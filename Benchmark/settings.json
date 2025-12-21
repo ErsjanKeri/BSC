@@ -1,0 +1,26 @@
+{
+  "experiment": {
+    "model_file": "llama-2-7b-chat.Q4_K_M.gguf",
+    "tokens_to_generate": 100,
+    "prompt": "Once upon a time"
+  },
+  "memory": {
+    "mlock_size_gb": 23,
+    "tmpfs_size_gb": 8,
+    "tmpfs_mount": "/mnt/blktrace_tmpfs"
+  },
+  "storage": {
+    "block_device": "/dev/nvme1n1"
+  },
+  "analysis": {
+    "gap_small_sectors": 256,
+    "gap_medium_sectors": 2048
+  },
+  "paths": {
+    "llama_cli": "llama.cpp/build/bin/llama-cli",
+    "models_dir": "llama.cpp/models",
+    "mlock_tool_cpp": "mlock_tool.cpp",
+    "mlock_bin": "mem_locker",
+    "results_dir": "results"
+  }
+}
