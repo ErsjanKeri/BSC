@@ -23,8 +23,7 @@ from utils import (
     check_root,
     drop_caches,
     compile_mem_locker,
-    mount_dedicated_tmpfs,
-    unmount_dedicated_tmpfs,
+    get_gguf_sector_range,
     blktrace_to_csv,
     analyze_with_duckdb
 )
@@ -95,6 +94,9 @@ def run_experiment(settings, paths):
 
     log(f"Model: {settings['experiment']['model_file']} ({model_size_gb:.2f} GB)")
 
+    # Get GGUF sector range (dynamic, handles defragmentation)
+    gguf_start_sector, gguf_end_sector, num_extents = get_gguf_sector_range(model_path)
+
     # Save configuration
     config = {
         "timestamp": timestamp,
@@ -106,7 +108,10 @@ def run_experiment(settings, paths):
         "mlock_gb": settings['memory']['mlock_size_gb'],
         "block_device": settings['storage']['block_device'],
         "gap_small_sectors": settings['analysis']['gap_small_sectors'],
-        "gap_medium_sectors": settings['analysis']['gap_medium_sectors']
+        "gap_medium_sectors": settings['analysis']['gap_medium_sectors'],
+        "gguf_start_sector": gguf_start_sector,
+        "gguf_end_sector": gguf_end_sector,
+        "num_extents": num_extents
     }
 
     with open(result_dir / "config.json", 'w') as f:
@@ -117,18 +122,16 @@ def run_experiment(settings, paths):
     # Step 1: Drop caches
     drop_caches()
 
-    # Step 2: Mount dedicated tmpfs (BEFORE mem_locker!)
-    tmpfs_dir = mount_dedicated_tmpfs(
-        settings['memory']['tmpfs_mount'],
-        settings['memory']['tmpfs_size_gb']
-    )
-    log(f"Dedicated tmpfs ready: {tmpfs_dir} ({settings['memory']['tmpfs_size_gb']}GB isolated RAM)")
+    # Step 2: Create blktrace staging directory on nvme0n1 (ZERO RAM usage!)
+    blktrace_staging = Path(settings['storage']['blktrace_staging'])
+    blktrace_staging.mkdir(parents=True, exist_ok=True)
+    log(f"blktrace staging on nvme0n1: {blktrace_staging} (disk storage, zero RAM interference)")
 
     # Step 3: Start blktrace
     log(f"Starting blktrace on {settings['storage']['block_device']}...")
     blktrace_proc = subprocess.Popen(
         ["blktrace", "-d", settings['storage']['block_device'], "-o", "trace"],
-        cwd=str(tmpfs_dir),
+        cwd=str(blktrace_staging),
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
     )
@@ -167,7 +170,7 @@ def run_experiment(settings, paths):
             "-m", str(model_path),
             "-p", settings['experiment']['prompt'],
             "-n", str(settings['experiment']['tokens_to_generate']),
-            "--log-disable"
+            "-no-cnv"  # Disable conversation/interactive mode for batch generation
         ],
         stdout=open(inference_log, 'w'),
         stderr=subprocess.STDOUT
@@ -211,7 +214,7 @@ def run_experiment(settings, paths):
         f.write("=== free -b ===\n")
         f.write(mem_after + "\n")
 
-    # Save performance metrics
+    # Save performance metrics (will add blktrace_size later)
     metrics = {
         "success": inference_success,
         "total_time_sec": elapsed_time,
@@ -238,23 +241,44 @@ def run_experiment(settings, paths):
 
     log("All processes stopped")
 
-    # Step 10: Copy blktrace files from RAM to disk
-    log("Copying blktrace data from RAM to disk...")
+    # Step 10: Copy blktrace files from nvme0n1 staging to results
+    log("Copying blktrace data from nvme0n1 staging to results...")
     blktrace_dest = result_dir / "blktrace"
     blktrace_dest.mkdir(exist_ok=True)
 
-    trace_files = list(tmpfs_dir.glob("trace.blktrace.*"))
+    trace_files = list(blktrace_staging.glob("trace.blktrace.*"))
 
     if not trace_files:
         log("WARNING: No blktrace files found!")
+        total_blktrace_bytes = 0
     else:
         log(f"Found {len(trace_files)} blktrace files")
+        total_blktrace_bytes = 0
         for trace_file in trace_files:
+            file_size = trace_file.stat().st_size
+            total_blktrace_bytes += file_size
             run_cmd(f"cp {trace_file} {blktrace_dest}/")
-        log(f"Blktrace files saved to {blktrace_dest}")
 
-    # Step 11: Unmount dedicated tmpfs (free 8GB RAM)
-    unmount_dedicated_tmpfs(settings['memory']['tmpfs_mount'])
+        total_blktrace_gb = total_blktrace_bytes / (1024 ** 3)
+        log(f"Blktrace files saved to {blktrace_dest}")
+        log(f"Total blktrace size: {total_blktrace_gb:.4f} GB ({total_blktrace_bytes / (1024**2):.2f} MB)")
+
+    # Update performance.json with blktrace size
+    perf_file = result_dir / "performance.json"
+    if perf_file.exists():
+        with open(perf_file, 'r') as f:
+            perf_data = json.load(f)
+        perf_data["blktrace_size_bytes"] = total_blktrace_bytes
+        perf_data["blktrace_size_mb"] = total_blktrace_bytes / (1024 ** 2)
+        perf_data["blktrace_size_gb"] = total_blktrace_bytes / (1024 ** 3)
+        with open(perf_file, 'w') as f:
+            json.dump(perf_data, f, indent=2)
+
+    # Step 11: Clean up staging directory
+    log("Cleaning up blktrace staging directory...")
+    for trace_file in blktrace_staging.glob("trace.blktrace.*"):
+        trace_file.unlink()
+    log("Staging directory cleaned")
 
     log(f"\n{'='*70}")
     log(f"Experiment complete! Results in: {result_dir}")
@@ -330,12 +354,24 @@ def main():
     csv_path = result_dir / "blktrace.csv"
     blktrace_to_csv(blktrace_dir, csv_path, result_dir)
 
-    # Analyze with DuckDB
+    # Read GGUF sector range from config (saved during run_experiment)
+    config_path = result_dir / "config.json"
+    with open(config_path, 'r') as f:
+        config = json.load(f)
+
+    gguf_start_sector = config['gguf_start_sector']
+    gguf_end_sector = config['gguf_end_sector']
+    num_extents = config['num_extents']
+
+    # Analyze with DuckDB (using sector range from config)
     analyze_with_duckdb(
         csv_path,
         result_dir,
         settings['analysis']['gap_small_sectors'],
-        settings['analysis']['gap_medium_sectors']
+        settings['analysis']['gap_medium_sectors'],
+        gguf_start_sector,
+        gguf_end_sector,
+        num_extents
     )
 
     # Parse memory files for page cache metrics

@@ -6,11 +6,85 @@ Includes:
 - DuckDB-based analysis
 - Gap distribution analysis
 - Bandwidth calculations
+- Dynamic GGUF sector range detection
 """
 
 import json
+import re
 from pathlib import Path
 from .setup_tools import log, run_cmd
+
+
+def get_gguf_sector_range(model_path):
+    """Get physical sector range for GGUF model file using filefrag
+
+    Args:
+        model_path: Path to .gguf model file
+
+    Returns:
+        tuple: (start_sector, end_sector, num_extents)
+
+    Note:
+        Sectors are 512 bytes each.
+        filefrag shows blocks (4096 bytes = 8 sectors).
+        We convert: block_number * 8 = sector_number
+
+        Adjacent extents are merged (same as filefrag's summary count)
+    """
+    log(f"Detecting GGUF sector range for {model_path.name}...")
+
+    # Run filefrag -v to get extent information
+    result = run_cmd(f"filefrag -v {model_path}", capture=True)
+
+    # Parse output to find physical extents
+    # Format: "  0:   0.. 4095: 128862208.. 128866303:  4096:"
+    extent_pattern = r'^\s*\d+:\s+\d+\.\.\s*\d+:\s+(\d+)\.\.\s*(\d+):\s+\d+:'
+
+    extents = []
+    for line in result.split('\n'):
+        match = re.search(extent_pattern, line)
+        if match:
+            start_block = int(match.group(1))
+            end_block = int(match.group(2))
+            extents.append((start_block, end_block))
+
+    if not extents:
+        raise ValueError(f"Failed to parse filefrag output for {model_path}")
+
+    # Sort extents by physical start block
+    extents.sort(key=lambda x: x[0])
+
+    # Merge adjacent extents (where end+1 == next_start)
+    merged_extents = []
+    current_start, current_end = extents[0]
+
+    for start, end in extents[1:]:
+        if start == current_end + 1:
+            # Adjacent extent, merge it
+            current_end = end
+        else:
+            # Gap found, save current extent and start new one
+            merged_extents.append((current_start, current_end))
+            current_start, current_end = start, end
+
+    # Don't forget the last extent
+    merged_extents.append((current_start, current_end))
+
+    # Get overall range
+    min_block = merged_extents[0][0]
+    max_block = merged_extents[-1][1]
+    num_extents = len(merged_extents)
+
+    # Convert blocks (4096 bytes) to sectors (512 bytes)
+    # 1 block = 8 sectors
+    min_sector = min_block * 8
+    max_sector = (max_block + 1) * 8  # +1 because filefrag end is inclusive
+
+    log(f"  Found {num_extents} extent(s) (after merging adjacent)")
+    log(f"  Physical blocks: {min_block:,} to {max_block:,}")
+    log(f"  Physical sectors: {min_sector:,} to {max_sector:,}")
+
+    return (min_sector, max_sector, num_extents)
 
 
 def blktrace_to_csv(blktrace_dir, output_csv, result_dir):
@@ -101,7 +175,7 @@ def blktrace_to_csv(blktrace_dir, output_csv, result_dir):
     return output_csv
 
 
-def analyze_with_duckdb(csv_path, result_dir, gap_small, gap_medium):
+def analyze_with_duckdb(csv_path, result_dir, gap_small, gap_medium, gguf_start_sector, gguf_end_sector, num_extents):
     """Analyze blktrace CSV with DuckDB
 
     Performs comprehensive analysis including:
@@ -115,6 +189,9 @@ def analyze_with_duckdb(csv_path, result_dir, gap_small, gap_medium):
         result_dir: Results directory for output files
         gap_small: Small gap threshold in sectors (e.g., 256 = 128KB)
         gap_medium: Medium gap threshold in sectors (e.g., 2048 = 1MB)
+        gguf_start_sector: Start sector of .gguf file (from get_gguf_sector_range)
+        gguf_end_sector: End sector of .gguf file (from get_gguf_sector_range)
+        num_extents: Number of extents (for logging fragmentation level)
     """
     try:
         import duckdb
@@ -164,12 +241,8 @@ def analyze_with_duckdb(csv_path, result_dir, gap_small, gap_medium):
         llama_pid = int(pid_file.read_text().strip())
         log(f"Filtering for llama-cli PID: {llama_pid}")
 
-        # Define .gguf file sector range (from filefrag)
-        # TODO: Calculate dynamically from filefrag output
-        GGUF_START_SECTOR = 1016594432  # 127074304 blocks × 8
-        GGUF_END_SECTOR = 1043242896    # 130405362 blocks × 8
-
-        log(f"Filtering for .gguf sectors: {GGUF_START_SECTOR} to {GGUF_END_SECTOR}")
+        # Use dynamic .gguf file sector range (from get_gguf_sector_range)
+        log(f"Filtering for .gguf sectors: {gguf_start_sector:,} to {gguf_end_sector:,} ({num_extents} extents)")
 
         # Filter for reads from llama-cli AND within .gguf sector range
         con.execute(f"""
@@ -177,8 +250,8 @@ def analyze_with_duckdb(csv_path, result_dir, gap_small, gap_medium):
             SELECT * FROM trace
             WHERE rwbs LIKE '%R%'
             AND pid = {llama_pid}
-            AND sector >= {GGUF_START_SECTOR}
-            AND sector <= {GGUF_END_SECTOR}
+            AND sector >= {gguf_start_sector}
+            AND sector <= {gguf_end_sector}
             ORDER BY timestamp
         """)
     total_rows = con.execute("SELECT COUNT(*) FROM reads").fetchone()[0]
