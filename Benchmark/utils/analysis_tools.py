@@ -248,7 +248,7 @@ def analyze_with_duckdb(csv_path, result_dir, gap_small, gap_medium, gguf_start_
         con.execute(f"""
             CREATE TABLE reads AS
             SELECT * FROM trace
-            WHERE rwbs LIKE '%R%'
+            WHERE action = 'D' AND rwbs LIKE '%R%'
             AND pid = {llama_pid}
             AND sector >= {gguf_start_sector}
             AND sector <= {gguf_end_sector}

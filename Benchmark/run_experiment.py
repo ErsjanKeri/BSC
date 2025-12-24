@@ -37,10 +37,6 @@ def load_settings():
     """
     settings_path = Path(__file__).parent / "settings.json"
 
-    if not settings_path.exists():
-        print(f"ERROR: settings.json not found at {settings_path}")
-        sys.exit(1)
-
     with open(settings_path, 'r') as f:
         settings = json.load(f)
 
@@ -324,15 +320,12 @@ def parse_memory_snapshot(filepath):
 def main():
     """Main entry point"""
 
-    print("\n" + "="*70)
     print("  LLM Parameter Offloading Experiment")
-    print("="*70 + "\n")
 
     # Check root
     check_root()
 
     # Load settings
-    log("Loading settings from settings.json...")
     settings = load_settings()
 
     # Resolve paths
@@ -346,10 +339,6 @@ def main():
 
     # Convert blktrace to CSV
     blktrace_dir = result_dir / "blktrace"
-
-    if not list(blktrace_dir.glob("trace.blktrace.*")):
-        log("ERROR: No blktrace files to analyze!")
-        return
 
     csv_path = result_dir / "blktrace.csv"
     blktrace_to_csv(blktrace_dir, csv_path, result_dir)

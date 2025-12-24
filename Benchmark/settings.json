@@ -5,7 +5,7 @@
     "prompt": "Once upon a time"
   },
   "memory": {
-    "mlock_size_gb": 12
+    "mlock_size_gb": 25
   },
   "storage": {
     "block_device": "/dev/nvme0n1",
