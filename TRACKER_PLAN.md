@@ -3,7 +3,7 @@
 **Project Goal**: Build a comprehensive tool to track, visualize, and analyze tensor access patterns during LLM inference in llama.cpp, enabling deep understanding of hot/cold parameters, memory access patterns, and optimization opportunities.
 
 **Status**: Planning Phase
-**Author**: Claude + Ersjan Këri
+**Author**: Ersjan Këri
 **Date**: January 1, 2026
 
 ---
@@ -1553,21 +1553,585 @@ uint64_t get_timestamp_ns() {
 
 ---
 
-## Approval & Sign-Off
+## 16. EXTRA: Deterministic Prefetching & Optimization Strategies
 
-**Plan Author**: Claude (AI Assistant)
-**Plan Reviewed By**: Ersjan Këri
-**Approval Date**: _____________
-**Approved to Proceed**: [ ] Yes  [ ] No  [ ] With Modifications
+**Source**: [30DEC.md](./Benchmark/journal/30DEC.md) - Memory Access Tracing & Deterministic Prefetching Strategy
 
-**Modifications/Comments:**
-_____________________________________________________________________________
-_____________________________________________________________________________
-_____________________________________________________________________________
+Once tensor access patterns are characterized through our tracking tool, we can implement intelligent optimization strategies based on the deterministic per-token access pattern discovered in autoregressive generation.
+
+### 16.1 Core Insight: Per-Token Access Pattern is Deterministic
+
+**Key Finding**: Even though which token is generated next is stochastic (due to probabilistic sampling), the **access pattern per token is completely deterministic**:
+
+```
+For EVERY token generation (regardless of which token):
+1. Access embeddings for current token
+2. Access layer 0: attn_q, attn_k, attn_v, attn_output, ffn_up, ffn_down, norms
+3. Access layer 1: same pattern
+4. ...
+5. Access layer N: same pattern
+6. Access output projection
+
+This sequence is IDENTICAL for every token!
+```
+
+**Why this matters**:
+- We can predict EXACTLY which tensors will be accessed next
+- We can prefetch layer N+1 while computing layer N
+- We can overlap I/O with computation
+- We can pin hot tensors and let cold tensors page
+
+### 16.2 Strategy 1: Pin Hot Tensors in RAM
+
+**Goal**: Keep frequently-accessed tensors in RAM, allow rarely-accessed tensors to page to SSD.
+
+**Implementation**:
+```c
+// After analyzing trace data, identify hot tensors
+// (e.g., accessed >N times per token on average)
+
+// From trace analysis
+const char* hot_tensors[] = {
+    "token_embd.weight",        // Accessed every token
+    "output.weight",            // Accessed every token
+    "blk.0.attn_norm.weight",   // Small, frequently accessed
+    // ... other hot tensors from analysis
+};
+
+// Pin them in RAM at startup
+void pin_hot_tensors() {
+    for (int i = 0; i < num_hot_tensors; i++) {
+        struct ggml_tensor* tensor = find_tensor_by_name(ctx, hot_tensors[i]);
+        if (tensor) {
+            mlock(tensor->data, ggml_nbytes(tensor));
+            printf("Pinned hot tensor: %s (%.2f MB)\n",
+                   hot_tensors[i],
+                   ggml_nbytes(tensor) / 1048576.0);
+        }
+    }
+}
+```
+
+**Expected Benefits**:
+- Eliminate re-reads of hot tensors (embeddings accessed 100+ times for 100 tokens)
+- Reduce I/O by 30-50% if embeddings are the main re-read culprit
+- Improve tokens/sec by 20-30% under memory pressure
+
+**Validation from Trace Data**:
+```python
+# From trace analysis
+hot_tensors = df.groupby('tensor_name').size().sort_values(ascending=False)
+
+# Expected output:
+# token_embd.weight:     101  ← 1 prompt + 100 generations
+# blk.0.attn_q.weight:   101
+# blk.0.attn_k.weight:   101
+# ...
+```
+
+**Resource Requirements**:
+- Llama-2-7B: Pin ~500 MB (token embeddings)
+- Llama-2-13B: Pin ~800 MB
+- Trade-off: Keep hot 5% of model, allow 95% to page
 
 ---
 
-**END OF TRACKER_PLAN.md**
+### 16.3 Strategy 2: Async I/O with io_uring (Compute-I/O Overlap) ⭐
 
-*Version 1.0 - Comprehensive implementation plan for LLM Tensor Access Tracker*
-*Last Updated: January 1, 2026*
+**Goal**: Hide I/O latency by prefetching layer N+1 while computing layer N.
+
+**Current Problem (Sequential Execution)**:
+```
+┌─────────────┐
+│ Load Layer 0│ ← I/O (100 ms), CPU idle
+└─────────────┘
+┌─────────────┐
+│Compute Lay 0│ ← CPU busy (200 ms), SSD idle
+└─────────────┘
+┌─────────────┐
+│ Load Layer 1│ ← I/O (100 ms), CPU idle
+└─────────────┘
+┌─────────────┐
+│Compute Lay 1│ ← CPU busy (200 ms), SSD idle
+└─────────────┘
+
+Total time: 32 layers × (100ms I/O + 200ms compute) = 9.6 seconds
+Wasted: 32 × 100ms = 3.2 seconds idle waiting for I/O
+```
+
+**Optimized (Overlapped Execution)**:
+```
+┌─────────────┐
+│ Load Layer 0│ (100 ms)
+└─────────────┘
+┌─────────────┐ ┌─────────────┐
+│Compute Lay 0│ │*Prefetch L1*│ ← Overlap!
+└─────────────┘ └─────────────┘
+                ┌─────────────┐ ┌─────────────┐
+                │Compute Lay 1│ │*Prefetch L2*│
+                └─────────────┘ └─────────────┘
+
+Total time: 100ms (load L0) + 32 × 200ms (compute) = 6.5 seconds
+Saved: 3.1 seconds (32% faster!)
+```
+
+**Implementation using io_uring (Linux)**:
+
+```c
+// prefetch_engine.h
+#include <liburing.h>
+
+struct PrefetchEngine {
+    struct io_uring ring;
+    int model_fd;
+
+    // Pre-computed per-token access pattern (from trace analysis)
+    struct AccessPattern {
+        const char* tensor_name;
+        uint64_t file_offset;
+        uint32_t size_bytes;
+        int layer_id;
+    };
+    std::vector<AccessPattern> per_token_pattern;
+};
+
+void prefetch_engine_init(PrefetchEngine* engine, const char* model_path) {
+    // Initialize io_uring
+    io_uring_queue_init(32, &engine->ring, 0);
+
+    // Open model file with O_DIRECT for async I/O
+    engine->model_fd = open(model_path, O_RDONLY | O_DIRECT);
+
+    // Load per-token access pattern from trace analysis
+    load_access_pattern(engine, "access_pattern.json");
+}
+
+void prefetch_next_layer(PrefetchEngine* engine, int current_layer) {
+    int next_layer = current_layer + 1;
+
+    // Find all tensors for next layer
+    for (auto& access : engine->per_token_pattern) {
+        if (access.layer_id == next_layer) {
+            // Submit async read request
+            struct io_uring_sqe* sqe = io_uring_get_sqe(&engine->ring);
+
+            void* buffer = aligned_alloc(4096, access.size_bytes);  // O_DIRECT requires alignment
+
+            io_uring_prep_read(sqe, engine->model_fd, buffer,
+                               access.size_bytes, access.file_offset);
+            io_uring_sqe_set_data(sqe, buffer);
+        }
+    }
+
+    // Submit all requests (non-blocking)
+    io_uring_submit(&engine->ring);
+}
+
+void wait_prefetch_complete(PrefetchEngine* engine) {
+    // Wait for all pending requests to complete
+    struct io_uring_cqe* cqe;
+    unsigned completed = 0;
+
+    while (completed < expected_completions) {
+        io_uring_wait_cqe(&engine->ring, &cqe);
+
+        // Prefetch is done, data now in page cache
+        void* buffer = io_uring_cqe_get_data(cqe);
+        free(buffer);  // Can free, already in kernel page cache
+
+        io_uring_cqe_seen(&engine->ring, cqe);
+        completed++;
+    }
+}
+
+// Modified inference loop
+void inference_with_prefetch(PrefetchEngine* prefetch, int n_tokens) {
+    for (int token = 0; token < n_tokens; token++) {
+        for (int layer = 0; layer < n_layers; layer++) {
+            // Start prefetching NEXT layer (async, non-blocking)
+            if (layer + 1 < n_layers) {
+                prefetch_next_layer(prefetch, layer);
+            }
+
+            // Compute current layer (CPU busy, I/O happening in background)
+            compute_layer(layer);
+
+            // Ensure prefetch is complete before accessing next layer
+            if (layer + 1 < n_layers) {
+                wait_prefetch_complete(prefetch);
+            }
+        }
+    }
+}
+```
+
+**Expected Benefits**:
+- **Theoretical max**: 2x speedup (if I/O time == compute time)
+- **Practical**: 1.5-1.8x speedup (compute usually > I/O for LLMs)
+- Only benefits memory-constrained scenarios (otherwise already cached)
+
+**From 22DEC.md findings**:
+```
+Current (20 GB lock, no overlap):
+- Inference time: 33.15s
+- Tokens/sec: 3.02
+
+With perfect overlap (estimated):
+- Inference time: ~20s
+- Tokens/sec: ~5.0 (+65%)
+```
+
+**Requirements**:
+- Linux kernel 5.1+ (io_uring support)
+- O_DIRECT I/O support
+- Accurate per-layer access pattern (from trace analysis)
+- Pre-computed access pattern file
+
+---
+
+### 16.4 Strategy 3: Pre-Computed Per-Token Access List
+
+**Goal**: Build exact access sequence once, reuse for every token.
+
+**Phase 1: Extract Per-Token Pattern from Trace**
+
+```python
+# extract_pattern.py
+import pandas as pd
+import json
+
+# Load trace from tensor tracker
+df = pd.read_parquet("tensor_access.parquet")
+
+# Load GGUF structure
+gguf_df = pd.read_csv("gguf_structure.csv")
+
+# Extract pattern from token 1 (generation phase)
+# Token 0 is prompt (different pattern), tokens 1+ are identical
+pattern_df = df[df['token_id'] == 1][['tensor_name', 'size_bytes', 'timestamp_ns']].copy()
+
+# Merge with GGUF offsets
+pattern_df = pattern_df.merge(
+    gguf_df[['tensor_name', 'file_offset', 'layer_id', 'component_type']],
+    on='tensor_name'
+)
+
+# Sort by timestamp (execution order)
+pattern_df = pattern_df.sort_values('timestamp_ns')
+
+# Export as JSON for C++ to load
+access_pattern = []
+for _, row in pattern_df.iterrows():
+    access_pattern.append({
+        'tensor_name': row['tensor_name'],
+        'file_offset': int(row['file_offset']),
+        'size_bytes': int(row['size_bytes']),
+        'layer_id': int(row['layer_id']),
+        'component': row['component_type']
+    })
+
+with open('access_pattern.json', 'w') as f:
+    json.dump({'per_token_pattern': access_pattern}, f, indent=2)
+
+print(f"Extracted {len(access_pattern)} accesses per token")
+```
+
+**Phase 2: Use Pattern for Prefetching**
+
+```c
+// Load pre-computed pattern at startup
+struct AccessEntry {
+    char tensor_name[128];
+    uint64_t file_offset;
+    uint32_t size_bytes;
+    int layer_id;
+};
+
+AccessEntry g_per_token_pattern[MAX_PATTERN_SIZE];
+int g_pattern_length = 0;
+
+void load_access_pattern(const char* pattern_file) {
+    FILE* f = fopen(pattern_file, "r");
+    // Parse JSON and populate g_per_token_pattern
+    // ...
+    fclose(f);
+}
+
+// During inference, use pattern for prefetching
+void optimized_inference_per_token() {
+    for (int i = 0; i < g_pattern_length; i++) {
+        auto& entry = g_per_token_pattern[i];
+
+        // Prefetch 2-3 entries ahead
+        if (i + 2 < g_pattern_length) {
+            auto& next = g_per_token_pattern[i + 2];
+
+            // Software prefetch (CPU cache line)
+            __builtin_prefetch((void*)(model_base + next.file_offset), 0, 3);
+
+            // Or io_uring for SSD prefetch (if under memory pressure)
+            // prefetch_async(next.file_offset, next.size_bytes);
+        }
+
+        // Access current entry (should be prefetched by now)
+        void* data = (void*)(model_base + entry.file_offset);
+        // Use data for computation...
+    }
+}
+```
+
+**Expected Benefits**:
+- Deterministic, optimal prefetch schedule
+- Distance = 2-3 entries ahead (balance prefetch vs working set)
+- Works for ALL tokens (pattern is identical)
+- ~1.3-1.5x speedup under memory pressure
+
+**Validation**:
+```python
+# Verify pattern is identical across tokens
+token_1_pattern = df[df['token_id'] == 1]['tensor_name'].values
+token_2_pattern = df[df['token_id'] == 2]['tensor_name'].values
+token_3_pattern = df[df['token_id'] == 3]['tensor_name'].values
+
+assert (token_1_pattern == token_2_pattern).all(), "Pattern not deterministic!"
+assert (token_2_pattern == token_3_pattern).all(), "Pattern not deterministic!"
+
+print("✓ Per-token pattern is DETERMINISTIC!")
+```
+
+---
+
+### 16.5 Strategy 4: MoE Expert-Aware Prefetching
+
+**Goal**: For Mixture-of-Experts models, only prefetch activated experts.
+
+**Background**: MoE models use sparse activation:
+- Total experts: 8 (example: Mixtral 8x7B)
+- Activated per token: 2 (top-K routing)
+- Utilization: 25% (2/8)
+- Optimization opportunity: Don't load unused experts!
+
+**Phase 1: Analyze Expert Usage from Trace**
+
+```python
+# Analyze MoE trace data
+moe_df = df[df['tensor_name'].str.contains('expert_')]
+
+# Extract expert ID from name: "blk.5.expert_3.ffn_up.weight" → expert=3
+moe_df['expert_id'] = moe_df['tensor_name'].str.extract(r'expert_(\d+)')[0].astype(int)
+moe_df['layer_id'] = moe_df['tensor_name'].str.extract(r'blk\.(\d+)')[0].astype(int)
+
+# Expert usage per token
+expert_usage = moe_df.groupby(['token_id', 'layer_id', 'expert_id']).size().reset_index(name='access_count')
+
+# Identify hot vs cold experts
+expert_totals = moe_df.groupby('expert_id').size().sort_values(ascending=False)
+
+print("Hot experts (frequently activated):")
+print(expert_totals.head(3))
+
+print("\nCold experts (rarely activated):")
+print(expert_totals.tail(3))
+
+# Expected output:
+# Expert 0: 450 activations ← HOT
+# Expert 1: 420 activations ← HOT
+# Expert 2: 80 activations
+# Expert 3: 50 activations  ← COLD
+```
+
+**Phase 2: Predictive Expert Prefetching**
+
+```c
+// MoE-aware prefetching
+void moe_prefetch_for_layer(int layer, float* routing_scores) {
+    // Router computes scores for each expert
+    // routing_scores[i] = probability of selecting expert i
+
+    // Get top-K expert IDs (K=2 for Mixtral)
+    int top_k = 2;
+    int expert_ids[8];
+    top_k_indices(routing_scores, 8, top_k, expert_ids);
+
+    // Prefetch ONLY the selected experts
+    for (int i = 0; i < top_k; i++) {
+        int expert_id = expert_ids[i];
+
+        // Construct tensor names
+        char ffn_up_name[128];
+        snprintf(ffn_up_name, sizeof(ffn_up_name),
+                 "blk.%d.expert_%d.ffn_up.weight", layer, expert_id);
+
+        char ffn_down_name[128];
+        snprintf(ffn_down_name, sizeof(ffn_down_name),
+                 "blk.%d.expert_%d.ffn_down.weight", layer, expert_id);
+
+        // Prefetch these expert weights
+        struct ggml_tensor* ffn_up = find_tensor(ffn_up_name);
+        struct ggml_tensor* ffn_down = find_tensor(ffn_down_name);
+
+        async_prefetch(ffn_up->data, ggml_nbytes(ffn_up));
+        async_prefetch(ffn_down->data, ggml_nbytes(ffn_down));
+    }
+
+    // Do NOT prefetch other 6 experts (save 75% of I/O!)
+}
+```
+
+**Expected Benefits**:
+- Reduce MoE layer I/O by 75% (load 2/8 experts instead of 8/8)
+- Faster inference for sparse MoE models
+- Better memory utilization
+
+**From Trace Analysis**:
+```python
+# Validate expert sparsity
+experts_per_token = moe_df.groupby(['token_id', 'layer_id'])['expert_id'].nunique()
+
+print(f"Average experts activated per layer: {experts_per_token.mean():.2f}")
+# Expected: ~2.0 for top-2 routing
+
+print(f"Expected I/O reduction: {(1 - 2/8) * 100:.0f}%")
+# Expected: 75% reduction
+```
+
+---
+
+### 16.6 Combined Strategy: Intelligent Hybrid Approach
+
+**Best Results**: Combine all strategies for maximum optimization.
+
+```
+┌──────────────────────────────────────────────┐
+│  Hybrid Optimization Strategy                │
+├──────────────────────────────────────────────┤
+│                                              │
+│  1. Pin Hot Tensors (Strategy 1)            │
+│     ├─ token_embd.weight → RAM (pinned)     │
+│     ├─ output.weight → RAM (pinned)         │
+│     └─ Small norms → RAM (pinned)           │
+│     Savings: ~40% I/O reduction              │
+│                                              │
+│  2. Layer-Wise Async Prefetch (Strategy 2)  │
+│     ├─ While computing layer N              │
+│     └─ Prefetch layer N+1 via io_uring      │
+│     Speedup: 1.5-1.8x                        │
+│                                              │
+│  3. Pre-Computed Pattern (Strategy 3)       │
+│     ├─ Use deterministic access sequence    │
+│     └─ Optimal prefetch distance (2-3 ahead)│
+│     Speedup: 1.3-1.5x                        │
+│                                              │
+│  4. MoE Expert Selection (Strategy 4)       │
+│     ├─ Only load activated experts          │
+│     └─ 75% I/O reduction for MoE layers     │
+│     (Only for MoE models)                    │
+│                                              │
+│  Combined Expected Improvement:              │
+│  ├─ I/O Reduction: 60-70%                   │
+│  ├─ Latency Reduction: 40-50%               │
+│  └─ Throughput Gain: 1.8-2.2x               │
+│     (Under memory pressure)                  │
+└──────────────────────────────────────────────┘
+```
+
+**Validation Plan**:
+1. Baseline: Run without optimizations (measure tokens/sec, I/O)
+2. +Strategy 1: Add hot tensor pinning (measure improvement)
+3. +Strategy 2: Add async prefetching (measure improvement)
+4. +Strategy 3: Add pattern-based prefetch (measure improvement)
+5. +Strategy 4: Add MoE optimization (if applicable)
+
+**Expected Results from 22DEC.md Baseline**:
+```
+Baseline (20 GB lock, no optimization):
+- Tokens/sec: 3.02
+- Total I/O: 14.52 GB (1.13x amplification)
+- I/O time: ~3.2 seconds (33% of total time)
+
+After All Optimizations (estimated):
+- Tokens/sec: 5.5-6.0 (+80-100%)
+- Total I/O: 5-6 GB (40-50% reduction)
+- I/O time: ~1.0 seconds (hidden by compute overlap)
+```
+
+---
+
+### 16.7 Implementation Priority & Dependencies
+
+**Priority 1: Foundation (Weeks 1-2)**
+- Complete tensor access tracker (Phases 1-3 from main plan)
+- Generate trace data for llama-2-7b and gpt-oss-20b
+- Validate per-token pattern determinism
+- **Deliverable**: Trace data with access patterns
+
+**Priority 2: Hot Tensor Pinning (Week 3)**
+- Analyze trace to identify hot tensors
+- Implement mlock-based pinning
+- Benchmark improvement
+- **Deliverable**: Strategy 1 implemented and validated
+
+**Priority 3: Pattern Extraction (Week 3)**
+- Extract per-token access list from trace
+- Export as JSON/binary format
+- Modify llama.cpp to load pattern
+- **Deliverable**: Strategy 3 implemented
+
+**Priority 4: Async I/O (Week 4)**
+- Implement io_uring-based prefetching
+- Test with pattern-based prefetch schedule
+- Measure overlap effectiveness
+- **Deliverable**: Strategy 2 implemented
+
+**Priority 5: MoE Optimization (Week 4, if time permits)**
+- Analyze MoE expert usage from trace
+- Implement expert-aware prefetching
+- **Deliverable**: Strategy 4 implemented (if MoE model available)
+
+**Dependencies**:
+```
+Tensor Tracker (Main Plan Phases 1-3)
+    ↓
+  Trace Data
+    ↓
+  ┌─────────────┬─────────────┬─────────────┐
+  │             │             │             │
+Strategy 1    Strategy 3    Strategy 4
+(Pin Hot)     (Pattern)     (MoE)
+  │             │             │
+  └─────────────┴─────────────┘
+                ↓
+          Strategy 2
+          (Async I/O)
+```
+
+---
+
+### 16.8 Success Metrics
+
+**Quantitative Metrics**:
+1. **I/O Reduction**: Measure total bytes read (target: 50-70% reduction)
+2. **Latency**: Measure inference time (target: 40-50% reduction)
+3. **Throughput**: Measure tokens/sec (target: 1.8-2.2x improvement)
+4. **Re-read Factor**: Measure amplification (target: 1.13x → 1.0x)
+
+**Qualitative Metrics**:
+1. **Understanding**: Can we explain which tensors are hot/cold?
+2. **Predictability**: Can we predict next access with >95% accuracy?
+3. **Generality**: Do patterns hold across different models/prompts?
+
+**Thesis Contributions**:
+1. ✅ Characterization of LLM memory access patterns (tensor-level)
+2. ✅ Discovery of deterministic per-token pattern
+3. ✅ Novel optimization strategies (hot pinning + async prefetch + pattern-based)
+4. ✅ Quantified performance improvements (1.8-2.2x under memory pressure)
+5. ✅ Open-source tool for future research (tensor access tracker)
+
+**This is publishable work** for systems conferences (OSDI, ATC, EuroSys) or ML systems workshops (MLSys, SysML).
+
+---
+
+**End of EXTRA Section**
+
+---
+
