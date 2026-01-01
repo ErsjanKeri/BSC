@@ -1,11 +1,4 @@
 
-
-KV cache/activations: anonymous. Without swap, they must stay in RAM; if RAM is full you hit OOM. With swap, they can be paged out, but performance tanks. ML frameworks sometimes implement explicit offload to SSD (e.g., paged attention, CPU/NVMe offload) using their own files/mappings; the kernel’s generic swap is not optimized for high-performance KV offload.
-
-
-Llama.cpp sometimes allocates not in buff/cache, has lock on the memory for small models 
-
-
 Our machine specs: 
 
 CPU: AMD Ryzen 7 7700X (8 cores / 16 threads) shown in lscpu; clocks 0.4–5.57 GHz; single NUMA node.
@@ -15,23 +8,6 @@ RAM: 30 Gi total, ~27 Gi free, no swap configured (free -h).
 GPU: no NVIDIA driver (nvidia-smi absent); lspci shows an AMD Raphael iGPU, so there’s no dedicated VRAM—graphics would share system RAM. The current llama.cpp build only ships CPU libs (libggml-cpu.so), so llama-cli will run on CPU
 
 
-
-Way to grok llama.cpp
-
-Start with the docs: read README.md, then docs/BUILD.md, docs/run.md, and docs/gguf.md to nail formats, build flags, and runtime options.
-Learn the mental layers: CLI frontends (llama-cli, llama-run), model loader (GGUF parsing, tensor init), compute graph build (attention/FFN), backend kernels (ggml CPU/GPU), and schedulers/sampling. Keep this stack in mind as you read.
-Do a guided code tour (in this order):
-src/llama.cpp/src/llama.h – API and high-level flow.
-src/llama-impl.h – internal structures.
-ggml/src/ggml.c (CPU) and ggml/src/ggml-cuda.cpp/ggml-hip.cpp – tensor ops.
-common/ utils (tokenizer, sampling).
-examples/ (small, focused demos) to see usage patterns.
-Run small experiments while reading: llama-bench to see threading/backends, llama-gguf to inspect headers, llama-cli -m <model> -t <threads> to connect code to behavior. Add -d (debug logging) and --verbose-prompt to watch the pipeline.
-Study GGUF and quantization: understand tensor layouts, n_params, and per-tensor types; skim docs/quantization.md and the conversion scripts.
-Use tracing/profiling to link code to perf: build with -DLLAMA_PERF=ON, run llama-bench --dump-timings, and skim the kernel dispatch in ggml to see which ops dominate.
-Read issues/PRs for design intent: search for “design”, “roadmap”, and backend discussions; skim recent PRs touching ggml and llama.cpp for rationale and constraints.
-If you like video, pick one good deep dive (e.g., a maintainer talk on ggml/llama.cpp internals) but rely on code/doc reading for fidelity.
-Take notes in a map: for each subsystem, write a short “responsibility + key files + hot paths + configs” summary; this cements understanding better than passive watching.
 
 
 
@@ -113,3 +89,25 @@ Traces writing was slowing us down insanely, because we were writing in disk as 
 # sudo sysctl vm.swappiness=0 
 
 CPU utilisation?
+
+deterministic prefetching might be killer for MoE 
+1) PowerInfer -> (sparsity hot/cold neurons) ReLU activisation keep GPU rest RAM, what if we do same but RAM/SSD? 
+2) Buffer for internal memory -> would require us to write our own virtual memory manager inside the application 
+3) io_uring 
+4) flash attention 
+-> thread to prefetch into memory???
+
+It requires deep kernel knowledge (io_uring).
+It requires deep engine knowledge (ggml internals).
+It offers marginal gains for dense models (limited by SSD speed).
+
+"Anonymous Memory" as memory that has no home on the hard drive.
+
+Anonymous Memory (malloc) is like a Whiteboard.
+The Source: It comes from nowhere. It is just blank, empty space given to you.
+
+The "Name": It has no name. You cannot look it up in the library catalog (the file system). It is just "Generic Whiteboard #5."
+
+If RAM is full (Eviction): You cannot just erase the whiteboard, because that information exists nowhere else! If you erase it, the data is lost forever.
+
+The Solution (Swap): To free up space, you must take a photo of the whiteboard and store it in a special "junk drawer" (the Swap partition). This is slow (writing to disk).
