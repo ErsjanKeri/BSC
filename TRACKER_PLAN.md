@@ -2,9 +2,47 @@
 
 **Project Goal**: Build a comprehensive tool to track, visualize, and analyze tensor access patterns during LLM inference in llama.cpp, enabling deep understanding of hot/cold parameters, memory access patterns, and optimization opportunities.
 
-**Status**: Planning Phase
+**Status**: Planning Phase - READY TO IMPLEMENT ✅
 **Author**: Ersjan Këri
 **Date**: January 1, 2026
+**Last Updated**: January 2, 2026 (Final Architecture Decision)
+
+---
+
+## FINAL ARCHITECTURE (Updated Jan 2, 2026)
+
+**Critical Design Decision**: Instrument **ggml-cpu.c** (CPU backend) to capture REAL memory access patterns.
+
+### Key Specifications
+
+**Instrumentation**:
+- **Location**: `ggml/src/ggml-cpu/ggml-cpu.c` (CPU backend operations)
+- **Scope**: ALL operations including model parameters, intermediate tensors, KV cache, embeddings
+- **Method**: Compile-time flag `#ifdef GGML_TENSOR_TRACE` in each operation
+- **Backend**: CPU-only (sufficient for thesis, GPU upstreamable later)
+
+**Why CPU Backend (Not Dispatcher)?**
+- ✅ Captures **physical** memory access (actual `tensor->data` reads)
+- ✅ Enables blktrace correlation (page faults, disk I/O attribution)
+- ✅ More granular than dispatcher-level hooks
+- ✅ Standard llama.cpp pattern (see `GGML_PERF`, `GGML_DEBUG`)
+
+**Logging Infrastructure**:
+- **Method**: mmap ring buffer to `/dev/shm/` (tmpfs)
+- **Entry Size**: 64 bytes fixed (cache-line aligned)
+- **Capacity**: 2 GB (33.5M entries)
+- **Thread Safety**: Thread-local buffers, sequential token processing (no atomics needed)
+
+**Data Mapping**:
+- **Build Phase**: During model load, create `tensor_ptr → {name, file_offset, size}` map
+- **Log Phase**: During inference, log `{tensor_ptr, timestamp, token_id, ...}`
+- **Analysis Phase**: Post-processing joins logs with mapping for semantic analysis
+
+**Environment**:
+- **Target Platform**: Linux server (`cli-hiwi-02.dis.cit.tum.de`)
+- **No macOS support needed**: `/dev/shm/` guaranteed on Linux
+
+**See**: [journal/02JAN.md](./Benchmark/journal/02JAN.md) Decision 5 for full rationale and discussion.
 
 ---
 
@@ -159,30 +197,37 @@ This validates the project's novelty and importance.
 
 ### 3.1 Functional Requirements
 
-**FR1: Comprehensive Logging**
+**FR1: Comprehensive Logging** ⭐ **UPDATED: ALL OPERATIONS**
 - Track EVERY tensor access (no sampling)
+- **Include model parameters** (mmap'd from GGUF): weights, embeddings, norms
+- **Include intermediate tensors** (allocated in RAM): activations, residuals, attention scores
+- **Include KV cache** (mmap'd or RAM): cache reads and writes
 - Capture full context: what, when, where, why
 - Support multi-token inference (prompt + generation)
 
 **FR2: Semantic Awareness**
-- Know tensor names (e.g., "blk.5.attn_q.weight")
+- Know tensor names (e.g., "blk.5.attn_q.weight" for params, "Qcur" for intermediates)
 - Understand operation types (MUL_MAT, ADD, ROPE, etc.)
 - Track layer progression and token boundaries
+- Distinguish file-backed vs RAM-allocated tensors (via file_offset field)
 
 **FR3: Attention Mechanism Detail**
-- Separate tracking for Q, K, V matrices
+- Separate tracking for Q, K, V matrices (both weights and computed activations)
 - Track attention head indices (for multi-head attention)
 - Log KV cache accesses vs fresh computations
+- Capture attention score calculations (intermediate tensors)
 
 **FR4: MoE Support**
 - Track expert selection (routing decisions)
 - Log which experts activated per token
 - Capture expert-specific weight accesses
+- Track expert-specific intermediate activations
 
 **FR5: File Offset Correlation**
-- Map tensor accesses → GGUF file byte offsets
+- Map tensor accesses → GGUF file byte offsets (for parameters)
+- Use file_offset = 0 for RAM-allocated intermediates (not in GGUF)
 - Enable correlation with blktrace block-level I/O
-- Support analysis of sequential vs random access
+- Support analysis of sequential vs random access patterns
 
 **FR6: Low Recording Overhead**
 - Async logging to minimize impact on inference
