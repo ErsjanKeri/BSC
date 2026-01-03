@@ -56,34 +56,76 @@ This is **Thread 1** of the thesis research, focusing on understanding disk I/O 
 
 ### run_experiment.py
 
-**Purpose**: Automated experiment runner for systematic blktrace benchmarking
+**Purpose**: Fully automated experiment runner for blktrace benchmarking
 
 **What it does**:
-- Automates the full experimental workflow
-- Controls memory pressure scenarios (0%, 50%, 100% RAM locked)
-- Manages blktrace start/stop
-- Runs llama.cpp inference with specified parameters
-- Collects and organizes results
+- Loads configuration from `settings.json`
+- Compiles `mlock_tool.cpp` if needed
+- Drops page cache to ensure clean state
+- Starts blktrace on configured block device
+- Launches mem_locker to force memory pressure
+- Runs llama-cli inference
+- Captures memory snapshots before/after
+- Stops all processes and collects data
+- Converts blktrace binary output to CSV
+- Analyzes with DuckDB (sequential vs random, bandwidth, etc.)
+- Generates comprehensive `analysis.json`
 
 **Usage**:
 ```bash
-sudo python3 run_experiment.py --model MODEL_NAME --scenario SCENARIO --tokens N
+# 1. Edit settings.json to configure experiment
+# 2. Run (no command-line arguments needed)
+sudo python3 run_experiment.py
 ```
 
-**Configuration**: See `settings.json` for experiment parameters
+**Configuration**: All parameters in `settings.json` (see below)
 
-**Status**: Ready for Phase 2 blktrace experiments
+**Output**: Results saved to `results/experiment_TIMESTAMP/`
+- `config.json` - Experiment configuration
+- `performance.json` - Timing and throughput metrics
+- `blktrace/` - Raw blktrace data
+- `blktrace.csv` - Parsed I/O events
+- `analysis.json` - DuckDB analysis (sequential%, bandwidth, gaps)
+- `memory_before.txt` / `memory_after.txt` - RAM snapshots
+- `inference.log` - llama-cli output
 
 ### settings.json
 
-**Purpose**: Experiment configuration file
+**Purpose**: Experiment configuration file (JSON format)
 
-**Contains**:
-- Model paths and names
-- Memory pressure scenarios
-- Token counts for inference
-- blktrace parameters
-- Output directories
+**Structure**:
+```json
+{
+  "experiment": {
+    "model_file": "gpt-oss-20b-F16.gguf",    // Model filename (in models_dir)
+    "tokens_to_generate": 100,                // How many tokens to generate
+    "prompt": "Once upon a time"              // Prompt text
+  },
+  "memory": {
+    "mlock_size_gb": 25                       // GB to lock (forces model to SSD)
+  },
+  "storage": {
+    "block_device": "/dev/nvme0n1",           // Device to trace
+    "blktrace_staging": "/tmp/blktrace_staging" // Temp dir for blktrace
+  },
+  "analysis": {
+    "gap_small_sectors": 256,                 // Gap threshold for sequential
+    "gap_medium_sectors": 2048                // Gap threshold for random
+  },
+  "paths": {
+    "llama_cli": "llama.cpp/build/bin/llama-cli",
+    "models_dir": "/mnt/experiment_ssd",      // Where models are stored
+    "mlock_tool_cpp": "utils/mlock_tool.cpp",
+    "mlock_bin": "mem_locker",
+    "results_dir": "results"
+  }
+}
+```
+
+**Configuration tips**:
+- `mlock_size_gb`: Set to force memory pressure (e.g., 25GB on 30GB system = 83% pressure)
+- `model_file`: Must exist in `models_dir`
+- `block_device`: The SSD where model is stored (use `lsblk` to verify)
 
 ### utils/
 
@@ -256,10 +298,10 @@ grep -E " (Q|C) " trace.txt  # Filter queue/complete events
 
 ## Research Questions
 
-1. **Is llama.cpp saturating the SSD bandwidth?**
-   - Current: ~10 GB/s throughput observed
-   - SSD capability: ~80 GB/s (according to server_specs.md)
-   - Gap: 8x underutilization - why?
+1. **What is the actual SSD bandwidth utilization during inference?**
+   - SSD spec: ~3.5 GB/s sequential read (PCIe Gen 3.0 x4)
+   - Question: Is llama.cpp achieving full bandwidth or underutilizing?
+   - Measurement: blktrace will show actual MB/s throughput
 
 2. **Are requests sequential or random?**
    - Hypothesis: Dense models access sequentially (layer-by-layer)

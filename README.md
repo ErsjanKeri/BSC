@@ -4,12 +4,12 @@ This repository contains all research, implementation, and documentation for my 
 
 ## Problem Statement
 
-**Current bottleneck**: llama.cpp achieves only ~10 GB/s throughput when loading model parameters from SSD, despite the server's NVMe drive supporting ~80 GB/s bandwidth (8x underutilization).
+**Research Goal**: Understand and optimize SSD-backed LLM inference performance. Current hypothesis: SSD bandwidth may not be fully utilized due to synchronous I/O, lack of predictive prefetching, or suboptimal access patterns.
 
-**Research questions**:
+**Research Questions**:
 1. Are model parameters accessed **sequentially** (layer-by-layer) or **uniformly** (randomly)?
-2. What causes the bandwidth underutilization?
-3. Can we implement predictive prefetching or buffer management to saturate SSD bandwidth?
+2. What is the actual SSD bandwidth utilization during inference?
+3. Can we implement optimizations to improve throughput?
 
 **Approach**: Two complementary instrumentation threads to understand the full picture.
 
@@ -27,14 +27,12 @@ This repository contains all research, implementation, and documentation for my 
 - Request sizes, timestamps, sectors
 - Actual SSD bandwidth utilization
 
-**Limitation**: No application-level semantics (doesn't know which tensor caused the I/O)
-
-**Status**: Tools ready (mlock_tool.cpp), experiments planned after tensor tracing validation
+**Purpose**: Measure real-world I/O patterns and bandwidth usage
 
 ---
 
 ### Thread 2: Tensor-Level Tracing (Application-level)
-**Location**: [tensor-tracing/](tensor-tracing/) (llama.cpp instrumentation)
+**Location**: [tensor-tracing/](tensor-tracing/) ([llama.cpp fork](https://github.com/ErsjanKeri/llama.cpp))
 
 **Tool**: Custom instrumentation in `ggml-cpu.c`
 
@@ -44,9 +42,7 @@ This repository contains all research, implementation, and documentation for my 
 - Layer-by-layer execution order
 - Operation types (mul_mat, embeddings, etc.)
 
-**Limitation**: Doesn't see disk I/O (operates at code level, not OS level)
-
-**Status**: ✅ Implementation complete (Jan 4), first data collected, validation in progress
+**Purpose**: Understand application-level tensor access patterns for correlation with disk I/O
 
 ---
 
@@ -97,10 +93,9 @@ BSC/
 │   ├── README.md                       blktrace workflow, tools documentation
 │   ├── run_experiment.py               Automated experiment runner
 │   ├── settings.json                   Experiment configuration
-│   ├── utils/                          Helper modules for automation
-│   │   ├── setup_tools.py
-│   │   └── analysis_tools.py
-│   └── tools/
+│   └── utils/                          Helper modules and tools
+│       ├── setup_tools.py              System setup utilities
+│       ├── analysis_tools.py           blktrace parsing
 │       └── mlock_tool.cpp              Memory locking for forced SSD usage
 │
 └── archive/                           ← Historical content (gold extracted)
@@ -120,86 +115,77 @@ BSC/
 
 ### For Tensor Tracing (Thread 2)
 
-**Build instrumented llama.cpp**:
+**1. Clone the instrumented llama.cpp fork**:
 ```bash
-cd ../llama.cpp
-cmake -B build -DGGML_TENSOR_TRACE=ON -DGGML_METAL=OFF
+git clone https://github.com/ErsjanKeri/llama.cpp
+cd llama.cpp
+```
+
+**2. Build with tensor tracing enabled**:
+```bash
+cmake -B build \
+  -DGGML_TENSOR_TRACE=ON \
+  -DGGML_METAL=OFF
 cmake --build build -j16
 ```
 
-**Run traced inference**:
+**3. Extract model structure** (one-time per model):
 ```bash
+./build/bin/gguf-dump /path/to/model.gguf --csv > model_structure.csv
+```
+
+**4. Run traced inference**:
+```bash
+rm -f /tmp/tensor_trace.bin
 ./build/bin/llama-cli -m /path/to/model.gguf -p "Hello" -n 1
 ```
 
-**Analyze trace**:
+**5. Analyze trace**:
 ```bash
-python BSC/tensor-tracing/tools/parse_trace.py /tmp/tensor_trace.bin --display
+cd ../BSC
+python3 tensor-tracing/tools/parse_trace.py /tmp/tensor_trace.bin --display
+python3 tensor-tracing/tools/parse_trace.py /tmp/tensor_trace.bin --stats
 ```
 
-See [tensor-tracing/README.md](tensor-tracing/README.md) for complete workflow.
+See [tensor-tracing/README.md](tensor-tracing/README.md) for detailed workflow and troubleshooting.
 
 ---
 
 ### For Disk I/O Benchmarking (Thread 1)
 
-**Setup** (requires sudo):
-```bash
-# Clear page cache
-sudo bash -c "echo 1 > /proc/sys/vm/drop_caches"
-
-# Start blktrace
-sudo blktrace -d /dev/nvme0n1 -o trace &
+**1. Configure experiment** (edit `settings.json`):
+```json
+{
+  "experiment": {
+    "model_file": "gpt-oss-20b-F16.gguf",
+    "tokens_to_generate": 100,
+    "prompt": "Once upon a time"
+  },
+  "memory": {
+    "mlock_size_gb": 25
+  }
+}
 ```
 
-**Run experiment**:
+**2. Run automated experiment**:
 ```bash
-# Force memory pressure (100% scenario)
-./disk-benchmarking/tools/mlock_tool --size 28G --lock &
-
-# Run inference (will hit SSD)
-./llama-cli -m model.gguf -p "Test" -n 100
-
-# Stop trace
-sudo killall blktrace
+cd disk-benchmarking
+sudo python3 run_experiment.py
 ```
 
-**Analyze**:
-```bash
-blkparse -i trace -o trace.txt
-grep -E " (Q|C) " trace.txt  # Queue/Complete events
-```
+The script automatically:
+- Compiles mlock_tool.cpp if needed
+- Drops page cache
+- Starts blktrace on configured block device
+- Launches mem_locker to force memory pressure
+- Runs llama-cli inference
+- Stops all processes and collects data
+- Converts blktrace output to CSV
+- Analyzes with DuckDB and generates `analysis.json`
 
-See [disk-benchmarking/README.md](disk-benchmarking/README.md) for complete workflow.
+Results saved to `results/experiment_TIMESTAMP/`
 
----
-
-## Current Status (as of 2026-01-04)
-
-### Completed ✅
-- [x] Custom tensor tracing infrastructure (128-byte binary logging)
-- [x] Dual-path tensor correlation (direct names + indexed lookup)
-- [x] Python parser for trace analysis
-- [x] First real inference data collected (84 trace entries)
-- [x] Layer ID extraction working (0-21 for layers)
-- [x] Timestamp bug fixed (relative time)
-- [x] Documentation restructured (journal/, docs/, clear separation of threads)
-
-### In Progress 🔄
-- [ ] Validate tensor tracing data quality
-  - Only 10/22 layers logged in first test
-  - Only V projection and FFN down logged (missing Q, K, O, gate, up)
-  - Need to find and instrument all mul_mat variants
-- [ ] Test rebuilt llama.cpp with timestamp fix
-- [ ] Validate Path A (tensor_name) vs Path B (tensor_idx) correlation
-
-### Planned ⏳
-- [ ] Phase 2: Add tensor registration during model load
-- [ ] Instrument other operations (ggml_get_rows, fused kernels)
-- [ ] Run first blktrace experiment (baseline: no memory pressure)
-- [ ] Run 100% memory pressure scenario
-- [ ] Correlate tensor trace + blktrace by timestamp
-- [ ] Answer research questions: Sequential vs uniform access?
+See [disk-benchmarking/README.md](disk-benchmarking/README.md) for detailed configuration.
 
 ---
 
@@ -209,10 +195,50 @@ See [disk-benchmarking/README.md](disk-benchmarking/README.md) for complete work
 
 **My hypothesis**: Dense models (like GPT, LLaMA) are accessed **sequentially** (layer-by-layer during inference)
 
-**If true** → Deterministic prefetching is viable
-**If false** → Cache optimization more important
+### Validation Method
+Analyze tensor trace layer_id sequence and correlate with blktrace sector access patterns.
 
-**Validation method**: Analyze tensor trace layer_id sequence and correlate with blktrace sector jumps.
+### Potential Optimization Strategies
+
+If sequential access is confirmed, three optimization approaches could improve performance:
+
+#### 1. Deterministic Prefetching
+**Concept**: Predict which tensors will be accessed next based on layer-by-layer execution order
+
+**Implementation**: Background prefetch thread loads upcoming layer parameters while current layer computes
+- If layer N is computing, prefetch layer N+1 parameters from SSD
+- Overlap I/O with computation to hide SSD latency
+- Requires validation that access pattern is truly sequential
+
+**Expected benefit**: Reduce blocking on SSD reads if I/O can be hidden behind computation
+
+---
+
+#### 2. Asynchronous I/O with io_uring
+**Concept**: Replace synchronous I/O with Linux io_uring for true async operations
+
+**Implementation**: Submit multiple I/O requests without blocking
+- Batch multiple tensor reads in a single io_uring submission
+- Kernel processes requests asynchronously
+- Saturate SSD bandwidth with concurrent requests
+
+**Expected benefit**: Increase SSD utilization from potential underutilization to closer to hardware limits
+
+---
+
+#### 3. Application-Level Buffer Manager
+**Concept**: Implement custom page cache inside llama.cpp instead of relying on OS
+
+**Implementation**: Virtual memory manager at application layer
+- Fine-grained control over which tensors stay in RAM
+- Predictive eviction based on known access patterns
+- Bypass kernel overhead for known sequential access
+
+**Expected benefit**: More efficient memory management tailored to inference patterns
+
+---
+
+**Status**: All three strategies require validation of access patterns via tensor tracing first. Current work focuses on data collection and pattern analysis.
 
 ---
 
@@ -223,42 +249,6 @@ See [disk-benchmarking/README.md](disk-benchmarking/README.md) for complete work
 - RAM: 30 GiB
 - Storage: 2x NVMe
   - `/dev/nvme1n1`: Samsung 980 PRO 1TB (system)
-  - `/dev/nvme0n1`: WD 960GB (experimental SSD, ~80 GB/s target)
+  - `/dev/nvme0n1`: WD 960GB (experimental SSD for benchmarking)
 
-See [docs/server-setup.md](docs/server-setup.md) for complete specs.
-
----
-
-## Timeline
-
-- **Dec 30 - Jan 3**: Tensor tracing infrastructure implementation
-- **Jan 4**: First real data collection, documentation restructure
-- **Jan 5-10**: Validation, fix missing layers/tensors, Phase 2 registration
-- **Jan 11-15**: blktrace experiments, correlation analysis
-- **Jan 16-20**: Optimization implementation (if patterns support it)
-- **Jan 21-31**: Thesis writing, final experiments
-
----
-
-## References
-
-### Internal Documentation
-- [Journal: 2026-01-04](journal/2026-01-04.md) - Complete implementation history
-- [Tensor Tracing README](tensor-tracing/README.md) - Thread 2 workflow
-- [Disk Benchmarking README](disk-benchmarking/README.md) - Thread 1 workflow
-- [Related Work](docs/related-work.md) - Why existing tools aren't sufficient
-- [Future Work](docs/future-work.md) - Optimization strategies
-
-### External Resources
-- llama.cpp: https://github.com/ggerganov/llama.cpp
-- CHEOPS paper: (parameter access patterns for LLM inference)
-- PowerInfer: https://github.com/SJTU-IPADS/PowerInfer (hot/cold neuron sparsity)
-
----
-
-## Contact
-
-**Author**: Ersi Besi
-**Institution**: Technical University of Munich (TUM)
-**Thesis Type**: Bachelor's Thesis
-**Server**: cli-hiwi-02.dis.cit.tum.de
+See [docs/server-setup.md](docs/server-setup.md) for complete specifications and memory concepts.

@@ -37,12 +37,14 @@
 
 ### NVMe Drive 2: Experimental SSD (Western Digital)
 - **Device**: `/dev/nvme0n1`
-- **Model**: WUS4BB096D7P3E3 (Enterprise drive)
+- **Model**: WUS4BB096D7P3E3 (Ultrastar DC SN640, Enterprise NVMe)
 - **Serial**: A06A0AA2
 - **Capacity**: 960.20 GB
+- **Interface**: PCIe Gen 3.0 x4
+- **Sequential Read**: ~3.5 GB/s (spec)
+- **Sequential Write**: ~2.8-3.0 GB/s (spec)
 - **Symlink**: `/blk/w0` → `/dev/disk/by-id/nvme-WUS4BB096D7P3E3_A06A0AA2`
 - **Purpose**: Experimental SSD for thesis work (can be overwritten)
-- **Target Performance**: ~80 GB/s bandwidth
 
 ⚠️ **Note**: Second SSD (`/blk/w0`) is shared - check Google Sheet before use!
 
@@ -71,10 +73,10 @@ Device: nvme1n1 (System SSD)
 ### Research Objective
 Optimize LLM inference when model weights are loaded from SSD storage rather than RAM.
 
-### Current Performance Gap
-- **Current**: llama.cpp achieves ~10 GB/s throughput
-- **Target**: Saturate 80 GB/s SSD bandwidth
-- **Suspected Issues**: Synchronous I/O, lack of prefetching, inefficient async I/O
+### Research Goal
+Understand and optimize SSD I/O utilization during LLM inference:
+- **Suspected bottlenecks**: Synchronous I/O, lack of prefetching, suboptimal access patterns
+- **Goal**: Determine actual bandwidth utilization and identify optimization opportunities
 
 ### Key Research Questions
 1. Are parameters accessed sequentially (layer-by-layer) or uniformly?

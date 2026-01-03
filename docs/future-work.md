@@ -36,7 +36,7 @@ This document captures potential optimization strategies for improving SSD-backe
 
 ## 3. io_uring for Asynchronous I/O
 
-**Current Problem**: llama.cpp likely uses synchronous I/O, limiting throughput to ~10 GB/s instead of the SSD's 80 GB/s capability.
+**Current Problem**: llama.cpp likely uses synchronous I/O, potentially underutilizing the SSD's ~3.5 GB/s sequential read bandwidth.
 
 **Solution**: Use Linux io_uring for true asynchronous I/O
 - Submit multiple I/O requests without blocking
