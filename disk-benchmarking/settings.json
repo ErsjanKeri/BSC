@@ -18,7 +18,7 @@
   "paths": {
     "llama_cli": "llama.cpp/build/bin/llama-cli",
     "models_dir": "/mnt/experiment_ssd",
-    "mlock_tool_cpp": "mlock_tool.cpp",
+    "mlock_tool_cpp": "utils/mlock_tool.cpp",
     "mlock_bin": "mem_locker",
     "results_dir": "results"
   }

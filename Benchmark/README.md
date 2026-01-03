@@ -1,1 +1,0 @@
-# sudo $(which python3) run_experiment.py
