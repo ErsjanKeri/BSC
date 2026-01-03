@@ -111,3 +111,5 @@ The "Name": It has no name. You cannot look it up in the library catalog (the fi
 If RAM is full (Eviction): You cannot just erase the whiteboard, because that information exists nowhere else! If you erase it, the data is lost forever.
 
 The Solution (Swap): To free up space, you must take a photo of the whiteboard and store it in a special "junk drawer" (the Swap partition). This is slow (writing to disk).
+
+
