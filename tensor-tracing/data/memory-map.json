@@ -1,0 +1,2781 @@
+{
+  "model_name": "tinyllama",
+  "total_size_bytes": 701267968,
+  "metadata": {
+    "n_layers": 22,
+    "n_vocab": 32000,
+    "n_embd": 2048,
+    "n_tensors": 201
+  },
+  "tensors": [
+    {
+      "name": "output.weight",
+      "offset_start": 0,
+      "offset_end": 262144000,
+      "size_bytes": 262144000,
+      "shape": [
+        2048,
+        32000
+      ],
+      "category": "output",
+      "layer_id": null,
+      "component": "output",
+      "component_type": "Output Projection"
+    },
+    {
+      "name": "token_embd.weight",
+      "offset_start": 53760000,
+      "offset_end": 315904000,
+      "size_bytes": 262144000,
+      "shape": [
+        2048,
+        32000
+      ],
+      "category": "embedding",
+      "layer_id": null,
+      "component": "other",
+      "component_type": "Token Embeddings"
+    },
+    {
+      "name": "blk.0.attn_norm.weight",
+      "offset_start": 90624000,
+      "offset_end": 90632192,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 0,
+      "component": "norm",
+      "component_type": "Attention Norm"
+    },
+    {
+      "name": "blk.0.ffn_down.weight",
+      "offset_start": 90632192,
+      "offset_end": 136769536,
+      "size_bytes": 46137344,
+      "shape": [
+        5632,
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 0,
+      "component": "down",
+      "component_type": "FFN Down"
+    },
+    {
+      "name": "blk.0.ffn_gate.weight",
+      "offset_start": 100093952,
+      "offset_end": 146231296,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 0,
+      "component": "gate",
+      "component_type": "FFN Gate"
+    },
+    {
+      "name": "blk.0.ffn_up.weight",
+      "offset_start": 106582016,
+      "offset_end": 152719360,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 0,
+      "component": "up",
+      "component_type": "FFN Up"
+    },
+    {
+      "name": "blk.0.ffn_norm.weight",
+      "offset_start": 113070080,
+      "offset_end": 113078272,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 0,
+      "component": "norm",
+      "component_type": "FFN Norm"
+    },
+    {
+      "name": "blk.0.attn_k.weight",
+      "offset_start": 113078272,
+      "offset_end": 115175424,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 0,
+      "component": "key",
+      "component_type": "Attention K"
+    },
+    {
+      "name": "blk.0.attn_output.weight",
+      "offset_start": 113373184,
+      "offset_end": 130150400,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 0,
+      "component": "output",
+      "component_type": "Output Projection"
+    },
+    {
+      "name": "blk.0.attn_q.weight",
+      "offset_start": 115732480,
+      "offset_end": 132509696,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 0,
+      "component": "query",
+      "component_type": "Attention Q"
+    },
+    {
+      "name": "blk.0.attn_v.weight",
+      "offset_start": 118091776,
+      "offset_end": 120188928,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 0,
+      "component": "value",
+      "component_type": "Attention V"
+    },
+    {
+      "name": "blk.1.attn_norm.weight",
+      "offset_start": 118521856,
+      "offset_end": 118530048,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 1,
+      "component": "norm",
+      "component_type": "Attention Norm"
+    },
+    {
+      "name": "blk.1.ffn_down.weight",
+      "offset_start": 118530048,
+      "offset_end": 164667392,
+      "size_bytes": 46137344,
+      "shape": [
+        5632,
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 1,
+      "component": "down",
+      "component_type": "FFN Down"
+    },
+    {
+      "name": "blk.1.ffn_gate.weight",
+      "offset_start": 127991808,
+      "offset_end": 174129152,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 1,
+      "component": "gate",
+      "component_type": "FFN Gate"
+    },
+    {
+      "name": "blk.1.ffn_up.weight",
+      "offset_start": 134479872,
+      "offset_end": 180617216,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 1,
+      "component": "up",
+      "component_type": "FFN Up"
+    },
+    {
+      "name": "blk.1.ffn_norm.weight",
+      "offset_start": 140967936,
+      "offset_end": 140976128,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 1,
+      "component": "norm",
+      "component_type": "FFN Norm"
+    },
+    {
+      "name": "blk.1.attn_k.weight",
+      "offset_start": 140976128,
+      "offset_end": 143073280,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 1,
+      "component": "key",
+      "component_type": "Attention K"
+    },
+    {
+      "name": "blk.1.attn_output.weight",
+      "offset_start": 141271040,
+      "offset_end": 158048256,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 1,
+      "component": "output",
+      "component_type": "Output Projection"
+    },
+    {
+      "name": "blk.1.attn_q.weight",
+      "offset_start": 143630336,
+      "offset_end": 160407552,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 1,
+      "component": "query",
+      "component_type": "Attention Q"
+    },
+    {
+      "name": "blk.1.attn_v.weight",
+      "offset_start": 145989632,
+      "offset_end": 148086784,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 1,
+      "component": "value",
+      "component_type": "Attention V"
+    },
+    {
+      "name": "blk.10.attn_norm.weight",
+      "offset_start": 146419712,
+      "offset_end": 146427904,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 10,
+      "component": "norm",
+      "component_type": "Attention Norm"
+    },
+    {
+      "name": "blk.10.ffn_down.weight",
+      "offset_start": 146427904,
+      "offset_end": 192565248,
+      "size_bytes": 46137344,
+      "shape": [
+        5632,
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 10,
+      "component": "down",
+      "component_type": "FFN Down"
+    },
+    {
+      "name": "blk.10.ffn_gate.weight",
+      "offset_start": 152915968,
+      "offset_end": 199053312,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 10,
+      "component": "gate",
+      "component_type": "FFN Gate"
+    },
+    {
+      "name": "blk.10.ffn_up.weight",
+      "offset_start": 159404032,
+      "offset_end": 205541376,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 10,
+      "component": "up",
+      "component_type": "FFN Up"
+    },
+    {
+      "name": "blk.10.ffn_norm.weight",
+      "offset_start": 165892096,
+      "offset_end": 165900288,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 10,
+      "component": "norm",
+      "component_type": "FFN Norm"
+    },
+    {
+      "name": "blk.10.attn_k.weight",
+      "offset_start": 165900288,
+      "offset_end": 167997440,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 10,
+      "component": "key",
+      "component_type": "Attention K"
+    },
+    {
+      "name": "blk.10.attn_output.weight",
+      "offset_start": 166195200,
+      "offset_end": 182972416,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 10,
+      "component": "output",
+      "component_type": "Output Projection"
+    },
+    {
+      "name": "blk.10.attn_q.weight",
+      "offset_start": 168554496,
+      "offset_end": 185331712,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 10,
+      "component": "query",
+      "component_type": "Attention Q"
+    },
+    {
+      "name": "blk.10.attn_v.weight",
+      "offset_start": 170913792,
+      "offset_end": 173010944,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 10,
+      "component": "value",
+      "component_type": "Attention V"
+    },
+    {
+      "name": "blk.11.attn_norm.weight",
+      "offset_start": 171208704,
+      "offset_end": 171216896,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 11,
+      "component": "norm",
+      "component_type": "Attention Norm"
+    },
+    {
+      "name": "blk.11.ffn_down.weight",
+      "offset_start": 171216896,
+      "offset_end": 217354240,
+      "size_bytes": 46137344,
+      "shape": [
+        5632,
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 11,
+      "component": "down",
+      "component_type": "FFN Down"
+    },
+    {
+      "name": "blk.11.ffn_gate.weight",
+      "offset_start": 177704960,
+      "offset_end": 223842304,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 11,
+      "component": "gate",
+      "component_type": "FFN Gate"
+    },
+    {
+      "name": "blk.11.ffn_up.weight",
+      "offset_start": 184193024,
+      "offset_end": 230330368,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 11,
+      "component": "up",
+      "component_type": "FFN Up"
+    },
+    {
+      "name": "blk.11.ffn_norm.weight",
+      "offset_start": 190681088,
+      "offset_end": 190689280,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 11,
+      "component": "norm",
+      "component_type": "FFN Norm"
+    },
+    {
+      "name": "blk.11.attn_k.weight",
+      "offset_start": 190689280,
+      "offset_end": 192786432,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 11,
+      "component": "key",
+      "component_type": "Attention K"
+    },
+    {
+      "name": "blk.11.attn_output.weight",
+      "offset_start": 190984192,
+      "offset_end": 207761408,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 11,
+      "component": "output",
+      "component_type": "Output Projection"
+    },
+    {
+      "name": "blk.11.attn_q.weight",
+      "offset_start": 193343488,
+      "offset_end": 210120704,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 11,
+      "component": "query",
+      "component_type": "Attention Q"
+    },
+    {
+      "name": "blk.11.attn_v.weight",
+      "offset_start": 195702784,
+      "offset_end": 197799936,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 11,
+      "component": "value",
+      "component_type": "Attention V"
+    },
+    {
+      "name": "blk.12.attn_norm.weight",
+      "offset_start": 195997696,
+      "offset_end": 196005888,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 12,
+      "component": "norm",
+      "component_type": "Attention Norm"
+    },
+    {
+      "name": "blk.12.ffn_down.weight",
+      "offset_start": 196005888,
+      "offset_end": 242143232,
+      "size_bytes": 46137344,
+      "shape": [
+        5632,
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 12,
+      "component": "down",
+      "component_type": "FFN Down"
+    },
+    {
+      "name": "blk.12.ffn_gate.weight",
+      "offset_start": 205467648,
+      "offset_end": 251604992,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 12,
+      "component": "gate",
+      "component_type": "FFN Gate"
+    },
+    {
+      "name": "blk.12.ffn_up.weight",
+      "offset_start": 211955712,
+      "offset_end": 258093056,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 12,
+      "component": "up",
+      "component_type": "FFN Up"
+    },
+    {
+      "name": "blk.12.ffn_norm.weight",
+      "offset_start": 218443776,
+      "offset_end": 218451968,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 12,
+      "component": "norm",
+      "component_type": "FFN Norm"
+    },
+    {
+      "name": "blk.12.attn_k.weight",
+      "offset_start": 218451968,
+      "offset_end": 220549120,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 12,
+      "component": "key",
+      "component_type": "Attention K"
+    },
+    {
+      "name": "blk.12.attn_output.weight",
+      "offset_start": 218746880,
+      "offset_end": 235524096,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 12,
+      "component": "output",
+      "component_type": "Output Projection"
+    },
+    {
+      "name": "blk.12.attn_q.weight",
+      "offset_start": 221106176,
+      "offset_end": 237883392,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 12,
+      "component": "query",
+      "component_type": "Attention Q"
+    },
+    {
+      "name": "blk.12.attn_v.weight",
+      "offset_start": 223465472,
+      "offset_end": 225562624,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 12,
+      "component": "value",
+      "component_type": "Attention V"
+    },
+    {
+      "name": "blk.13.attn_norm.weight",
+      "offset_start": 223895552,
+      "offset_end": 223903744,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 13,
+      "component": "norm",
+      "component_type": "Attention Norm"
+    },
+    {
+      "name": "blk.13.ffn_down.weight",
+      "offset_start": 223903744,
+      "offset_end": 270041088,
+      "size_bytes": 46137344,
+      "shape": [
+        5632,
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 13,
+      "component": "down",
+      "component_type": "FFN Down"
+    },
+    {
+      "name": "blk.13.ffn_gate.weight",
+      "offset_start": 230391808,
+      "offset_end": 276529152,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 13,
+      "component": "gate",
+      "component_type": "FFN Gate"
+    },
+    {
+      "name": "blk.13.ffn_up.weight",
+      "offset_start": 236879872,
+      "offset_end": 283017216,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 13,
+      "component": "up",
+      "component_type": "FFN Up"
+    },
+    {
+      "name": "blk.13.ffn_norm.weight",
+      "offset_start": 243367936,
+      "offset_end": 243376128,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 13,
+      "component": "norm",
+      "component_type": "FFN Norm"
+    },
+    {
+      "name": "blk.13.attn_k.weight",
+      "offset_start": 243376128,
+      "offset_end": 245473280,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 13,
+      "component": "key",
+      "component_type": "Attention K"
+    },
+    {
+      "name": "blk.13.attn_output.weight",
+      "offset_start": 243671040,
+      "offset_end": 260448256,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 13,
+      "component": "output",
+      "component_type": "Output Projection"
+    },
+    {
+      "name": "blk.13.attn_q.weight",
+      "offset_start": 246030336,
+      "offset_end": 262807552,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 13,
+      "component": "query",
+      "component_type": "Attention Q"
+    },
+    {
+      "name": "blk.13.attn_v.weight",
+      "offset_start": 248389632,
+      "offset_end": 250486784,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 13,
+      "component": "value",
+      "component_type": "Attention V"
+    },
+    {
+      "name": "blk.14.attn_norm.weight",
+      "offset_start": 248684544,
+      "offset_end": 248692736,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 14,
+      "component": "norm",
+      "component_type": "Attention Norm"
+    },
+    {
+      "name": "blk.14.ffn_down.weight",
+      "offset_start": 248692736,
+      "offset_end": 294830080,
+      "size_bytes": 46137344,
+      "shape": [
+        5632,
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 14,
+      "component": "down",
+      "component_type": "FFN Down"
+    },
+    {
+      "name": "blk.14.ffn_gate.weight",
+      "offset_start": 255180800,
+      "offset_end": 301318144,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 14,
+      "component": "gate",
+      "component_type": "FFN Gate"
+    },
+    {
+      "name": "blk.14.ffn_up.weight",
+      "offset_start": 261668864,
+      "offset_end": 307806208,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 14,
+      "component": "up",
+      "component_type": "FFN Up"
+    },
+    {
+      "name": "blk.14.ffn_norm.weight",
+      "offset_start": 268156928,
+      "offset_end": 268165120,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 14,
+      "component": "norm",
+      "component_type": "FFN Norm"
+    },
+    {
+      "name": "blk.14.attn_k.weight",
+      "offset_start": 268165120,
+      "offset_end": 270262272,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 14,
+      "component": "key",
+      "component_type": "Attention K"
+    },
+    {
+      "name": "blk.14.attn_output.weight",
+      "offset_start": 268460032,
+      "offset_end": 285237248,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 14,
+      "component": "output",
+      "component_type": "Output Projection"
+    },
+    {
+      "name": "blk.14.attn_q.weight",
+      "offset_start": 270819328,
+      "offset_end": 287596544,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 14,
+      "component": "query",
+      "component_type": "Attention Q"
+    },
+    {
+      "name": "blk.14.attn_v.weight",
+      "offset_start": 273178624,
+      "offset_end": 275275776,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 14,
+      "component": "value",
+      "component_type": "Attention V"
+    },
+    {
+      "name": "blk.15.attn_norm.weight",
+      "offset_start": 273473536,
+      "offset_end": 273481728,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 15,
+      "component": "norm",
+      "component_type": "Attention Norm"
+    },
+    {
+      "name": "blk.15.ffn_down.weight",
+      "offset_start": 273481728,
+      "offset_end": 319619072,
+      "size_bytes": 46137344,
+      "shape": [
+        5632,
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 15,
+      "component": "down",
+      "component_type": "FFN Down"
+    },
+    {
+      "name": "blk.15.ffn_gate.weight",
+      "offset_start": 282943488,
+      "offset_end": 329080832,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 15,
+      "component": "gate",
+      "component_type": "FFN Gate"
+    },
+    {
+      "name": "blk.15.ffn_up.weight",
+      "offset_start": 289431552,
+      "offset_end": 335568896,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 15,
+      "component": "up",
+      "component_type": "FFN Up"
+    },
+    {
+      "name": "blk.15.ffn_norm.weight",
+      "offset_start": 295919616,
+      "offset_end": 295927808,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 15,
+      "component": "norm",
+      "component_type": "FFN Norm"
+    },
+    {
+      "name": "blk.15.attn_k.weight",
+      "offset_start": 295927808,
+      "offset_end": 298024960,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 15,
+      "component": "key",
+      "component_type": "Attention K"
+    },
+    {
+      "name": "blk.15.attn_output.weight",
+      "offset_start": 296222720,
+      "offset_end": 312999936,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 15,
+      "component": "output",
+      "component_type": "Output Projection"
+    },
+    {
+      "name": "blk.15.attn_q.weight",
+      "offset_start": 298582016,
+      "offset_end": 315359232,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 15,
+      "component": "query",
+      "component_type": "Attention Q"
+    },
+    {
+      "name": "blk.15.attn_v.weight",
+      "offset_start": 300941312,
+      "offset_end": 303038464,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 15,
+      "component": "value",
+      "component_type": "Attention V"
+    },
+    {
+      "name": "blk.16.attn_norm.weight",
+      "offset_start": 301371392,
+      "offset_end": 301379584,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 16,
+      "component": "norm",
+      "component_type": "Attention Norm"
+    },
+    {
+      "name": "blk.16.ffn_down.weight",
+      "offset_start": 301379584,
+      "offset_end": 347516928,
+      "size_bytes": 46137344,
+      "shape": [
+        5632,
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 16,
+      "component": "down",
+      "component_type": "FFN Down"
+    },
+    {
+      "name": "blk.16.ffn_gate.weight",
+      "offset_start": 307867648,
+      "offset_end": 354004992,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 16,
+      "component": "gate",
+      "component_type": "FFN Gate"
+    },
+    {
+      "name": "blk.16.ffn_up.weight",
+      "offset_start": 314355712,
+      "offset_end": 360493056,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 16,
+      "component": "up",
+      "component_type": "FFN Up"
+    },
+    {
+      "name": "blk.16.ffn_norm.weight",
+      "offset_start": 320843776,
+      "offset_end": 320851968,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 16,
+      "component": "norm",
+      "component_type": "FFN Norm"
+    },
+    {
+      "name": "blk.16.attn_k.weight",
+      "offset_start": 320851968,
+      "offset_end": 322949120,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 16,
+      "component": "key",
+      "component_type": "Attention K"
+    },
+    {
+      "name": "blk.16.attn_output.weight",
+      "offset_start": 321146880,
+      "offset_end": 337924096,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 16,
+      "component": "output",
+      "component_type": "Output Projection"
+    },
+    {
+      "name": "blk.16.attn_q.weight",
+      "offset_start": 323506176,
+      "offset_end": 340283392,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 16,
+      "component": "query",
+      "component_type": "Attention Q"
+    },
+    {
+      "name": "blk.16.attn_v.weight",
+      "offset_start": 325865472,
+      "offset_end": 327962624,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 16,
+      "component": "value",
+      "component_type": "Attention V"
+    },
+    {
+      "name": "blk.17.attn_norm.weight",
+      "offset_start": 326160384,
+      "offset_end": 326168576,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 17,
+      "component": "norm",
+      "component_type": "Attention Norm"
+    },
+    {
+      "name": "blk.17.ffn_down.weight",
+      "offset_start": 326168576,
+      "offset_end": 372305920,
+      "size_bytes": 46137344,
+      "shape": [
+        5632,
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 17,
+      "component": "down",
+      "component_type": "FFN Down"
+    },
+    {
+      "name": "blk.17.ffn_gate.weight",
+      "offset_start": 332656640,
+      "offset_end": 378793984,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 17,
+      "component": "gate",
+      "component_type": "FFN Gate"
+    },
+    {
+      "name": "blk.17.ffn_up.weight",
+      "offset_start": 339144704,
+      "offset_end": 385282048,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 17,
+      "component": "up",
+      "component_type": "FFN Up"
+    },
+    {
+      "name": "blk.17.ffn_norm.weight",
+      "offset_start": 345632768,
+      "offset_end": 345640960,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 17,
+      "component": "norm",
+      "component_type": "FFN Norm"
+    },
+    {
+      "name": "blk.17.attn_k.weight",
+      "offset_start": 345640960,
+      "offset_end": 347738112,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 17,
+      "component": "key",
+      "component_type": "Attention K"
+    },
+    {
+      "name": "blk.17.attn_output.weight",
+      "offset_start": 345935872,
+      "offset_end": 362713088,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 17,
+      "component": "output",
+      "component_type": "Output Projection"
+    },
+    {
+      "name": "blk.17.attn_q.weight",
+      "offset_start": 348295168,
+      "offset_end": 365072384,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 17,
+      "component": "query",
+      "component_type": "Attention Q"
+    },
+    {
+      "name": "blk.17.attn_v.weight",
+      "offset_start": 350654464,
+      "offset_end": 352751616,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 17,
+      "component": "value",
+      "component_type": "Attention V"
+    },
+    {
+      "name": "blk.18.attn_norm.weight",
+      "offset_start": 350949376,
+      "offset_end": 350957568,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 18,
+      "component": "norm",
+      "component_type": "Attention Norm"
+    },
+    {
+      "name": "blk.18.ffn_down.weight",
+      "offset_start": 350957568,
+      "offset_end": 397094912,
+      "size_bytes": 46137344,
+      "shape": [
+        5632,
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 18,
+      "component": "down",
+      "component_type": "FFN Down"
+    },
+    {
+      "name": "blk.18.ffn_gate.weight",
+      "offset_start": 360419328,
+      "offset_end": 406556672,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 18,
+      "component": "gate",
+      "component_type": "FFN Gate"
+    },
+    {
+      "name": "blk.18.ffn_up.weight",
+      "offset_start": 366907392,
+      "offset_end": 413044736,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 18,
+      "component": "up",
+      "component_type": "FFN Up"
+    },
+    {
+      "name": "blk.18.ffn_norm.weight",
+      "offset_start": 373395456,
+      "offset_end": 373403648,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 18,
+      "component": "norm",
+      "component_type": "FFN Norm"
+    },
+    {
+      "name": "blk.18.attn_k.weight",
+      "offset_start": 373403648,
+      "offset_end": 375500800,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 18,
+      "component": "key",
+      "component_type": "Attention K"
+    },
+    {
+      "name": "blk.18.attn_output.weight",
+      "offset_start": 373698560,
+      "offset_end": 390475776,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 18,
+      "component": "output",
+      "component_type": "Output Projection"
+    },
+    {
+      "name": "blk.18.attn_q.weight",
+      "offset_start": 376057856,
+      "offset_end": 392835072,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 18,
+      "component": "query",
+      "component_type": "Attention Q"
+    },
+    {
+      "name": "blk.18.attn_v.weight",
+      "offset_start": 378417152,
+      "offset_end": 380514304,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 18,
+      "component": "value",
+      "component_type": "Attention V"
+    },
+    {
+      "name": "blk.19.attn_norm.weight",
+      "offset_start": 378847232,
+      "offset_end": 378855424,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 19,
+      "component": "norm",
+      "component_type": "Attention Norm"
+    },
+    {
+      "name": "blk.19.ffn_down.weight",
+      "offset_start": 378855424,
+      "offset_end": 424992768,
+      "size_bytes": 46137344,
+      "shape": [
+        5632,
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 19,
+      "component": "down",
+      "component_type": "FFN Down"
+    },
+    {
+      "name": "blk.19.ffn_gate.weight",
+      "offset_start": 385343488,
+      "offset_end": 431480832,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 19,
+      "component": "gate",
+      "component_type": "FFN Gate"
+    },
+    {
+      "name": "blk.19.ffn_up.weight",
+      "offset_start": 391831552,
+      "offset_end": 437968896,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 19,
+      "component": "up",
+      "component_type": "FFN Up"
+    },
+    {
+      "name": "blk.19.ffn_norm.weight",
+      "offset_start": 398319616,
+      "offset_end": 398327808,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 19,
+      "component": "norm",
+      "component_type": "FFN Norm"
+    },
+    {
+      "name": "blk.19.attn_k.weight",
+      "offset_start": 398327808,
+      "offset_end": 400424960,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 19,
+      "component": "key",
+      "component_type": "Attention K"
+    },
+    {
+      "name": "blk.19.attn_output.weight",
+      "offset_start": 398622720,
+      "offset_end": 415399936,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 19,
+      "component": "output",
+      "component_type": "Output Projection"
+    },
+    {
+      "name": "blk.19.attn_q.weight",
+      "offset_start": 400982016,
+      "offset_end": 417759232,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 19,
+      "component": "query",
+      "component_type": "Attention Q"
+    },
+    {
+      "name": "blk.19.attn_v.weight",
+      "offset_start": 403341312,
+      "offset_end": 405438464,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 19,
+      "component": "value",
+      "component_type": "Attention V"
+    },
+    {
+      "name": "blk.2.attn_norm.weight",
+      "offset_start": 403636224,
+      "offset_end": 403644416,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 2,
+      "component": "norm",
+      "component_type": "Attention Norm"
+    },
+    {
+      "name": "blk.2.ffn_down.weight",
+      "offset_start": 403644416,
+      "offset_end": 449781760,
+      "size_bytes": 46137344,
+      "shape": [
+        5632,
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 2,
+      "component": "down",
+      "component_type": "FFN Down"
+    },
+    {
+      "name": "blk.2.ffn_gate.weight",
+      "offset_start": 410132480,
+      "offset_end": 456269824,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 2,
+      "component": "gate",
+      "component_type": "FFN Gate"
+    },
+    {
+      "name": "blk.2.ffn_up.weight",
+      "offset_start": 416620544,
+      "offset_end": 462757888,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 2,
+      "component": "up",
+      "component_type": "FFN Up"
+    },
+    {
+      "name": "blk.2.ffn_norm.weight",
+      "offset_start": 423108608,
+      "offset_end": 423116800,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 2,
+      "component": "norm",
+      "component_type": "FFN Norm"
+    },
+    {
+      "name": "blk.2.attn_k.weight",
+      "offset_start": 423116800,
+      "offset_end": 425213952,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 2,
+      "component": "key",
+      "component_type": "Attention K"
+    },
+    {
+      "name": "blk.2.attn_output.weight",
+      "offset_start": 423411712,
+      "offset_end": 440188928,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 2,
+      "component": "output",
+      "component_type": "Output Projection"
+    },
+    {
+      "name": "blk.2.attn_q.weight",
+      "offset_start": 425771008,
+      "offset_end": 442548224,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 2,
+      "component": "query",
+      "component_type": "Attention Q"
+    },
+    {
+      "name": "blk.2.attn_v.weight",
+      "offset_start": 428130304,
+      "offset_end": 430227456,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 2,
+      "component": "value",
+      "component_type": "Attention V"
+    },
+    {
+      "name": "blk.20.attn_norm.weight",
+      "offset_start": 428425216,
+      "offset_end": 428433408,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 20,
+      "component": "norm",
+      "component_type": "Attention Norm"
+    },
+    {
+      "name": "blk.20.ffn_down.weight",
+      "offset_start": 428433408,
+      "offset_end": 474570752,
+      "size_bytes": 46137344,
+      "shape": [
+        5632,
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 20,
+      "component": "down",
+      "component_type": "FFN Down"
+    },
+    {
+      "name": "blk.20.ffn_gate.weight",
+      "offset_start": 437895168,
+      "offset_end": 484032512,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 20,
+      "component": "gate",
+      "component_type": "FFN Gate"
+    },
+    {
+      "name": "blk.20.ffn_up.weight",
+      "offset_start": 444383232,
+      "offset_end": 490520576,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 20,
+      "component": "up",
+      "component_type": "FFN Up"
+    },
+    {
+      "name": "blk.20.ffn_norm.weight",
+      "offset_start": 450871296,
+      "offset_end": 450879488,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 20,
+      "component": "norm",
+      "component_type": "FFN Norm"
+    },
+    {
+      "name": "blk.20.attn_k.weight",
+      "offset_start": 450879488,
+      "offset_end": 452976640,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 20,
+      "component": "key",
+      "component_type": "Attention K"
+    },
+    {
+      "name": "blk.20.attn_output.weight",
+      "offset_start": 451174400,
+      "offset_end": 467951616,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 20,
+      "component": "output",
+      "component_type": "Output Projection"
+    },
+    {
+      "name": "blk.20.attn_q.weight",
+      "offset_start": 453533696,
+      "offset_end": 470310912,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 20,
+      "component": "query",
+      "component_type": "Attention Q"
+    },
+    {
+      "name": "blk.20.attn_v.weight",
+      "offset_start": 455892992,
+      "offset_end": 457990144,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 20,
+      "component": "value",
+      "component_type": "Attention V"
+    },
+    {
+      "name": "blk.21.attn_norm.weight",
+      "offset_start": 456323072,
+      "offset_end": 456331264,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 21,
+      "component": "norm",
+      "component_type": "Attention Norm"
+    },
+    {
+      "name": "blk.21.ffn_down.weight",
+      "offset_start": 456331264,
+      "offset_end": 502468608,
+      "size_bytes": 46137344,
+      "shape": [
+        5632,
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 21,
+      "component": "down",
+      "component_type": "FFN Down"
+    },
+    {
+      "name": "blk.21.ffn_gate.weight",
+      "offset_start": 462819328,
+      "offset_end": 508956672,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 21,
+      "component": "gate",
+      "component_type": "FFN Gate"
+    },
+    {
+      "name": "blk.21.ffn_up.weight",
+      "offset_start": 469307392,
+      "offset_end": 515444736,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 21,
+      "component": "up",
+      "component_type": "FFN Up"
+    },
+    {
+      "name": "blk.21.ffn_norm.weight",
+      "offset_start": 475795456,
+      "offset_end": 475803648,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 21,
+      "component": "norm",
+      "component_type": "FFN Norm"
+    },
+    {
+      "name": "blk.21.attn_k.weight",
+      "offset_start": 475803648,
+      "offset_end": 477900800,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 21,
+      "component": "key",
+      "component_type": "Attention K"
+    },
+    {
+      "name": "blk.21.attn_output.weight",
+      "offset_start": 476098560,
+      "offset_end": 492875776,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 21,
+      "component": "output",
+      "component_type": "Output Projection"
+    },
+    {
+      "name": "blk.21.attn_q.weight",
+      "offset_start": 478457856,
+      "offset_end": 495235072,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 21,
+      "component": "query",
+      "component_type": "Attention Q"
+    },
+    {
+      "name": "blk.21.attn_v.weight",
+      "offset_start": 480817152,
+      "offset_end": 482914304,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 21,
+      "component": "value",
+      "component_type": "Attention V"
+    },
+    {
+      "name": "blk.3.attn_norm.weight",
+      "offset_start": 481112064,
+      "offset_end": 481120256,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 3,
+      "component": "norm",
+      "component_type": "Attention Norm"
+    },
+    {
+      "name": "blk.3.ffn_down.weight",
+      "offset_start": 481120256,
+      "offset_end": 527257600,
+      "size_bytes": 46137344,
+      "shape": [
+        5632,
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 3,
+      "component": "down",
+      "component_type": "FFN Down"
+    },
+    {
+      "name": "blk.3.ffn_gate.weight",
+      "offset_start": 487608320,
+      "offset_end": 533745664,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 3,
+      "component": "gate",
+      "component_type": "FFN Gate"
+    },
+    {
+      "name": "blk.3.ffn_up.weight",
+      "offset_start": 494096384,
+      "offset_end": 540233728,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 3,
+      "component": "up",
+      "component_type": "FFN Up"
+    },
+    {
+      "name": "blk.3.ffn_norm.weight",
+      "offset_start": 500584448,
+      "offset_end": 500592640,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 3,
+      "component": "norm",
+      "component_type": "FFN Norm"
+    },
+    {
+      "name": "blk.3.attn_k.weight",
+      "offset_start": 500592640,
+      "offset_end": 502689792,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 3,
+      "component": "key",
+      "component_type": "Attention K"
+    },
+    {
+      "name": "blk.3.attn_output.weight",
+      "offset_start": 500887552,
+      "offset_end": 517664768,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 3,
+      "component": "output",
+      "component_type": "Output Projection"
+    },
+    {
+      "name": "blk.3.attn_q.weight",
+      "offset_start": 503246848,
+      "offset_end": 520024064,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 3,
+      "component": "query",
+      "component_type": "Attention Q"
+    },
+    {
+      "name": "blk.3.attn_v.weight",
+      "offset_start": 505606144,
+      "offset_end": 507703296,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 3,
+      "component": "value",
+      "component_type": "Attention V"
+    },
+    {
+      "name": "blk.4.attn_norm.weight",
+      "offset_start": 505901056,
+      "offset_end": 505909248,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 4,
+      "component": "norm",
+      "component_type": "Attention Norm"
+    },
+    {
+      "name": "blk.4.ffn_down.weight",
+      "offset_start": 505909248,
+      "offset_end": 552046592,
+      "size_bytes": 46137344,
+      "shape": [
+        5632,
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 4,
+      "component": "down",
+      "component_type": "FFN Down"
+    },
+    {
+      "name": "blk.4.ffn_gate.weight",
+      "offset_start": 515371008,
+      "offset_end": 561508352,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 4,
+      "component": "gate",
+      "component_type": "FFN Gate"
+    },
+    {
+      "name": "blk.4.ffn_up.weight",
+      "offset_start": 521859072,
+      "offset_end": 567996416,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 4,
+      "component": "up",
+      "component_type": "FFN Up"
+    },
+    {
+      "name": "blk.4.ffn_norm.weight",
+      "offset_start": 528347136,
+      "offset_end": 528355328,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 4,
+      "component": "norm",
+      "component_type": "FFN Norm"
+    },
+    {
+      "name": "blk.4.attn_k.weight",
+      "offset_start": 528355328,
+      "offset_end": 530452480,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 4,
+      "component": "key",
+      "component_type": "Attention K"
+    },
+    {
+      "name": "blk.4.attn_output.weight",
+      "offset_start": 528650240,
+      "offset_end": 545427456,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 4,
+      "component": "output",
+      "component_type": "Output Projection"
+    },
+    {
+      "name": "blk.4.attn_q.weight",
+      "offset_start": 531009536,
+      "offset_end": 547786752,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 4,
+      "component": "query",
+      "component_type": "Attention Q"
+    },
+    {
+      "name": "blk.4.attn_v.weight",
+      "offset_start": 533368832,
+      "offset_end": 535465984,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 4,
+      "component": "value",
+      "component_type": "Attention V"
+    },
+    {
+      "name": "blk.5.attn_norm.weight",
+      "offset_start": 533798912,
+      "offset_end": 533807104,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 5,
+      "component": "norm",
+      "component_type": "Attention Norm"
+    },
+    {
+      "name": "blk.5.ffn_down.weight",
+      "offset_start": 533807104,
+      "offset_end": 579944448,
+      "size_bytes": 46137344,
+      "shape": [
+        5632,
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 5,
+      "component": "down",
+      "component_type": "FFN Down"
+    },
+    {
+      "name": "blk.5.ffn_gate.weight",
+      "offset_start": 540295168,
+      "offset_end": 586432512,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 5,
+      "component": "gate",
+      "component_type": "FFN Gate"
+    },
+    {
+      "name": "blk.5.ffn_up.weight",
+      "offset_start": 546783232,
+      "offset_end": 592920576,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 5,
+      "component": "up",
+      "component_type": "FFN Up"
+    },
+    {
+      "name": "blk.5.ffn_norm.weight",
+      "offset_start": 553271296,
+      "offset_end": 553279488,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 5,
+      "component": "norm",
+      "component_type": "FFN Norm"
+    },
+    {
+      "name": "blk.5.attn_k.weight",
+      "offset_start": 553279488,
+      "offset_end": 555376640,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 5,
+      "component": "key",
+      "component_type": "Attention K"
+    },
+    {
+      "name": "blk.5.attn_output.weight",
+      "offset_start": 553574400,
+      "offset_end": 570351616,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 5,
+      "component": "output",
+      "component_type": "Output Projection"
+    },
+    {
+      "name": "blk.5.attn_q.weight",
+      "offset_start": 555933696,
+      "offset_end": 572710912,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 5,
+      "component": "query",
+      "component_type": "Attention Q"
+    },
+    {
+      "name": "blk.5.attn_v.weight",
+      "offset_start": 558292992,
+      "offset_end": 560390144,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 5,
+      "component": "value",
+      "component_type": "Attention V"
+    },
+    {
+      "name": "blk.6.attn_norm.weight",
+      "offset_start": 558587904,
+      "offset_end": 558596096,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 6,
+      "component": "norm",
+      "component_type": "Attention Norm"
+    },
+    {
+      "name": "blk.6.ffn_down.weight",
+      "offset_start": 558596096,
+      "offset_end": 604733440,
+      "size_bytes": 46137344,
+      "shape": [
+        5632,
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 6,
+      "component": "down",
+      "component_type": "FFN Down"
+    },
+    {
+      "name": "blk.6.ffn_gate.weight",
+      "offset_start": 565084160,
+      "offset_end": 611221504,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 6,
+      "component": "gate",
+      "component_type": "FFN Gate"
+    },
+    {
+      "name": "blk.6.ffn_up.weight",
+      "offset_start": 571572224,
+      "offset_end": 617709568,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 6,
+      "component": "up",
+      "component_type": "FFN Up"
+    },
+    {
+      "name": "blk.6.ffn_norm.weight",
+      "offset_start": 578060288,
+      "offset_end": 578068480,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 6,
+      "component": "norm",
+      "component_type": "FFN Norm"
+    },
+    {
+      "name": "blk.6.attn_k.weight",
+      "offset_start": 578068480,
+      "offset_end": 580165632,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 6,
+      "component": "key",
+      "component_type": "Attention K"
+    },
+    {
+      "name": "blk.6.attn_output.weight",
+      "offset_start": 578363392,
+      "offset_end": 595140608,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 6,
+      "component": "output",
+      "component_type": "Output Projection"
+    },
+    {
+      "name": "blk.6.attn_q.weight",
+      "offset_start": 580722688,
+      "offset_end": 597499904,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 6,
+      "component": "query",
+      "component_type": "Attention Q"
+    },
+    {
+      "name": "blk.6.attn_v.weight",
+      "offset_start": 583081984,
+      "offset_end": 585179136,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 6,
+      "component": "value",
+      "component_type": "Attention V"
+    },
+    {
+      "name": "blk.7.attn_norm.weight",
+      "offset_start": 583376896,
+      "offset_end": 583385088,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 7,
+      "component": "norm",
+      "component_type": "Attention Norm"
+    },
+    {
+      "name": "blk.7.ffn_down.weight",
+      "offset_start": 583385088,
+      "offset_end": 629522432,
+      "size_bytes": 46137344,
+      "shape": [
+        5632,
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 7,
+      "component": "down",
+      "component_type": "FFN Down"
+    },
+    {
+      "name": "blk.7.ffn_gate.weight",
+      "offset_start": 592846848,
+      "offset_end": 638984192,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 7,
+      "component": "gate",
+      "component_type": "FFN Gate"
+    },
+    {
+      "name": "blk.7.ffn_up.weight",
+      "offset_start": 599334912,
+      "offset_end": 645472256,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 7,
+      "component": "up",
+      "component_type": "FFN Up"
+    },
+    {
+      "name": "blk.7.ffn_norm.weight",
+      "offset_start": 605822976,
+      "offset_end": 605831168,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 7,
+      "component": "norm",
+      "component_type": "FFN Norm"
+    },
+    {
+      "name": "blk.7.attn_k.weight",
+      "offset_start": 605831168,
+      "offset_end": 607928320,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 7,
+      "component": "key",
+      "component_type": "Attention K"
+    },
+    {
+      "name": "blk.7.attn_output.weight",
+      "offset_start": 606126080,
+      "offset_end": 622903296,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 7,
+      "component": "output",
+      "component_type": "Output Projection"
+    },
+    {
+      "name": "blk.7.attn_q.weight",
+      "offset_start": 608485376,
+      "offset_end": 625262592,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 7,
+      "component": "query",
+      "component_type": "Attention Q"
+    },
+    {
+      "name": "blk.7.attn_v.weight",
+      "offset_start": 610844672,
+      "offset_end": 612941824,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 7,
+      "component": "value",
+      "component_type": "Attention V"
+    },
+    {
+      "name": "blk.8.attn_norm.weight",
+      "offset_start": 611274752,
+      "offset_end": 611282944,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 8,
+      "component": "norm",
+      "component_type": "Attention Norm"
+    },
+    {
+      "name": "blk.8.ffn_down.weight",
+      "offset_start": 611282944,
+      "offset_end": 657420288,
+      "size_bytes": 46137344,
+      "shape": [
+        5632,
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 8,
+      "component": "down",
+      "component_type": "FFN Down"
+    },
+    {
+      "name": "blk.8.ffn_gate.weight",
+      "offset_start": 620744704,
+      "offset_end": 666882048,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 8,
+      "component": "gate",
+      "component_type": "FFN Gate"
+    },
+    {
+      "name": "blk.8.ffn_up.weight",
+      "offset_start": 627232768,
+      "offset_end": 673370112,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 8,
+      "component": "up",
+      "component_type": "FFN Up"
+    },
+    {
+      "name": "blk.8.ffn_norm.weight",
+      "offset_start": 633720832,
+      "offset_end": 633729024,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 8,
+      "component": "norm",
+      "component_type": "FFN Norm"
+    },
+    {
+      "name": "blk.8.attn_k.weight",
+      "offset_start": 633729024,
+      "offset_end": 635826176,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 8,
+      "component": "key",
+      "component_type": "Attention K"
+    },
+    {
+      "name": "blk.8.attn_output.weight",
+      "offset_start": 634023936,
+      "offset_end": 650801152,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 8,
+      "component": "output",
+      "component_type": "Output Projection"
+    },
+    {
+      "name": "blk.8.attn_q.weight",
+      "offset_start": 636383232,
+      "offset_end": 653160448,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 8,
+      "component": "query",
+      "component_type": "Attention Q"
+    },
+    {
+      "name": "blk.8.attn_v.weight",
+      "offset_start": 638742528,
+      "offset_end": 640839680,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 8,
+      "component": "value",
+      "component_type": "Attention V"
+    },
+    {
+      "name": "blk.9.attn_norm.weight",
+      "offset_start": 639172608,
+      "offset_end": 639180800,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 9,
+      "component": "norm",
+      "component_type": "Attention Norm"
+    },
+    {
+      "name": "blk.9.ffn_down.weight",
+      "offset_start": 639180800,
+      "offset_end": 685318144,
+      "size_bytes": 46137344,
+      "shape": [
+        5632,
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 9,
+      "component": "down",
+      "component_type": "FFN Down"
+    },
+    {
+      "name": "blk.9.ffn_gate.weight",
+      "offset_start": 648642560,
+      "offset_end": 694779904,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 9,
+      "component": "gate",
+      "component_type": "FFN Gate"
+    },
+    {
+      "name": "blk.9.ffn_up.weight",
+      "offset_start": 655130624,
+      "offset_end": 701267968,
+      "size_bytes": 46137344,
+      "shape": [
+        2048,
+        5632
+      ],
+      "category": "ffn",
+      "layer_id": 9,
+      "component": "up",
+      "component_type": "FFN Up"
+    },
+    {
+      "name": "blk.9.ffn_norm.weight",
+      "offset_start": 661618688,
+      "offset_end": 661626880,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "ffn",
+      "layer_id": 9,
+      "component": "norm",
+      "component_type": "FFN Norm"
+    },
+    {
+      "name": "blk.9.attn_k.weight",
+      "offset_start": 661626880,
+      "offset_end": 663724032,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 9,
+      "component": "key",
+      "component_type": "Attention K"
+    },
+    {
+      "name": "blk.9.attn_output.weight",
+      "offset_start": 661921792,
+      "offset_end": 678699008,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 9,
+      "component": "output",
+      "component_type": "Output Projection"
+    },
+    {
+      "name": "blk.9.attn_q.weight",
+      "offset_start": 664281088,
+      "offset_end": 681058304,
+      "size_bytes": 16777216,
+      "shape": [
+        2048,
+        2048
+      ],
+      "category": "attention",
+      "layer_id": 9,
+      "component": "query",
+      "component_type": "Attention Q"
+    },
+    {
+      "name": "blk.9.attn_v.weight",
+      "offset_start": 666640384,
+      "offset_end": 668737536,
+      "size_bytes": 2097152,
+      "shape": [
+        2048,
+        256
+      ],
+      "category": "attention",
+      "layer_id": 9,
+      "component": "value",
+      "component_type": "Attention V"
+    },
+    {
+      "name": "output_norm.weight",
+      "offset_start": 667070464,
+      "offset_end": 667078656,
+      "size_bytes": 8192,
+      "shape": [
+        2048
+      ],
+      "category": "output",
+      "layer_id": null,
+      "component": "output",
+      "component_type": "Output Projection"
+    }
+  ]
+}

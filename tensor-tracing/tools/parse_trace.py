@@ -9,6 +9,8 @@ Usage:
     python3 parse_trace.py                          # Show all entries
     python3 parse_trace.py --limit 20               # Show first 20 entries
     python3 parse_trace.py --layer 5                # Filter by layer 5
+    python3 parse_trace.py --token 1                # Filter by token ID
+    python3 parse_trace.py --format json --output trace-token-00001.json  # JSON output
     python3 parse_trace.py --csv tinyllama_structure.csv  # Correlate with CSV
 """
 
@@ -16,6 +18,7 @@ import struct
 import sys
 import argparse
 import csv
+import json
 from pathlib import Path
 
 # TensorAccessLog struct layout (128 bytes total)
@@ -116,6 +119,90 @@ def format_layer(layer_id):
     """Format layer ID (65535 = N/A)."""
     return "N/A" if layer_id == 65535 else str(layer_id)
 
+def output_json(entries, output_path):
+    """
+    Output entries in JSON format for WebUI.
+
+    Args:
+        entries: List of trace entries
+        output_path: Path to output file (or None for stdout)
+    """
+    if not entries:
+        print("No entries to export", file=sys.stderr)
+        return
+
+    # Compute metadata
+    first_ts = entries[0]['timestamp_ns']
+    last_ts = entries[-1]['timestamp_ns']
+    duration_ms = (last_ts - first_ts) / 1_000_000
+
+    # Get unique token ID (should be same for all if filtered)
+    token_ids = set(e['token_id'] for e in entries)
+    token_id = list(token_ids)[0] if len(token_ids) == 1 else None
+
+    # Build JSON structure
+    trace_data = {
+        "token_id": token_id,
+        "metadata": {
+            "total_entries": len(entries),
+            "duration_ms": duration_ms,
+            "timestamp_start_ns": first_ts
+        },
+        "entries": []
+    }
+
+    # Convert entries
+    for entry in entries:
+        # Compute relative timestamp
+        timestamp_relative_ms = (entry['timestamp_ns'] - first_ts) / 1_000_000
+
+        # Get operation name
+        op_name = OPERATION_TYPES.get(entry['operation_type'], f"UNKNOWN_{entry['operation_type']}")
+
+        # Format phase
+        phase = "PROMPT" if entry['phase'] == 0 else "GENERATE"
+
+        json_entry = {
+            "entry_id": entry['entry_num'],
+            "timestamp_ns": entry['timestamp_ns'],
+            "timestamp_relative_ms": round(timestamp_relative_ms, 3),
+
+            # Execution context
+            "token_id": entry['token_id'],
+            "layer_id": entry['layer_id'],
+            "thread_id": entry['thread_id'],
+            "phase": phase,
+
+            # Operation
+            "operation_type": op_name,
+
+            # Tensor identification
+            "tensor_idx": entry['tensor_idx'] if entry['tensor_idx'] != 0xFFFFFFFF else None,
+            "tensor_ptr": f"0x{entry['tensor_ptr']:x}",  # Format as hex string
+            "tensor_name": entry['tensor_name'] if entry['tensor_name'] else "",
+            "size_bytes": entry['size_bytes'],
+            "file_offset": entry['file_offset']
+        }
+
+        trace_data["entries"].append(json_entry)
+
+    # Write output
+    if output_path:
+        import os
+        output_dir = os.path.dirname(output_path)
+        if output_dir and not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+            print(f"Created directory: {output_dir}")
+
+        with open(output_path, 'w') as f:
+            json.dump(trace_data, f, indent=2)
+        print(f"✓ Exported {len(entries)} entries to: {output_path}")
+        print(f"  File size: {os.path.getsize(output_path) / 1024:.1f} KB")
+    else:
+        # Output to stdout
+        json.dump(trace_data, sys.stdout, indent=2)
+        print()  # Newline after JSON
+
 def main():
     parser = argparse.ArgumentParser(description='Parse tensor trace binary')
     parser.add_argument('trace_file', nargs='?', default='/tmp/tensor_trace.bin',
@@ -124,6 +211,12 @@ def main():
                         help='Limit number of entries to display (0 = all)')
     parser.add_argument('--layer', type=int, default=None,
                         help='Filter by layer ID')
+    parser.add_argument('--token', type=int, default=None,
+                        help='Filter by token ID')
+    parser.add_argument('--format', type=str, choices=['text', 'json'], default='text',
+                        help='Output format: text (default) or json')
+    parser.add_argument('--output', type=str, default=None,
+                        help='Output file (default: stdout)')
     parser.add_argument('--csv', type=str, default=None,
                         help='Path to CSV structure for correlation')
     parser.add_argument('--validate', action='store_true',
@@ -167,8 +260,12 @@ def main():
     # Apply filters
     filtered = entries
     if args.layer is not None:
-        filtered = [e for e in entries if e['layer_id'] == args.layer]
+        filtered = [e for e in filtered if e['layer_id'] == args.layer]
         print(f"Filtered to {len(filtered)} entries for layer {args.layer}\n")
+
+    if args.token is not None:
+        filtered = [e for e in filtered if e['token_id'] == args.token]
+        print(f"Filtered to {len(filtered)} entries for token {args.token}\n")
 
     # Show statistics
     if args.stats:
@@ -180,7 +277,12 @@ def main():
         validate_paths(entries)
         return 0
 
-    # Display entries
+    # JSON output
+    if args.format == 'json':
+        output_json(filtered, args.output)
+        return 0
+
+    # Display entries (text format)
     display_entries(filtered, args.limit, csv_data)
 
     return 0

@@ -3,3 +3,4 @@ llama.cpp
 mem_locker
 __pycache__/
 results/
+node_modules
