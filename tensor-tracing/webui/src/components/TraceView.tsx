@@ -14,7 +14,11 @@ import { List } from 'react-window';
 import { useAppStore } from '../stores/useAppStore';
 import type { TraceEntry } from '../types/data';
 
-export function TraceView() {
+interface TraceViewProps {
+  isFullScreen: boolean;
+}
+
+export function TraceView({ isFullScreen }: TraceViewProps) {
   const listRef = useRef<any>(null);
   const animationRef = useRef<number | null>(null);
 
@@ -27,7 +31,7 @@ export function TraceView() {
     playTimeline,
     pauseTimeline,
     setPlaybackSpeed,
-    correlationIndex,
+    setFullScreen,
   } = useAppStore();
 
   const [filteredEntries, setFilteredEntries] = useState<TraceEntry[]>([]);
@@ -153,8 +157,19 @@ export function TraceView() {
             {filteredEntries.length} entries
           </span>
         </div>
-        <div className="text-gray-400 text-sm font-mono">
-          {timeline.currentTime.toFixed(2)} / {maxTime.toFixed(2)} ms
+        <div className="flex items-center gap-3">
+          <div className="text-gray-400 text-sm font-mono">
+            {timeline.currentTime.toFixed(2)} / {maxTime.toFixed(2)} ms
+          </div>
+          {!isFullScreen && (
+            <button
+              onClick={() => setFullScreen('trace')}
+              className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded"
+              title="Enter full-screen mode"
+            >
+              ⛶ Full Screen
+            </button>
+          )}
         </div>
       </div>
 

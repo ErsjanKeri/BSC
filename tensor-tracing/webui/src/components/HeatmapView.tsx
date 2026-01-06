@@ -19,13 +19,17 @@ interface HoveredTensor {
   accessCount: number;
 }
 
-export function HeatmapView() {
+interface HeatmapViewProps {
+  isFullScreen: boolean;
+}
+
+export function HeatmapView({ isFullScreen }: HeatmapViewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredTensor, setHoveredTensor] = useState<HoveredTensor | null>(null);
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 400 });
 
-  const { memoryMap, traceData, correlationIndex, selectNode } = useAppStore();
+  const { memoryMap, traceData, correlationIndex, selectNode, setFullScreen } = useAppStore();
 
   // Update canvas size on container resize
   useEffect(() => {
@@ -252,8 +256,19 @@ export function HeatmapView() {
           </span>
         </div>
 
-        {/* Legend */}
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex items-center gap-4">
+          {!isFullScreen && (
+            <button
+              onClick={() => setFullScreen('heatmap')}
+              className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded"
+              title="Enter full-screen mode"
+            >
+              ⛶ Full Screen
+            </button>
+          )}
+
+          {/* Legend */}
+          <div className="flex items-center gap-2 text-xs">
           <span className="text-gray-400">Access frequency:</span>
           <div className="flex items-center gap-1">
             <div className="w-8 h-3 bg-gray-700"></div>
@@ -270,6 +285,7 @@ export function HeatmapView() {
           <div className="flex items-center gap-1">
             <div className="w-8 h-3 bg-red-500"></div>
             <span className="text-gray-500">High</span>
+          </div>
           </div>
         </div>
       </div>

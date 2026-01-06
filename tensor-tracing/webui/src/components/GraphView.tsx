@@ -12,7 +12,11 @@
 import { useEffect, useRef, useState } from 'react';
 import cytoscape from 'cytoscape';
 import type { Core, NodeSingular } from 'cytoscape';
+import dagre from 'cytoscape-dagre';
 import { useAppStore } from '../stores/useAppStore';
+
+// Register dagre layout extension
+cytoscape.use(dagre);
 
 // Category color scheme (matching Tailwind config)
 const CATEGORY_COLORS = {
@@ -24,22 +28,25 @@ const CATEGORY_COLORS = {
   other: '#6b7280',      // gray-500
 };
 
-export function GraphView() {
+interface GraphViewProps {
+  isFullScreen: boolean;
+}
+
+export function GraphView({ isFullScreen }: GraphViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<Core | null>(null);
   const [selectedNodeInfo, setSelectedNodeInfo] = useState<any>(null);
   const [showAllNodes, setShowAllNodes] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const {
     graphData,
     selectedNode,
-    hoveredNode,
     selectNode,
     setHoveredNode,
     timeline,
     correlationIndex,
     filters,
+    setFullScreen,
   } = useAppStore();
 
   // Initialize Cytoscape instance
@@ -51,8 +58,10 @@ export function GraphView() {
       cyRef.current.destroy();
     }
 
-    // Filter nodes to show (start with layer 0 only for performance)
-    const nodesToShow = showAllNodes
+    // Filter nodes to show
+    // Full-screen: show all nodes automatically
+    // Small screen: Layer 0 only unless user toggles
+    const nodesToShow = (isFullScreen || showAllNodes)
       ? graphData.nodes
       : graphData.nodes.filter(n => n.layer_id === 0 || n.layer_id === null);
 
@@ -143,16 +152,14 @@ export function GraphView() {
       ],
 
       layout: {
-        name: 'cose',  // Better layout for medium-sized graphs
-        directed: true,
-        padding: 100,
-        nodeRepulsion: 8000,  // Increase spacing between nodes
-        idealEdgeLength: 100,  // Longer edges for readability
-        edgeElasticity: 100,
-        gravity: 1,
-        numIter: 1000,
+        name: 'dagre',  // Hierarchical top-to-bottom layout
+        rankDir: 'TB',  // Top-to-bottom
+        ranker: 'tight-tree',  // Compact hierarchical layout
+        nodeSep: 50,    // Horizontal spacing between nodes
+        rankSep: 100,   // Vertical spacing between ranks (layers)
+        padding: 50,
         animate: false,  // Disable animation for faster rendering
-      },
+      } as any,  // dagre layout options not in base types
 
       minZoom: 0.1,
       maxZoom: 5,
@@ -189,16 +196,14 @@ export function GraphView() {
 
       // Apply layout
       const layout = cy.layout({
-        name: 'cose',
-        directed: true,
-        padding: 100,
-        nodeRepulsion: 8000,
-        idealEdgeLength: 100,
-        edgeElasticity: 100,
-        gravity: 1,
-        numIter: 1000,
+        name: 'dagre',
+        rankDir: 'TB',
+        ranker: 'tight-tree',
+        nodeSep: 50,
+        rankSep: 100,
+        padding: 50,
         animate: false,
-      });
+      } as any);  // dagre layout options not in base types
 
       layout.run();
 
@@ -262,7 +267,7 @@ export function GraphView() {
         cyRef.current.destroy();
       }
     };
-  }, [graphData, selectNode, setHoveredNode, showAllNodes]);
+  }, [graphData, selectNode, setHoveredNode, showAllNodes, isFullScreen]);
 
   // Highlight nodes based on timeline position
   useEffect(() => {
@@ -380,15 +385,26 @@ export function GraphView() {
 
         {/* Graph controls */}
         <div className="flex gap-2">
-          <button
-            onClick={() => setShowAllNodes(!showAllNodes)}
-            className={`px-3 py-1 text-white text-sm rounded ${
-              showAllNodes ? 'bg-amber-600 hover:bg-amber-500' : 'bg-gray-700 hover:bg-gray-600'
-            }`}
-            title="Toggle all layers"
-          >
-            {showAllNodes ? 'Layer 0 Only' : 'Show All Layers'}
-          </button>
+          {!isFullScreen && (
+            <>
+              <button
+                onClick={() => setFullScreen('graph')}
+                className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded"
+                title="Enter full-screen mode"
+              >
+                ⛶ Full Screen
+              </button>
+              <button
+                onClick={() => setShowAllNodes(!showAllNodes)}
+                className={`px-3 py-1 text-white text-sm rounded ${
+                  showAllNodes ? 'bg-amber-600 hover:bg-amber-500' : 'bg-gray-700 hover:bg-gray-600'
+                }`}
+                title="Toggle all layers"
+              >
+                {showAllNodes ? 'Layer 0 Only' : 'Show All Layers'}
+              </button>
+            </>
+          )}
           <button
             onClick={() => cyRef.current?.fit(undefined, 50)}
             className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded"
@@ -415,14 +431,6 @@ export function GraphView() {
 
       {/* Main graph area */}
       <div className="flex-1 relative">
-        {error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-900/90 z-50">
-            <div className="bg-red-900/50 border border-red-500 rounded-lg p-4 max-w-md">
-              <div className="text-red-400 font-semibold mb-2">Graph Rendering Error</div>
-              <div className="text-red-300 text-sm">{error}</div>
-            </div>
-          </div>
-        )}
         <div ref={containerRef} className="w-full h-full" />
 
         {/* Node details panel (when node selected) */}

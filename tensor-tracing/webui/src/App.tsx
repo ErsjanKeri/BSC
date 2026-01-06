@@ -93,7 +93,7 @@ function Header() {
 }
 
 export default function App() {
-  const { loadMemoryMap, loadTokenData, isLoading, loadingError } = useAppStore();
+  const { loadMemoryMap, loadTokenData, isLoading, loadingError, fullScreenView, setFullScreen } = useAppStore();
 
   // Load data on mount
   useEffect(() => {
@@ -105,6 +105,17 @@ export default function App() {
     initializeData();
   }, [loadMemoryMap, loadTokenData]);
 
+  // ESC key to exit full-screen
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && fullScreenView) {
+        setFullScreen(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [fullScreenView, setFullScreen]);
+
   // Show loading state
   if (isLoading && !loadingError) {
     return <LoadingSpinner />;
@@ -115,33 +126,56 @@ export default function App() {
     return <ErrorDisplay error={loadingError} />;
   }
 
-  // Main 4-view layout
+  // Main layout - either 4-view grid or full-screen single view
   return (
     <div className="w-screen h-screen bg-gray-950 flex flex-col overflow-hidden">
       <Header />
 
-      {/* 4-View Grid Layout */}
-      <div className="flex-1 grid grid-cols-2 grid-rows-2 gap-4 p-4 min-h-0">
-        {/* Top-left: Computation Graph */}
-        <div className="min-h-0 min-w-0">
-          <GraphView />
-        </div>
+      {fullScreenView ? (
+        // Full-screen single view
+        <div className="flex-1 p-4 min-h-0">
+          <div className="w-full h-full relative">
+            {/* Exit full-screen button */}
+            <button
+              onClick={() => setFullScreen(null)}
+              className="absolute top-4 right-4 z-50 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg shadow-lg flex items-center gap-2"
+              title="Exit full-screen (ESC)"
+            >
+              <span>✕</span>
+              <span>Exit Full-Screen</span>
+            </button>
 
-        {/* Top-right: Timeline & Trace */}
-        <div className="min-h-0 min-w-0">
-          <TraceView />
+            {/* Render the appropriate full-screen view */}
+            {fullScreenView === 'graph' && <GraphView isFullScreen={true} />}
+            {fullScreenView === 'trace' && <TraceView isFullScreen={true} />}
+            {fullScreenView === 'heatmap' && <HeatmapView isFullScreen={true} />}
+            {fullScreenView === 'transformer' && <TransformerView isFullScreen={true} />}
+          </div>
         </div>
+      ) : (
+        // 4-View Grid Layout
+        <div className="flex-1 grid grid-cols-2 grid-rows-2 gap-4 p-4 min-h-0">
+          {/* Top-left: Computation Graph */}
+          <div className="min-h-0 min-w-0">
+            <GraphView isFullScreen={false} />
+          </div>
 
-        {/* Bottom-left: Memory Heatmap */}
-        <div className="min-h-0 min-w-0">
-          <HeatmapView />
-        </div>
+          {/* Top-right: Timeline & Trace */}
+          <div className="min-h-0 min-w-0">
+            <TraceView isFullScreen={false} />
+          </div>
 
-        {/* Bottom-right: 3D Transformer */}
-        <div className="min-h-0 min-w-0">
-          <TransformerView />
+          {/* Bottom-left: Memory Heatmap */}
+          <div className="min-h-0 min-w-0">
+            <HeatmapView isFullScreen={false} />
+          </div>
+
+          {/* Bottom-right: 3D Transformer */}
+          <div className="min-h-0 min-w-0">
+            <TransformerView isFullScreen={false} />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

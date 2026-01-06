@@ -175,8 +175,12 @@ function TransformerModel() {
   return <>{layers}</>;
 }
 
-export function TransformerView() {
-  const { memoryMap } = useAppStore();
+interface TransformerViewProps {
+  isFullScreen: boolean;
+}
+
+export function TransformerView({ isFullScreen }: TransformerViewProps) {
+  const { memoryMap, setFullScreen } = useAppStore();
 
   if (!memoryMap) {
     return (
@@ -197,9 +201,21 @@ export function TransformerView() {
           </span>
         </div>
 
-        {/* Controls hint */}
-        <div className="text-gray-500 text-xs">
-          Click layer to filter • Drag to rotate • Scroll to zoom
+        <div className="flex items-center gap-4">
+          {!isFullScreen && (
+            <button
+              onClick={() => setFullScreen('transformer')}
+              className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded"
+              title="Enter full-screen mode"
+            >
+              ⛶ Full Screen
+            </button>
+          )}
+
+          {/* Controls hint */}
+          <div className="text-gray-500 text-xs">
+            Click layer to filter • Drag to rotate • Scroll to zoom
+          </div>
         </div>
       </div>
 

@@ -38,6 +38,7 @@ interface AppStore {
   hoveredNode: string | null           // Node ID being hovered
   timeline: TimelineState
   filters: FilterState
+  fullScreenView: 'graph' | 'trace' | 'heatmap' | 'transformer' | null  // Which view is full-screen
 
   // ========================================================================
   // Loading State
@@ -75,6 +76,11 @@ interface AppStore {
   setCategoryFilter: (category: string | null) => void
   setSearchTerm: (term: string) => void
   clearFilters: () => void
+
+  // ========================================================================
+  // Actions - Full-Screen Mode
+  // ========================================================================
+  setFullScreen: (view: 'graph' | 'trace' | 'heatmap' | 'transformer' | null) => void
 }
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -102,6 +108,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
     selectedCategory: null,
     searchTerm: '',
   },
+
+  fullScreenView: null,
 
   isLoading: false,
   loadingError: null,
@@ -355,5 +363,13 @@ export const useAppStore = create<AppStore>((set, get) => ({
         searchTerm: '',
       },
     });
+  },
+
+  // ========================================================================
+  // Full-Screen Actions
+  // ========================================================================
+
+  setFullScreen: (view) => {
+    set({ fullScreenView: view });
   },
 }));
