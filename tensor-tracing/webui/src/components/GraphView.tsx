@@ -36,7 +36,10 @@ export function GraphView({ isFullScreen }: GraphViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<Core | null>(null);
   const [selectedNodeInfo, setSelectedNodeInfo] = useState<any>(null);
-  const [showAllNodes, setShowAllNodes] = useState(false);
+
+  // Layer filtering: 'all' or specific layer number (0, 1, 2, ...)
+  // Defaults to Layer 0 for small screen, 'all' for full screen
+  const [selectedLayer, setSelectedLayer] = useState<number | 'all'>(0);
 
   const {
     graphData,
@@ -49,6 +52,88 @@ export function GraphView({ isFullScreen }: GraphViewProps) {
     setFullScreen,
   } = useAppStore();
 
+  // Auto-switch layer view based on full-screen mode
+  useEffect(() => {
+    if (isFullScreen) {
+      // Full screen: show all layers
+      setSelectedLayer('all');
+    } else {
+      // Small screen: show Layer 0
+      setSelectedLayer(0);
+    }
+  }, [isFullScreen]);
+
+  /**
+   * Get nodes for a specific layer, including connected N/A nodes and previous layer outputs
+   *
+   * Algorithm:
+   * 1. Get all nodes with layer_id === targetLayer
+   * 2. Get all N/A nodes (layer_id === null) that have edges to/from layer nodes
+   * 3. Get all nodes from layer N-1 that feed into layer N (predecessors)
+   * 4. Return combined set
+   */
+  // Get available layers from graph data
+  const availableLayers = graphData
+    ? Array.from(new Set(graphData.nodes.map(n => n.layer_id).filter(l => l !== null))).sort((a, b) => a! - b!)
+    : [];
+
+  const getFilteredNodesForLayer = (targetLayer: number | 'all') => {
+    if (!graphData) return { nodes: [], edges: [] };
+
+    // If 'all', return everything
+    if (targetLayer === 'all') {
+      return {
+        nodes: graphData.nodes,
+        edges: graphData.edges,
+      };
+    }
+
+    // Step 1: Get all nodes from target layer
+    const layerNodes = graphData.nodes.filter(n => n.layer_id === targetLayer);
+    const layerNodeIds = new Set(layerNodes.map(n => n.id));
+
+    // Step 2: Get N/A nodes connected to this layer
+    const connectedNA = graphData.nodes.filter(node => {
+      // Only consider N/A nodes
+      if (node.layer_id !== null) return false;
+
+      // Check if this N/A node has any edge to/from a layer node
+      return graphData.edges.some(edge =>
+        (edge.source === node.id && layerNodeIds.has(edge.target)) ||
+        (edge.target === node.id && layerNodeIds.has(edge.source))
+      );
+    });
+
+    // Step 3: Get previous layer outputs that feed into current layer
+    // Only if not Layer 0 (no previous layer)
+    const previousLayerOutputs = targetLayer > 0
+      ? graphData.nodes.filter(node => {
+          // Only consider nodes from previous layer
+          if (node.layer_id !== targetLayer - 1) return false;
+
+          // Include if this node has an edge TO current layer
+          return graphData.edges.some(edge =>
+            edge.source === node.id && layerNodeIds.has(edge.target)
+          );
+        })
+      : [];
+
+    // Step 4: Combine all
+    const filteredNodes = [...layerNodes, ...connectedNA, ...previousLayerOutputs];
+    const filteredNodeIds = new Set(filteredNodes.map(n => n.id));
+
+    // Step 5: Get edges - only include edges where BOTH endpoints are visible
+    // We can't render edges to non-existent nodes in Cytoscape
+    const filteredEdges = graphData.edges.filter(edge =>
+      filteredNodeIds.has(edge.source) && filteredNodeIds.has(edge.target)
+    );
+
+    return {
+      nodes: filteredNodes,
+      edges: filteredEdges,
+    };
+  };
+
   // Initialize Cytoscape instance
   useEffect(() => {
     if (!containerRef.current || !graphData) return;
@@ -58,20 +143,24 @@ export function GraphView({ isFullScreen }: GraphViewProps) {
       cyRef.current.destroy();
     }
 
-    // Filter nodes to show
-    // Full-screen: show all nodes automatically
-    // Small screen: Layer 0 only unless user toggles
-    const nodesToShow = (isFullScreen || showAllNodes)
-      ? graphData.nodes
-      : graphData.nodes.filter(n => n.layer_id === 0 || n.layer_id === null);
+    // Apply layer filtering using our new logic
+    // selectedLayer determines what to show (Layer 0 by default, or 'all', or specific layer)
+    const { nodes: nodesToShow, edges: edgesToShow } = getFilteredNodesForLayer(selectedLayer);
 
-      const edgesToShow = graphData.edges.filter(e => {
-        const sourceNode = graphData.nodes.find(n => n.id === e.source);
-        const targetNode = graphData.nodes.find(n => n.id === e.target);
-        return nodesToShow.includes(sourceNode!) && nodesToShow.includes(targetNode!);
-      });
+    // Debug logging
+    if (selectedLayer !== 'all') {
+      const layerNodeCount = nodesToShow.filter(n => n.layer_id === selectedLayer).length;
+      const naNodeCount = nodesToShow.filter(n => n.layer_id === null).length;
+      const prevLayerNodeCount = selectedLayer > 0 ? nodesToShow.filter(n => n.layer_id === (selectedLayer as number) - 1).length : 0;
 
-      console.log(`Rendering ${nodesToShow.length} nodes, ${edgesToShow.length} edges`);
+      console.log(
+        `Layer ${selectedLayer}: ${nodesToShow.length} nodes total ` +
+        `(${layerNodeCount} layer nodes, ${naNodeCount} N/A nodes, ${prevLayerNodeCount} from prev layer), ` +
+        `${edgesToShow.length} edges`
+      );
+    } else {
+      console.log(`All layers: ${nodesToShow.length} nodes, ${edgesToShow.length} edges`);
+    }
 
       // Create Cytoscape instance
       const cy = cytoscape({
@@ -93,7 +182,14 @@ export function GraphView({ isFullScreen }: GraphViewProps) {
             'width': 40,
             'height': 40,
             'border-width': 2,
-            'border-color': '#1f2937', // gray-800
+            'border-color': (ele: NodeSingular) => {
+              // Use alternating border colors for visual layer separation
+              const layerId = ele.data('layer_id') as number | null;
+              if (layerId !== null && layerId % 2 === 1) {
+                return '#fbbf24'; // amber-400 for odd layers
+              }
+              return '#1f2937'; // gray-800 for even layers
+            },
           },
         },
 
@@ -267,7 +363,7 @@ export function GraphView({ isFullScreen }: GraphViewProps) {
         cyRef.current.destroy();
       }
     };
-  }, [graphData, selectNode, setHoveredNode, showAllNodes, isFullScreen]);
+  }, [graphData, selectNode, setHoveredNode, isFullScreen, selectedLayer]);
 
   // Highlight nodes based on timeline position
   useEffect(() => {
@@ -378,32 +474,44 @@ export function GraphView({ isFullScreen }: GraphViewProps) {
           <span className="text-white font-semibold">Computation Graph</span>
           {graphData && (
             <span className="ml-3 text-gray-400 text-sm">
-              {showAllNodes ? `${graphData.metadata.total_nodes} nodes` : `Layer 0 only`}
+              {selectedLayer === 'all'
+                ? `${graphData.metadata.total_nodes} nodes (all layers)`
+                : `Layer ${selectedLayer} + connected nodes`
+              }
             </span>
           )}
         </div>
 
         {/* Graph controls */}
         <div className="flex gap-2">
+          {/* Layer selector dropdown */}
+          <div className="flex items-center gap-2">
+            <span className="text-gray-400 text-sm">Layer:</span>
+            <select
+              value={selectedLayer}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSelectedLayer(value === 'all' ? 'all' : parseInt(value, 10));
+              }}
+              className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {availableLayers.map(layer => (
+                <option key={layer} value={layer!}>
+                  Layer {layer}
+                </option>
+              ))}
+              <option value="all">All Layers</option>
+            </select>
+          </div>
+
           {!isFullScreen && (
-            <>
-              <button
-                onClick={() => setFullScreen('graph')}
-                className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded"
-                title="Enter full-screen mode"
-              >
-                ⛶ Full Screen
-              </button>
-              <button
-                onClick={() => setShowAllNodes(!showAllNodes)}
-                className={`px-3 py-1 text-white text-sm rounded ${
-                  showAllNodes ? 'bg-amber-600 hover:bg-amber-500' : 'bg-gray-700 hover:bg-gray-600'
-                }`}
-                title="Toggle all layers"
-              >
-                {showAllNodes ? 'Layer 0 Only' : 'Show All Layers'}
-              </button>
-            </>
+            <button
+              onClick={() => setFullScreen('graph')}
+              className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded"
+              title="Enter full-screen mode"
+            >
+              ⛶ Full Screen
+            </button>
           )}
           <button
             onClick={() => cyRef.current?.fit(undefined, 50)}
