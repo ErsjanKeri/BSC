@@ -13,6 +13,7 @@ import type {
   GraphData,
   TraceData,
   MemoryMap,
+  BufferTimeline,
   CorrelationIndex,
   SelectedNode,
   SelectedTrace,
@@ -25,6 +26,7 @@ interface AppStore {
   // Data State
   // ========================================================================
   memoryMap: MemoryMap | null
+  bufferTimeline: BufferTimeline | null
   currentTokenId: number
   graphData: GraphData | null
   traceData: TraceData | null
@@ -50,6 +52,7 @@ interface AppStore {
   // Actions - Data Loading
   // ========================================================================
   loadMemoryMap: () => Promise<void>
+  loadBufferStats: () => Promise<void>
   loadTokenData: (tokenId: number) => Promise<void>
   buildCorrelationIndex: () => void
 
@@ -88,6 +91,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   // Initial State
   // ========================================================================
   memoryMap: null,
+  bufferTimeline: null,
   currentTokenId: 0,
   graphData: null,
   traceData: null,
@@ -128,6 +132,26 @@ export const useAppStore = create<AppStore>((set, get) => ({
     } catch (error) {
       set({
         loadingError: `Failed to load memory map: ${error}`,
+        isLoading: false,
+      });
+    }
+  },
+
+  loadBufferStats: async () => {
+    set({ isLoading: true, loadingError: null });
+    try {
+      const response = await fetch('/data/buffer-timeline.json');
+      if (!response.ok) throw new Error('Failed to load buffer stats');
+      const bufferTimeline = await response.json();
+      set({ bufferTimeline, isLoading: false });
+      console.log('Buffer timeline loaded:', {
+        buffers: bufferTimeline.metadata.total_buffers,
+        events: bufferTimeline.metadata.total_events,
+        peak_mb: bufferTimeline.metadata.peak_occupancy_mb,
+      });
+    } catch (error) {
+      set({
+        loadingError: `Failed to load buffer stats: ${error}`,
         isLoading: false,
       });
     }
@@ -178,11 +202,15 @@ export const useAppStore = create<AppStore>((set, get) => ({
       addressToNode.set(node.address, node);
     });
 
-    // Build address → trace entries mapping
+    // Build address → trace entries mapping (NEW: handle multi-source entries)
+    // Each source tensor in an entry gets mapped to that entry
     const addressToTraces = new Map<string, typeof traceData.entries>();
     traceData.entries.forEach(entry => {
-      const existing = addressToTraces.get(entry.tensor_ptr) || [];
-      addressToTraces.set(entry.tensor_ptr, [...existing, entry]);
+      // Map each source tensor to this entry
+      entry.sources.forEach(source => {
+        const existing = addressToTraces.get(source.tensor_ptr) || [];
+        addressToTraces.set(source.tensor_ptr, [...existing, entry]);
+      });
     });
 
     // Build node ID → memory tensor mapping (by tensor name)
@@ -204,11 +232,18 @@ export const useAppStore = create<AppStore>((set, get) => ({
       }
     });
 
-    // Build time index for animation
+    // Build time index for animation (NEW: get addresses from sources)
     const timestamps = traceData.entries.map(e => e.timestamp_relative_ms);
     const activeNodes = traceData.entries.map(entry => {
-      const node = addressToNode.get(entry.tensor_ptr);
-      return node ? [node.id] : [];
+      // Get all nodes involved in this entry (from all sources)
+      const nodeIds: string[] = [];
+      entry.sources.forEach(source => {
+        const node = addressToNode.get(source.tensor_ptr);
+        if (node) {
+          nodeIds.push(node.id);
+        }
+      });
+      return nodeIds;
     });
 
     const correlationIndex: CorrelationIndex = {
@@ -254,17 +289,59 @@ export const useAppStore = create<AppStore>((set, get) => ({
   selectTrace: (trace) => {
     set({ selectedTrace: trace });
 
-    // If a trace is selected, highlight corresponding node
-    if (trace && get().correlationIndex) {
-      const node = get().correlationIndex!.addressToNode.get(trace.tensor_ptr);
-      if (node) {
+    // If a trace is selected, try to highlight corresponding node in graph
+    if (trace && trace.sources && trace.sources.length > 0 && get().correlationIndex) {
+      const index = get().correlationIndex!;
+      let foundNode = null;
+
+      // Strategy 1: Try to find by address (from any source)
+      for (const source of trace.sources) {
+        const node = index.addressToNode.get(source.tensor_ptr);
+        if (node) {
+          foundNode = node;
+          console.log('✓ Trace→Graph correlation (by address):', {
+            trace_entry: trace.entryId,
+            source: source.name,
+            graph_node: node.label,
+            node_id: node.id,
+          });
+          break;
+        }
+      }
+
+      // Strategy 2: Try to find by tensor name (fallback)
+      if (!foundNode && get().graphData) {
+        const graphData = get().graphData!;
+        for (const source of trace.sources) {
+          // Try exact match
+          const matchByName = graphData.nodes.find(n => n.label === source.name);
+          if (matchByName) {
+            foundNode = matchByName;
+            console.log('✓ Trace→Graph correlation (by name):', {
+              trace_entry: trace.entryId,
+              source: source.name,
+              graph_node: matchByName.label,
+              node_id: matchByName.id,
+            });
+            break;
+          }
+        }
+      }
+
+      // If found, select the node
+      if (foundNode) {
         set({
           selectedNode: {
-            nodeId: node.id,
-            address: node.address,
-            label: node.label,
-            layer_id: node.layer_id,
+            nodeId: foundNode.id,
+            address: foundNode.address,
+            label: foundNode.label,
+            layer_id: foundNode.layer_id,
           },
+        });
+      } else {
+        console.log('⚠ Trace→Graph correlation failed:', {
+          trace_entry: trace.entryId,
+          sources: trace.sources.map(s => s.name),
         });
       }
     }

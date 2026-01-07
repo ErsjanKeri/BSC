@@ -513,27 +513,7 @@ export function GraphView({ isFullScreen }: GraphViewProps) {
               ⛶ Full Screen
             </button>
           )}
-          <button
-            onClick={() => cyRef.current?.fit(undefined, 50)}
-            className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded"
-            title="Fit graph to viewport"
-          >
-            Fit
-          </button>
-          <button
-            onClick={() => cyRef.current?.zoom(cyRef.current.zoom() * 1.2)}
-            className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded"
-            title="Zoom in"
-          >
-            +
-          </button>
-          <button
-            onClick={() => cyRef.current?.zoom(cyRef.current.zoom() * 0.8)}
-            className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded"
-            title="Zoom out"
-          >
-            −
-          </button>
+     
         </div>
       </div>
 

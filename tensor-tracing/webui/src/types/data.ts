@@ -43,8 +43,19 @@ export interface GraphData {
 }
 
 // ============================================================================
-// Trace Data (from parse_trace.py)
+// Trace Data (from parse_trace.py) - NEW 256-byte format
 // ============================================================================
+
+export interface SourceTensorInfo {
+  name: string                     // Source tensor name (may be truncated to 20 chars)
+  tensor_ptr: string               // Memory address: "0x15001a8c0"
+  size_bytes: number               // Size of tensor in bytes
+  layer_id: number | null          // Layer ID or null
+  memory_source: "DISK" | "BUFFER" // Memory source type (NEW!)
+  disk_offset?: number             // If DISK: offset in GGUF file
+  buffer_id?: number               // If BUFFER: buffer identifier
+  tensor_idx?: number | null       // Tensor index in registry (optional)
+}
 
 export interface TraceEntry {
   entry_id: number                 // Sequential entry number
@@ -53,25 +64,26 @@ export interface TraceEntry {
 
   // Execution context
   token_id: number                 // Token ID being processed
-  layer_id: number                 // Layer ID (65535 = N/A)
+  layer_id: number | null          // Layer ID or null (was 65535 for N/A, now null)
   thread_id: number                // Thread that executed this operation
   phase: string                    // "PROMPT" | "GENERATE"
 
-  // Operation
-  operation_type: string           // "MUL_MAT", "ADD", "ROPE", etc.
+  // Operation (NEW: all operations, not just MUL_MAT)
+  operation_type: string           // "MUL_MAT", "ADD", "ROPE", "OUT_PROD", "LOG", etc.
 
-  // Tensor identification (CORRELATION KEYS)
-  tensor_idx: number | null        // Tensor index in registry (null if not found)
-  tensor_ptr: string               // Memory address: "0x15001a8c0"
-  tensor_name: string              // Tensor name: "blk.0.attn_q.weight"
-  size_bytes: number               // Size of tensor in bytes
-  file_offset: number              // Offset in GGUF file
+  // Destination tensor (NEW!)
+  dst_name: string                 // Destination tensor name
+
+  // Source tensors (NEW: multi-source structure)
+  num_sources: number              // Number of source tensors (0-4)
+  sources: SourceTensorInfo[]      // Array of source tensors
 }
 
 export interface TraceMetadata {
   total_entries: number            // Number of trace entries
   duration_ms: number              // Total execution time
   timestamp_start_ns: number       // First timestamp
+  format_version: string           // Format version: "256-byte"
 }
 
 export interface TraceData {
@@ -125,7 +137,8 @@ export interface SelectedNode {
 export interface SelectedTrace {
   entryId: number
   timestamp_relative_ms: number
-  tensor_ptr: string
+  dst_name: string                 // Destination tensor name
+  sources: SourceTensorInfo[]      // Source tensors
 }
 
 export interface TimelineState {
@@ -138,6 +151,47 @@ export interface FilterState {
   selectedLayer: number | null     // Filter by layer (null = all)
   selectedCategory: string | null  // Filter by category (null = all)
   searchTerm: string               // Text search filter
+}
+
+// ============================================================================
+// Buffer Timeline (from parse_buffer_stats.py) - NEW!
+// ============================================================================
+
+export interface BufferInfo {
+  id: number                       // Unique buffer ID
+  name: string                     // Buffer name: "KVCache_CPU", "ModelWeights_file0"
+  size: number                     // Size in bytes
+  backend: string                  // Backend type: "CPU", "Metal", etc.
+  usage: number                    // Usage type enum value
+  usage_name: string               // Usage name: "WEIGHTS", "COMPUTE", "ANY"
+  layer: number                    // Associated layer (65535 = N/A)
+  alloc_time_ms: number            // Allocation timestamp
+  dealloc_time_ms: number | null   // Deallocation timestamp (null if still active)
+}
+
+export interface BufferTimelineEvent {
+  timestamp_ms: number             // Event timestamp
+  event: "alloc" | "dealloc"       // Event type
+  buffer_id: number                // Buffer ID
+  buffer_name: string              // Buffer name
+  size: number                     // Buffer size
+  cumulative_size: number          // Total allocated memory at this point
+  num_active_buffers: number       // Number of active buffers
+}
+
+export interface BufferTimelineMetadata {
+  total_events: number             // Total number of events
+  total_buffers: number            // Total number of buffers
+  peak_occupancy_bytes: number     // Peak memory occupancy
+  peak_occupancy_mb: number        // Peak occupancy in MB
+  duration_ms: number              // Duration of buffer tracking
+  usage_breakdown: Record<string, number>  // Count by usage type
+}
+
+export interface BufferTimeline {
+  metadata: BufferTimelineMetadata
+  buffers: BufferInfo[]
+  timeline: BufferTimelineEvent[]
 }
 
 // ============================================================================

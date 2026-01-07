@@ -20,7 +20,6 @@ interface TraceViewProps {
 
 export function TraceView({ isFullScreen }: TraceViewProps) {
   const listRef = useRef<any>(null);
-  const animationRef = useRef<number | null>(null);
 
   const {
     traceData,
@@ -28,10 +27,9 @@ export function TraceView({ isFullScreen }: TraceViewProps) {
     selectedTrace,
     selectTrace,
     setTimelinePosition,
-    playTimeline,
-    pauseTimeline,
-    setPlaybackSpeed,
     setFullScreen,
+    correlationIndex,
+    graphData,
   } = useAppStore();
 
   const [filteredEntries, setFilteredEntries] = useState<TraceEntry[]>([]);
@@ -44,36 +42,6 @@ export function TraceView({ isFullScreen }: TraceViewProps) {
     // TODO: Apply filters from store
     setFilteredEntries(traceData.entries);
   }, [traceData]);
-
-  // Animation loop
-  useEffect(() => {
-    if (!timeline.isPlaying || !traceData) return;
-
-    const maxTime = traceData.metadata.duration_ms;
-    const frameRate = 60; // 60 FPS
-    const increment = (1000 / frameRate) * timeline.playbackSpeed;
-
-    const animate = () => {
-      setTimelinePosition((prev) => {
-        const newTime = prev + increment;
-        if (newTime >= maxTime) {
-          pauseTimeline();
-          return maxTime;
-        }
-        return newTime;
-      });
-
-      animationRef.current = requestAnimationFrame(animate);
-    };
-
-    animationRef.current = requestAnimationFrame(animate);
-
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, [timeline.isPlaying, timeline.playbackSpeed, traceData, setTimelinePosition, pauseTimeline]);
 
   // Auto-scroll to selected trace entry
   useEffect(() => {
@@ -100,7 +68,8 @@ export function TraceView({ isFullScreen }: TraceViewProps) {
     selectTrace({
       entryId: entry.entry_id,
       timestamp_relative_ms: entry.timestamp_relative_ms,
-      tensor_ptr: entry.tensor_ptr,
+      dst_name: entry.dst_name,
+      sources: entry.sources,
     });
 
     // Jump timeline to this entry's timestamp
@@ -115,33 +84,151 @@ export function TraceView({ isFullScreen }: TraceViewProps) {
                      (index === filteredEntries.length - 1 ||
                       timeline.currentTime < filteredEntries[index + 1]?.timestamp_relative_ms);
 
+    // Calculate total size from all sources
+    const totalSize = entry.sources.reduce((sum, src) => sum + src.size_bytes, 0);
+
+    // Check if this trace entry has a corresponding graph node
+    const hasGraphNode = correlationIndex && entry.sources.length > 0 && entry.sources.some(source => {
+      // Check by address
+      if (correlationIndex.addressToNode.has(source.tensor_ptr)) return true;
+      // Check by name
+      if (graphData) {
+        return graphData.nodes.some(n => n.label === source.name);
+      }
+      return false;
+    });
+
+    // In full-screen mode, show detailed multi-line view
+    if (isFullScreen) {
+      return (
+        <div
+          style={style}
+          onClick={() => handleTraceClick(entry)}
+          className={`
+            border-b-2 border-gray-800 cursor-pointer py-3 px-4
+            ${isSelected ? 'bg-blue-900/50 border-blue-500' : 'hover:bg-gray-800'}
+            ${isActive ? 'bg-amber-900/30' : ''}
+          `}
+          title={hasGraphNode ? 'Click to highlight in graph' : 'No corresponding graph node'}
+        >
+          {/* Header row: operation info */}
+          <div className="flex items-center gap-3 mb-3">
+            <span className={`text-xs ${hasGraphNode ? 'text-green-400' : 'text-gray-700'}`}>
+              {hasGraphNode ? '●' : '○'}
+            </span>
+            <span className="text-gray-500 font-mono text-sm">#{entry.entry_id}</span>
+            <span className="text-gray-300 font-mono text-sm">{entry.timestamp_relative_ms.toFixed(2)}ms</span>
+            <span className="text-white font-bold text-sm">{entry.operation_type}</span>
+            <span className="text-gray-400 text-sm">
+              {entry.layer_id === null ? 'Layer: N/A' : `Layer: ${entry.layer_id}`}
+            </span>
+            <span className="text-gray-500 text-sm">Thread: {entry.thread_id}</span>
+            <span className="text-purple-400 text-sm">{entry.phase}</span>
+          </div>
+
+          {/* Destination Tensor */}
+          <div className="ml-6 mb-2">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-yellow-400 font-semibold text-xs">DESTINATION:</span>
+              <span className="text-yellow-200 font-mono text-sm">{entry.dst_name}</span>
+            </div>
+          </div>
+
+          {/* Sources: detailed list */}
+          <div className="ml-6 space-y-1">
+            <div className="text-blue-400 font-semibold text-xs mb-1">
+              SOURCES ({entry.sources.length}):
+            </div>
+            {entry.sources.length === 0 ? (
+              <div className="text-gray-500 text-xs italic ml-4">No source tensors</div>
+            ) : (
+              entry.sources.map((source, idx) => (
+                <div key={idx} className="flex items-center gap-4 text-xs font-mono ml-4">
+                  <span className="text-gray-500 w-8">[{idx}]</span>
+                  <span className="text-white min-w-[200px]">{source.name}</span>
+                  <span className={`px-2 py-0.5 rounded font-semibold ${
+                    source.memory_source === 'DISK'
+                      ? 'bg-blue-900 text-blue-300'
+                      : 'bg-green-900 text-green-300'
+                  }`}>
+                    {source.memory_source}
+                  </span>
+                  <span className="text-gray-300 min-w-[60px]">{formatSize(source.size_bytes)}</span>
+                  {source.memory_source === 'DISK' && source.disk_offset !== undefined && (
+                    <span className="text-blue-400">offset: 0x{source.disk_offset.toString(16)}</span>
+                  )}
+                  {source.memory_source === 'BUFFER' && source.buffer_id !== undefined && (
+                    <span className="text-green-400">buffer: 0x{source.buffer_id.toString(16)}</span>
+                  )}
+                  {source.layer_id !== null && (
+                    <span className="text-purple-400">L{source.layer_id}</span>
+                  )}
+                  <span className="text-gray-600 text-[10px]">{source.tensor_ptr}</span>
+                </div>
+              ))
+            )}
+            <div className="text-gray-500 text-xs pt-1 ml-4">
+              Total input size: {formatSize(totalSize)}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Compact mode for small view
+    const displayName = entry.sources.length > 0
+      ? `${entry.sources[0].name}${entry.sources.length > 1 ? ` +${entry.sources.length - 1}` : ''}`
+      : entry.dst_name || '<no sources>';
+
+    const getSourceBadge = () => {
+      if (entry.sources.length === 0) return null;
+      const diskCount = entry.sources.filter(s => s.memory_source === 'DISK').length;
+      const bufferCount = entry.sources.filter(s => s.memory_source === 'BUFFER').length;
+
+      if (diskCount > 0 && bufferCount > 0) {
+        return <span className="text-purple-400 text-xs">D+B</span>;
+      } else if (diskCount > 0) {
+        return <span className="text-blue-400 text-xs">DSK</span>;
+      } else if (bufferCount > 0) {
+        return <span className="text-green-400 text-xs">BUF</span>;
+      }
+      return null;
+    };
+
     return (
       <div
         style={{ height: '32px', ...style }}
         onClick={() => handleTraceClick(entry)}
         className={`
-          flex items-center gap-3 px-3 text-sm border-b border-gray-800 cursor-pointer
+          flex items-center gap-2 px-3 text-sm border-b border-gray-800 cursor-pointer
           ${isSelected ? 'bg-blue-900/50 border-blue-500' : 'hover:bg-gray-800'}
           ${isActive ? 'bg-amber-900/30' : ''}
         `}
+        title={hasGraphNode ? 'Click to highlight in graph' : 'No corresponding graph node'}
       >
+        <span className={`w-4 text-xs ${hasGraphNode ? 'text-green-400' : 'text-gray-700'}`}>
+          {hasGraphNode ? '●' : '○'}
+        </span>
         <span className="text-gray-500 w-12 text-right font-mono text-xs">
           {entry.entry_id}
         </span>
         <span className="text-gray-300 w-20 text-right font-mono text-xs">
           {entry.timestamp_relative_ms.toFixed(2)}ms
         </span>
-        <span className="text-white w-24 font-mono text-xs">
+        <span className="text-white w-32 font-mono text-xs truncate">
           {entry.operation_type}
         </span>
         <span className="text-gray-400 w-12 text-center font-mono text-xs">
-          L{entry.layer_id === 65535 ? '-' : entry.layer_id}
+          {entry.layer_id === null ? '-' : `L${entry.layer_id}`}
         </span>
         <span className="text-gray-300 flex-1 truncate font-mono text-xs">
-          {entry.tensor_name || '<anonymous>'}
+          {displayName}
+        </span>
+        <span className="w-10 text-center">
+          {getSourceBadge()}
         </span>
         <span className="text-gray-500 w-20 text-right font-mono text-xs">
-          {formatSize(entry.size_bytes)}
+          {formatSize(totalSize)}
         </span>
       </div>
     );
@@ -193,88 +280,18 @@ export function TraceView({ isFullScreen }: TraceViewProps) {
                        [&::-webkit-slider-thumb]:cursor-pointer"
           />
         </div>
-
-        {/* Playback controls */}
-        <div className="flex items-center gap-2">
-          {/* Play/Pause */}
-          <button
-            onClick={() => timeline.isPlaying ? pauseTimeline() : playTimeline()}
-            className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded flex items-center gap-2"
-          >
-            {timeline.isPlaying ? '⏸' : '▶'} {timeline.isPlaying ? 'Pause' : 'Play'}
-          </button>
-
-          {/* Step backward */}
-          <button
-            onClick={() => {
-              const currentIndex = filteredEntries.findIndex(
-                e => e.timestamp_relative_ms > timeline.currentTime
-              );
-              const prevIndex = Math.max(0, currentIndex - 1);
-              if (filteredEntries[prevIndex]) {
-                setTimelinePosition(filteredEntries[prevIndex].timestamp_relative_ms);
-              }
-            }}
-            className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded"
-            title="Previous entry"
-          >
-            ⏮
-          </button>
-
-          {/* Step forward */}
-          <button
-            onClick={() => {
-              const nextEntry = filteredEntries.find(
-                e => e.timestamp_relative_ms > timeline.currentTime
-              );
-              if (nextEntry) {
-                setTimelinePosition(nextEntry.timestamp_relative_ms);
-              }
-            }}
-            className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded"
-            title="Next entry"
-          >
-            ⏭
-          </button>
-
-          {/* Reset */}
-          <button
-            onClick={() => setTimelinePosition(0)}
-            className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded"
-            title="Reset to start"
-          >
-            ⏮⏮
-          </button>
-
-          {/* Playback speed */}
-          <div className="flex items-center gap-2 ml-4">
-            <span className="text-gray-400 text-sm">Speed:</span>
-            {[0.5, 1, 2, 4].map(speed => (
-              <button
-                key={speed}
-                onClick={() => setPlaybackSpeed(speed)}
-                className={`
-                  px-2 py-1 text-sm rounded
-                  ${timeline.playbackSpeed === speed
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                  }
-                `}
-              >
-                {speed}x
-              </button>
-            ))}
-          </div>
-        </div>
+      
       </div>
 
       {/* Table header */}
-      <div className="flex items-center gap-3 px-3 py-2 bg-gray-800 border-b border-gray-700 text-xs text-gray-400 font-semibold">
+      <div className="flex items-center gap-2 px-3 py-2 bg-gray-800 border-b border-gray-700 text-xs text-gray-400 font-semibold">
+        <span className="w-4" title="Graph correlation indicator">🔗</span>
         <span className="w-12 text-right">#</span>
         <span className="w-20 text-right">Time (ms)</span>
-        <span className="w-24">Operation</span>
+        <span className="w-32">Operation</span>
         <span className="w-12 text-center">Layer</span>
-        <span className="flex-1">Tensor Name</span>
+        <span className="flex-1">Source Tensors</span>
+        <span className="w-10 text-center">Mem</span>
         <span className="w-20 text-right">Size</span>
       </div>
 

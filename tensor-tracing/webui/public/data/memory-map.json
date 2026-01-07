@@ -1,5 +1,5 @@
 {
-  "model_name": "tinyllama",
+  "model_name": "tinyllama_clean",
   "total_size_bytes": 701267968,
   "metadata": {
     "n_layers": 22,

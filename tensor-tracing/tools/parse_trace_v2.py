@@ -9,18 +9,15 @@ Parses /tmp/tensor_trace.bin with the NEW 256-byte format:
 - Proper GGUF offsets
 
 Usage:
-    python3 parse_trace.py                          # Show all entries
-    python3 parse_trace.py --limit 20               # Show first 20 entries
-    python3 parse_trace.py --stats                  # Show statistics
-    python3 parse_trace.py --verify                 # Verify format
-    python3 parse_trace.py --token 0 --format json --output trace-token-0.json
+    python3 parse_trace_v2.py                       # Show all entries
+    python3 parse_trace_v2.py --limit 20            # Show first 20 entries
+    python3 parse_trace_v2.py --stats               # Show statistics
+    python3 parse_trace_v2.py --verify              # Verify format
 """
 
 import struct
 import sys
 import argparse
-import json
-import os
 from pathlib import Path
 from collections import Counter
 
@@ -349,119 +346,6 @@ def verify_format(entries):
         return True
 
 
-def output_json(entries, output_path, token_id=None):
-    """
-    Output entries in JSON format for WebUI.
-
-    Args:
-        entries: List of trace entries
-        output_path: Path to output file (or None for stdout)
-        token_id: Optional token ID to filter entries
-    """
-    if not entries:
-        print("No entries to export", file=sys.stderr)
-        return
-
-    # Filter by token if specified
-    if token_id is not None:
-        entries = [e for e in entries if e['token_id'] == token_id]
-        if not entries:
-            print(f"No entries found for token {token_id}", file=sys.stderr)
-            return
-
-    # Compute metadata
-    first_ts = entries[0]['timestamp_ns']
-    last_ts = entries[-1]['timestamp_ns']
-    duration_ms = (last_ts - first_ts) / 1_000_000
-
-    # Get unique token IDs
-    token_ids = sorted(set(e['token_id'] for e in entries))
-
-    # Use the token_id from filtered entries if single token
-    if len(token_ids) == 1:
-        metadata_token_id = token_ids[0]
-    else:
-        metadata_token_id = None
-
-    # Build JSON structure
-    trace_data = {
-        "token_id": metadata_token_id,
-        "metadata": {
-            "total_entries": len(entries),
-            "duration_ms": duration_ms,
-            "timestamp_start_ns": first_ts,
-            "format_version": "256-byte"
-        },
-        "entries": []
-    }
-
-    # Convert entries
-    for entry in entries:
-        # Compute relative timestamp
-        timestamp_relative_ms = (entry['timestamp_ns'] - first_ts) / 1_000_000
-
-        json_entry = {
-            "entry_id": entry['entry_num'],
-            "timestamp_ns": entry['timestamp_ns'],
-            "timestamp_relative_ms": round(timestamp_relative_ms, 3),
-
-            # Execution context
-            "token_id": entry['token_id'],
-            "layer_id": entry['layer_id'],
-            "thread_id": entry['thread_id'],
-            "phase": entry['phase'],
-
-            # Operation
-            "operation_type": entry['operation_name'],
-
-            # Destination
-            "dst_name": entry['dst_name'],
-
-            # Sources
-            "num_sources": entry['num_sources'],
-            "sources": []
-        }
-
-        # Add source information
-        for src in entry['sources']:
-            json_src = {
-                "name": src['name'],
-                "tensor_ptr": f"0x{src['tensor_ptr']:x}",
-                "size_bytes": src['size_bytes'],
-                "layer_id": src['layer_id'],
-                "memory_source": src['memory_source'],
-            }
-
-            # Add offset or buffer ID depending on memory source
-            if src['memory_source'] == 'DISK':
-                json_src['disk_offset'] = src['disk_offset_or_buffer_id']
-            else:
-                json_src['buffer_id'] = src['disk_offset_or_buffer_id']
-
-            if src['tensor_idx'] is not None:
-                json_src['tensor_idx'] = src['tensor_idx']
-
-            json_entry['sources'].append(json_src)
-
-        trace_data["entries"].append(json_entry)
-
-    # Write output
-    if output_path:
-        output_dir = os.path.dirname(output_path)
-        if output_dir and not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-            print(f"Created directory: {output_dir}")
-
-        with open(output_path, 'w') as f:
-            json.dump(trace_data, f, indent=2)
-        print(f"✓ Exported {len(entries)} entries to: {output_path}")
-        print(f"  File size: {os.path.getsize(output_path) / 1024:.1f} KB")
-    else:
-        # Output to stdout
-        json.dump(trace_data, sys.stdout, indent=2)
-        print()  # Newline after JSON
-
-
 def main():
     parser = argparse.ArgumentParser(description='Parse tensor trace binary (256-byte format)')
     parser.add_argument('trace_file', nargs='?', default='/tmp/tensor_trace.bin',
@@ -472,12 +356,6 @@ def main():
                         help='Show statistics')
     parser.add_argument('--verify', action='store_true',
                         help='Verify format correctness')
-    parser.add_argument('--token', type=int, default=None,
-                        help='Filter by token ID')
-    parser.add_argument('--format', type=str, choices=['text', 'json'], default='text',
-                        help='Output format: text (default) or json')
-    parser.add_argument('--output', type=str, default=None,
-                        help='Output file (default: stdout)')
 
     args = parser.parse_args()
 
@@ -521,18 +399,10 @@ def main():
         verify_format(entries)
     elif args.stats:
         show_statistics(entries)
-    elif args.format == 'json':
-        output_json(entries, args.output, args.token)
     else:
-        # Text format
-        filtered_entries = entries
-        if args.token is not None:
-            filtered_entries = [e for e in entries if e['token_id'] == args.token]
-            print(f"Filtered to {len(filtered_entries)} entries for token {args.token}\n")
-
-        display_entries(filtered_entries, args.limit if args.limit > 0 else 10)
-        if args.limit == 0 and len(filtered_entries) > 10:
-            print(f"\n... ({len(filtered_entries) - 10} more entries, use --limit to show more)")
+        display_entries(entries, args.limit if args.limit > 0 else 10)
+        if args.limit == 0:
+            print(f"\n... ({len(entries) - 10} more entries, use --limit to show more)")
 
     return 0
 

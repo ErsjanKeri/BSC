@@ -41,6 +41,7 @@ function ErrorDisplay({ error }: { error: string }) {
           Make sure the data files are in the <code className="bg-gray-800 px-1 rounded">public/data/</code> directory:
           <ul className="list-disc list-inside mt-2">
             <li>memory-map.json</li>
+            <li>buffer-timeline.json (optional)</li>
             <li>graphs/token-00000.json</li>
             <li>traces/token-00000.json</li>
           </ul>
@@ -93,17 +94,18 @@ function Header() {
 }
 
 export default function App() {
-  const { loadMemoryMap, loadTokenData, isLoading, loadingError, fullScreenView, setFullScreen } = useAppStore();
+  const { loadMemoryMap, loadBufferStats, loadTokenData, isLoading, loadingError, fullScreenView, setFullScreen } = useAppStore();
 
   // Load data on mount
   useEffect(() => {
     const initializeData = async () => {
       await loadMemoryMap();
-      await loadTokenData(0);  // Start with token 0
+      await loadBufferStats();  // Load buffer timeline (optional, won't fail if missing)
+      await loadTokenData(0);   // Start with token 0
     };
 
     initializeData();
-  }, [loadMemoryMap, loadTokenData]);
+  }, [loadMemoryMap, loadBufferStats, loadTokenData]);
 
   // ESC key to exit full-screen
   useEffect(() => {

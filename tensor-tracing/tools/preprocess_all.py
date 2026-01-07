@@ -13,6 +13,14 @@ Usage:
         --csv /path/to/model_structure.csv \
         --output data
 
+    # Include buffer stats
+    python preprocess_all.py \
+        --graphs /tmp/graphs \
+        --trace /tmp/tensor_trace.bin \
+        --csv /path/to/model_structure.csv \
+        --buffer-stats /tmp/buffer_stats.jsonl \
+        --output data
+
     # Process specific tokens only
     python preprocess_all.py \
         --graphs /tmp/graphs \
@@ -24,6 +32,7 @@ Usage:
 Directory structure created:
     data/
     ├── memory-map.json          (once, from CSV)
+    ├── buffer-timeline.json     (once, from buffer_stats.jsonl, optional)
     ├── graphs/
     │   ├── token-00000.json
     │   ├── token-00001.json
@@ -116,6 +125,50 @@ def run_command(cmd: List[str], description: str) -> Tuple[bool, str]:
     except FileNotFoundError as e:
         error_msg = f"{description} failed: {e}"
         return False, error_msg
+
+
+def preprocess_buffer_stats(buffer_stats_path: Path, output_dir: Path, verbose: bool = True) -> bool:
+    """
+    Generate buffer-timeline.json from buffer_stats.jsonl.
+
+    Args:
+        buffer_stats_path: Path to buffer stats JSONL
+        output_dir: Output directory
+        verbose: Print progress messages
+
+    Returns:
+        True if successful
+    """
+    if verbose:
+        print("\n" + "="*60)
+        print("STEP 1: Processing Buffer Stats")
+        print("="*60)
+        print(f"Input:  {buffer_stats_path}")
+
+    output_file = output_dir / "buffer-timeline.json"
+    print(f"Output: {output_file}")
+
+    # Find parse_buffer_stats.py script
+    parse_buffer_stats = find_script("parse_buffer_stats.py")
+
+    # Run parser
+    cmd = [
+        sys.executable,
+        str(parse_buffer_stats),
+        str(buffer_stats_path),
+        "--output", str(output_file)
+    ]
+
+    success, error = run_command(cmd, "parse_buffer_stats.py")
+
+    if success:
+        if verbose:
+            size_kb = output_file.stat().st_size / 1024
+            print(f"✓ Success! ({size_kb:.1f} KB)")
+    else:
+        print(f"✗ Error: {error}")
+
+    return success
 
 
 def preprocess_memory_map(csv_path: Path, output_dir: Path, verbose: bool = True) -> bool:
@@ -282,6 +335,12 @@ Examples:
         help='Binary trace file (e.g., /tmp/tensor_trace.bin)'
     )
     parser.add_argument(
+        '--buffer-stats',
+        type=Path,
+        default=None,
+        help='Buffer stats JSONL file (e.g., /tmp/buffer_stats.jsonl). Optional.'
+    )
+    parser.add_argument(
         '--csv',
         required=True,
         type=Path,
@@ -368,6 +427,19 @@ Examples:
     else:
         if verbose:
             print("\nSkipping memory map generation (--skip-memory-map)")
+
+    # Step 1.5: Process buffer stats (once, if provided)
+    if args.buffer_stats:
+        if args.buffer_stats.exists():
+            success = preprocess_buffer_stats(args.buffer_stats, args.output, verbose)
+            if not success:
+                print("\nWarning: Buffer stats generation failed. Continuing...")
+        else:
+            if verbose:
+                print(f"\nWarning: Buffer stats file not found: {args.buffer_stats}")
+    else:
+        if verbose:
+            print("\nNo buffer stats file provided (use --buffer-stats to include)")
 
     # Step 2: Process each token
     if verbose:
