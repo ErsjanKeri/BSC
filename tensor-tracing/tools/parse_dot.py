@@ -19,29 +19,24 @@ from typing import List, Dict, Any, Tuple
 def extract_layer_id(tensor_name: str) -> int:
     """
     Extract layer ID from tensor name.
+    ONLY matches "blk.N." pattern (consistent with C code in tensor_trace.h)
 
     Args:
-        tensor_name: Tensor name (e.g., "Qcur-0", "blk.5.attn_q", "ffn_inp-12")
+        tensor_name: Tensor name (e.g., "blk.5.attn_q")
 
     Returns:
         Layer ID (0-N), or None for non-layer tensors
     """
-    # Pattern 1: "name-N" format (e.g., "Qcur-0", "ffn_inp-12")
-    match = re.search(r'-(\d+)(?:\s|$|\)|,)', tensor_name)
-    if match:
-        return int(match.group(1))
+    # ONLY Pattern: "blk.N." format (e.g., "blk.5.attn_q.weight")
+    # This matches the C implementation in tensor_trace_extract_layer_id()
+    if tensor_name and tensor_name.startswith("blk."):
+        match = re.search(r'blk\.(\d+)\.', tensor_name)
+        if match:
+            layer = int(match.group(1))
+            if 0 <= layer < 65535:  # Sanity check
+                return layer
 
-    # Pattern 2: "blk.N." format (e.g., "blk.5.attn_q")
-    match = re.search(r'blk\.(\d+)\.', tensor_name)
-    if match:
-        return int(match.group(1))
-
-    # Pattern 3: "l_out-N", "attn_out-N", etc.
-    match = re.search(r'_(\d+)(?:\s|$|\))', tensor_name)
-    if match:
-        return int(match.group(1))
-
-    return None
+    return None  # Not a layer tensor
 
 
 def categorize_tensor(tensor_name: str, operation: str) -> str:
@@ -75,7 +70,9 @@ def parse_node_label(label: str) -> Tuple[str, str, List[int], str]:
     """
     Parse node label from .dot file.
 
-    Label format: "name (dtype)|node_num [shape] | <x>operation"
+    Label formats:
+    - Standard: "name (dtype)|node_num [shape]|<x>operation"  (3 parts)
+    - Leaf/Constant: "<x>name (dtype)|CONST num [shape]"      (2 parts)
 
     Args:
         label: Label string
@@ -85,39 +82,74 @@ def parse_node_label(label: str) -> Tuple[str, str, List[int], str]:
     """
     # Split by "|"
     parts = label.split('|')
-    if len(parts) < 3:
-        # Malformed label, return defaults
-        return label, "unknown", [], "unknown"
 
-    # Part 1: "name (dtype)"
-    name_part = parts[0].strip()
-    name_match = re.match(r'(.+?)\s*\(([^)]+)\)', name_part)
-    if name_match:
-        name = name_match.group(1).strip()
-        dtype = name_match.group(2).strip()
-    else:
-        name = name_part
-        dtype = "unknown"
+    # Handle 2-part format (leaf/constant nodes)
+    if len(parts) == 2:
+        # Part 1: "<x>name (dtype)" or "name (dtype)"
+        name_part = parts[0].strip()
+        # Remove <x> prefix if present
+        name_part = re.sub(r'^<[^>]+>', '', name_part).strip()
 
-    # Part 2: "node_num [shape]"
-    shape_part = parts[1].strip()
-    shape_match = re.search(r'\[([^\]]+)\]', shape_part)
-    if shape_match:
-        shape_str = shape_match.group(1)
-        # Parse shape: "2048, 14" -> [2048, 14]
-        try:
-            shape = [int(x.strip()) for x in shape_str.split(',')]
-        except ValueError:
+        name_match = re.match(r'(.+?)\s*\(([^)]+)\)', name_part)
+        if name_match:
+            name = name_match.group(1).strip()
+            dtype = name_match.group(2).strip()
+        else:
+            name = name_part
+            dtype = "unknown"
+
+        # Part 2: "CONST num [shape]"
+        shape_part = parts[1].strip()
+        shape_match = re.search(r'\[([^\]]+)\]', shape_part)
+        if shape_match:
+            shape_str = shape_match.group(1)
+            try:
+                shape = [int(x.strip()) for x in shape_str.split(',')]
+            except ValueError:
+                shape = []
+        else:
             shape = []
+
+        # Leaf nodes have "CONST" operation
+        operation = "CONST"
+
+        return name, dtype, shape, operation
+
+    # Handle 3-part format (standard nodes)
+    elif len(parts) >= 3:
+        # Part 1: "name (dtype)"
+        name_part = parts[0].strip()
+        name_match = re.match(r'(.+?)\s*\(([^)]+)\)', name_part)
+        if name_match:
+            name = name_match.group(1).strip()
+            dtype = name_match.group(2).strip()
+        else:
+            name = name_part
+            dtype = "unknown"
+
+        # Part 2: "node_num [shape]"
+        shape_part = parts[1].strip()
+        shape_match = re.search(r'\[([^\]]+)\]', shape_part)
+        if shape_match:
+            shape_str = shape_match.group(1)
+            # Parse shape: "2048, 14" -> [2048, 14]
+            try:
+                shape = [int(x.strip()) for x in shape_str.split(',')]
+            except ValueError:
+                shape = []
+        else:
+            shape = []
+
+        # Part 3: "<x>operation"
+        op_part = parts[2].strip()
+        # Remove "<x>" prefix and any trailing whitespace
+        operation = re.sub(r'<[^>]+>', '', op_part).strip()
+
+        return name, dtype, shape, operation
+
     else:
-        shape = []
-
-    # Part 3: "<x>operation"
-    op_part = parts[2].strip()
-    # Remove "<x>" prefix and any trailing whitespace
-    operation = re.sub(r'<[^>]+>', '', op_part).strip()
-
-    return name, dtype, shape, operation
+        # Malformed label (less than 2 parts), return defaults
+        return label, "unknown", [], "unknown"
 
 
 def parse_dot_file(dot_path: str) -> Dict[str, Any]:

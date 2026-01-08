@@ -9,20 +9,18 @@ Parses /tmp/tensor_trace.bin with the NEW 256-byte format:
 - Proper GGUF offsets
 
 Usage:
-    python3 parse_trace.py                          # Show all entries
-    python3 parse_trace.py --limit 20               # Show first 20 entries
-    python3 parse_trace.py --stats                  # Show statistics
-    python3 parse_trace.py --verify                 # Verify format
-    python3 parse_trace.py --token 0 --format json --output trace-token-0.json
+    python3 parse_trace_v2.py                       # Show all entries
+    python3 parse_trace_v2.py --limit 20            # Show first 20 entries
+    python3 parse_trace_v2.py --stats               # Show statistics
+    python3 parse_trace_v2.py --verify              # Verify format
 """
 
 import struct
 import sys
 import argparse
 import json
-import os
 from pathlib import Path
-from collections import Counter
+from collections import Counter, defaultdict
 
 # === Structure Definitions (Phase 1) ===
 
@@ -40,85 +38,104 @@ HEADER_FORMAT = '<QIHHBBB5s24s'  # timestamp, token_id, layer_id, thread_id, op_
 SOURCE_FORMAT = '<20sQIHBBQI4s'  # name[20], tensor_ptr, size_bytes, layer_id, memory_source, pad1, disk_offset_or_buffer_id, tensor_idx, pad2[4]
 
 # Operation type names (ggml_op enum)
+# IMPORTANT: This MUST match the exact order in ggml/include/ggml.h
+# Last synced: 2026-01-08 from llama.cpp commit
 OPERATION_TYPES = {
     0: "NONE",
     1: "DUP",
     2: "ADD",
-    3: "MUL",
-    4: "DIV",
-    5: "SQR",
-    6: "SQRT",
-    7: "LOG",
-    8: "SIN",
-    9: "COS",
-    10: "SUM",
-    11: "SUM_ROWS",
-    12: "MEAN",
-    13: "ARGMAX",
-    14: "COUNT_EQUAL",
-    15: "REPEAT",
-    16: "REPEAT_BACK",
-    17: "CONCAT",
-    18: "SILU_BACK",
-    19: "NORM",
-    20: "RMS_NORM",
-    21: "RMS_NORM_BACK",
-    22: "GROUP_NORM",
-    23: "MUL_MAT",
-    24: "MUL_MAT_ID",
-    25: "OUT_PROD",
-    26: "SCALE",
-    27: "SET",
-    28: "CPY",
-    29: "CONT",
-    30: "RESHAPE",
-    31: "VIEW",
-    32: "PERMUTE",
-    33: "TRANSPOSE",
-    34: "GET_ROWS",
-    35: "GET_ROWS_BACK",
-    36: "DIAG",
-    37: "DIAG_MASK_INF",
-    38: "DIAG_MASK_ZERO",
-    39: "SOFT_MAX",
-    40: "SOFT_MAX_BACK",
-    41: "ROPE",
-    42: "ROPE_BACK",
-    43: "CLAMP",
-    44: "CONV_TRANSPOSE_1D",
-    45: "IM2COL",
-    46: "IM2COL_BACK",
-    47: "CONV_TRANSPOSE_2D",
-    48: "POOL_1D",
-    49: "POOL_2D",
-    50: "POOL_2D_BACK",
-    51: "UPSCALE",
-    52: "PAD",
-    53: "ARANGE",
-    54: "TIMESTEP_EMBEDDING",
-    55: "ARGSORT",
-    56: "LEAKY_RELU",
-    57: "FLASH_ATTN_EXT",
-    58: "FLASH_ATTN_BACK",
-    59: "SSM_CONV",
-    60: "SSM_SCAN",
-    61: "WIN_PART",
-    62: "WIN_UNPART",
-    63: "GET_REL_POS",
-    64: "ADD_REL_POS",
-    65: "RWKV_WKV6",
-    66: "UNARY",
-    67: "MAP_UNARY",
-    68: "MAP_BINARY",
-    69: "MAP_CUSTOM1_F32",
-    70: "MAP_CUSTOM2_F32",
-    71: "MAP_CUSTOM3_F32",
-    72: "MAP_CUSTOM1",
-    73: "MAP_CUSTOM2",
-    74: "MAP_CUSTOM3",
-    75: "CROSS_ENTROPY_LOSS",
-    76: "CROSS_ENTROPY_LOSS_BACK",
-    77: "OPT_STEP_ADAMW",
+    3: "ADD_ID",        # FIXED: Was missing, causing all subsequent ops to shift
+    4: "ADD1",          # FIXED: Was missing
+    5: "ACC",           # FIXED: Was missing
+    6: "SUB",           # FIXED: Was missing
+    7: "MUL",           # Was at position 3 (WRONG)
+    8: "DIV",
+    9: "SQR",
+    10: "SQRT",
+    11: "LOG",          # Was at position 7 (WRONG)
+    12: "SIN",
+    13: "COS",
+    14: "SUM",
+    15: "SUM_ROWS",
+    16: "CUMSUM",       # FIXED: Was missing
+    17: "MEAN",
+    18: "ARGMAX",
+    19: "COUNT_EQUAL",
+    20: "REPEAT",
+    21: "REPEAT_BACK",
+    22: "CONCAT",
+    23: "SILU_BACK",
+    24: "NORM",         # FIXED: Was at position 19
+    25: "RMS_NORM",     # Was at position 20
+    26: "RMS_NORM_BACK",
+    27: "GROUP_NORM",
+    28: "L2_NORM",      # FIXED: Was missing
+    29: "MUL_MAT",      # Was at position 23 (WRONG)
+    30: "MUL_MAT_ID",
+    31: "OUT_PROD",     # Was at position 25 (WRONG)
+    32: "SCALE",
+    33: "SET",
+    34: "CPY",
+    35: "CONT",         # Was at position 29 (WRONG)
+    36: "RESHAPE",
+    37: "VIEW",
+    38: "PERMUTE",
+    39: "TRANSPOSE",
+    40: "GET_ROWS",     # Was at position 34
+    41: "GET_ROWS_BACK",
+    42: "SET_ROWS",     # FIXED: Was missing
+    43: "DIAG",
+    44: "DIAG_MASK_INF",
+    45: "DIAG_MASK_ZERO",
+    46: "SOFT_MAX",
+    47: "SOFT_MAX_BACK",
+    48: "ROPE",
+    49: "ROPE_BACK",
+    50: "CLAMP",
+    51: "CONV_TRANSPOSE_1D",
+    52: "IM2COL",
+    53: "IM2COL_BACK",
+    54: "IM2COL_3D",    # FIXED: Was missing
+    55: "CONV_2D",      # FIXED: Was missing
+    56: "CONV_3D",      # FIXED: Was missing
+    57: "CONV_2D_DW",   # FIXED: Was missing
+    58: "CONV_TRANSPOSE_2D",  # Was at position 47
+    59: "POOL_1D",      # Was at position 48
+    60: "POOL_2D",
+    61: "POOL_2D_BACK",
+    62: "UPSCALE",
+    63: "PAD",
+    64: "PAD_REFLECT_1D",  # FIXED: Was missing
+    65: "ROLL",         # FIXED: Was missing
+    66: "ARANGE",
+    67: "TIMESTEP_EMBEDDING",
+    68: "ARGSORT",
+    69: "TOP_K",        # FIXED: Was missing
+    70: "LEAKY_RELU",
+    71: "TRI",          # FIXED: Was missing
+    72: "FILL",         # FIXED: Was missing
+    73: "FLASH_ATTN_EXT",
+    74: "FLASH_ATTN_BACK",
+    75: "SSM_CONV",
+    76: "SSM_SCAN",
+    77: "WIN_PART",
+    78: "WIN_UNPART",
+    79: "GET_REL_POS",
+    80: "ADD_REL_POS",
+    81: "RWKV_WKV6",
+    82: "GATED_LINEAR_ATTN",  # FIXED: Was missing
+    83: "RWKV_WKV7",    # FIXED: Was missing
+    84: "SOLVE_TRI",    # FIXED: Was missing
+    85: "UNARY",
+    86: "MAP_CUSTOM1",  # Was split into MAP_CUSTOM1_F32, etc. (WRONG)
+    87: "MAP_CUSTOM2",
+    88: "MAP_CUSTOM3",
+    89: "CUSTOM",       # FIXED: Was missing
+    90: "CROSS_ENTROPY_LOSS",
+    91: "CROSS_ENTROPY_LOSS_BACK",
+    92: "OPT_STEP_ADAMW",
+    93: "OPT_STEP_SGD",
+    94: "GLU",
 }
 
 
@@ -349,117 +366,96 @@ def verify_format(entries):
         return True
 
 
-def output_json(entries, output_path, token_id=None):
+def export_to_json_per_token(entries, output_dir):
     """
-    Output entries in JSON format for WebUI.
+    Export trace entries as JSON files, one per token.
 
     Args:
-        entries: List of trace entries
-        output_path: Path to output file (or None for stdout)
-        token_id: Optional token ID to filter entries
+        entries: List of parsed trace entries
+        output_dir: Directory to write JSON files (e.g., 'webui/public/data/traces/')
+
+    Returns:
+        Number of token files written
     """
-    if not entries:
-        print("No entries to export", file=sys.stderr)
-        return
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
 
-    # Filter by token if specified
-    if token_id is not None:
-        entries = [e for e in entries if e['token_id'] == token_id]
-        if not entries:
-            print(f"No entries found for token {token_id}", file=sys.stderr)
-            return
-
-    # Compute metadata
-    first_ts = entries[0]['timestamp_ns']
-    last_ts = entries[-1]['timestamp_ns']
-    duration_ms = (last_ts - first_ts) / 1_000_000
-
-    # Get unique token IDs
-    token_ids = sorted(set(e['token_id'] for e in entries))
-
-    # Use the token_id from filtered entries if single token
-    if len(token_ids) == 1:
-        metadata_token_id = token_ids[0]
-    else:
-        metadata_token_id = None
-
-    # Build JSON structure
-    trace_data = {
-        "token_id": metadata_token_id,
-        "metadata": {
-            "total_entries": len(entries),
-            "duration_ms": duration_ms,
-            "timestamp_start_ns": first_ts,
-            "format_version": "256-byte"
-        },
-        "entries": []
-    }
-
-    # Convert entries
+    # Group entries by token_id
+    entries_by_token = defaultdict(list)
     for entry in entries:
-        # Compute relative timestamp
-        timestamp_relative_ms = (entry['timestamp_ns'] - first_ts) / 1_000_000
+        token_id = entry['token_id']
+        entries_by_token[token_id].append(entry)
 
-        json_entry = {
-            "entry_id": entry['entry_num'],
-            "timestamp_ns": entry['timestamp_ns'],
-            "timestamp_relative_ms": round(timestamp_relative_ms, 3),
+    # Write one JSON file per token
+    num_files = 0
+    for token_id in sorted(entries_by_token.keys()):
+        token_entries = entries_by_token[token_id]
 
-            # Execution context
-            "token_id": entry['token_id'],
-            "layer_id": entry['layer_id'],
-            "thread_id": entry['thread_id'],
-            "phase": entry['phase'],
+        # Compute metadata for this token
+        timestamps = [e['timestamp_ns'] for e in token_entries]
+        timestamp_start = min(timestamps)
+        timestamp_end = max(timestamps)
+        duration_ms = (timestamp_end - timestamp_start) / 1_000_000  # ns -> ms
 
-            # Operation
-            "operation_type": entry['operation_name'],
+        # Format entries for JSON export
+        formatted_entries = []
+        for i, entry in enumerate(token_entries):
+            # Format sources with proper field names
+            formatted_sources = []
+            for src in entry['sources']:
+                formatted_src = {
+                    'name': src['name'],
+                    'tensor_ptr': f"0x{src['tensor_ptr']:x}",  # Format as hex string
+                    'size_bytes': src['size_bytes'],
+                    'layer_id': src['layer_id'],
+                    'memory_source': src['memory_source']
+                }
 
-            # Destination
-            "dst_name": entry['dst_name'],
+                # Add disk_offset or buffer_id based on memory source
+                if src['memory_source'] == 'DISK':
+                    formatted_src['disk_offset'] = src['disk_offset_or_buffer_id']
+                else:
+                    formatted_src['buffer_id'] = src['disk_offset_or_buffer_id']
 
-            # Sources
-            "num_sources": entry['num_sources'],
-            "sources": []
+                formatted_sources.append(formatted_src)
+
+            formatted_entry = {
+                'entry_id': i,
+                'timestamp_ns': entry['timestamp_ns'],
+                'timestamp_relative_ms': round((entry['timestamp_ns'] - timestamp_start) / 1_000_000, 3),
+                'token_id': token_id,
+                'layer_id': entry['layer_id'],
+                'thread_id': entry['thread_id'],
+                'phase': entry['phase'],
+                'operation_type': entry['operation_name'],
+                'dst_name': entry['dst_name'],
+                'num_sources': entry['num_sources'],
+                'sources': formatted_sources
+            }
+            formatted_entries.append(formatted_entry)
+
+        # Build JSON structure
+        token_json = {
+            'token_id': token_id,
+            'metadata': {
+                'total_entries': len(token_entries),
+                'duration_ms': round(duration_ms, 3),
+                'timestamp_start_ns': timestamp_start,
+                'format_version': '256-byte'
+            },
+            'entries': formatted_entries
         }
 
-        # Add source information
-        for src in entry['sources']:
-            json_src = {
-                "name": src['name'],
-                "tensor_ptr": f"0x{src['tensor_ptr']:x}",
-                "size_bytes": src['size_bytes'],
-                "layer_id": src['layer_id'],
-                "memory_source": src['memory_source'],
-            }
+        # Write to file
+        output_file = output_path / f"token-{token_id:05d}.json"
+        with open(output_file, 'w') as f:
+            json.dump(token_json, f, indent=2)
 
-            # Add offset or buffer ID depending on memory source
-            if src['memory_source'] == 'DISK':
-                json_src['disk_offset'] = src['disk_offset_or_buffer_id']
-            else:
-                json_src['buffer_id'] = src['disk_offset_or_buffer_id']
+        file_size_kb = output_file.stat().st_size / 1024
+        print(f"✓ Token {token_id:5d}: {len(token_entries):4d} entries → {output_file} ({file_size_kb:.1f} KB)")
+        num_files += 1
 
-            if src['tensor_idx'] is not None:
-                json_src['tensor_idx'] = src['tensor_idx']
-
-            json_entry['sources'].append(json_src)
-
-        trace_data["entries"].append(json_entry)
-
-    # Write output
-    if output_path:
-        output_dir = os.path.dirname(output_path)
-        if output_dir and not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-            print(f"Created directory: {output_dir}")
-
-        with open(output_path, 'w') as f:
-            json.dump(trace_data, f, indent=2)
-        print(f"✓ Exported {len(entries)} entries to: {output_path}")
-        print(f"  File size: {os.path.getsize(output_path) / 1024:.1f} KB")
-    else:
-        # Output to stdout
-        json.dump(trace_data, sys.stdout, indent=2)
-        print()  # Newline after JSON
+    return num_files
 
 
 def main():
@@ -472,12 +468,8 @@ def main():
                         help='Show statistics')
     parser.add_argument('--verify', action='store_true',
                         help='Verify format correctness')
-    parser.add_argument('--token', type=int, default=None,
-                        help='Filter by token ID')
-    parser.add_argument('--format', type=str, choices=['text', 'json'], default='text',
-                        help='Output format: text (default) or json')
-    parser.add_argument('--output', type=str, default=None,
-                        help='Output file (default: stdout)')
+    parser.add_argument('--export-json', type=str, metavar='OUTPUT_DIR',
+                        help='Export entries to JSON files per token (e.g., webui/public/data/traces/)')
 
     args = parser.parse_args()
 
@@ -517,22 +509,18 @@ def main():
         return 1
 
     # Execute requested action
-    if args.verify:
+    if args.export_json:
+        print(f"\nExporting to JSON (grouped by token)...")
+        num_files = export_to_json_per_token(entries, args.export_json)
+        print(f"\n✓ Exported {num_files} token files to {args.export_json}")
+    elif args.verify:
         verify_format(entries)
     elif args.stats:
         show_statistics(entries)
-    elif args.format == 'json':
-        output_json(entries, args.output, args.token)
     else:
-        # Text format
-        filtered_entries = entries
-        if args.token is not None:
-            filtered_entries = [e for e in entries if e['token_id'] == args.token]
-            print(f"Filtered to {len(filtered_entries)} entries for token {args.token}\n")
-
-        display_entries(filtered_entries, args.limit if args.limit > 0 else 10)
-        if args.limit == 0 and len(filtered_entries) > 10:
-            print(f"\n... ({len(filtered_entries) - 10} more entries, use --limit to show more)")
+        display_entries(entries, args.limit if args.limit > 0 else 10)
+        if args.limit == 0:
+            print(f"\n... ({len(entries) - 10} more entries, use --limit to show more)")
 
     return 0
 

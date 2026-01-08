@@ -338,7 +338,7 @@ static struct ggml_cgraph * llm_build_deepseek(
             model.layers[il].wq,    // Q weight [n_embd × n_embd]
             cur                     // Input [n_tokens × n_embd]
         );
-        // 🎣 HOOK TRIGGERS DURING EXECUTION (not now!)
+        // HOOK TRIGGERS DURING EXECUTION (not now!)
 
         struct ggml_tensor * Kcur = ggml_mul_mat(ctx, model.layers[il].wk, cur);
         struct ggml_tensor * Vcur = ggml_mul_mat(ctx, model.layers[il].wv, cur);
@@ -507,7 +507,7 @@ static void ggml_compute_forward_mul_mat(
             entry.tensor_ptr = (uint64_t)src0->data;
             strncpy(entry.tensor_name, src0->name, 63);
             entry.layer_id = tensor_trace_extract_layer_id(src0->name);
-            tensor_trace_log(&entry);  // 📝 Write to /tmp/tensor_trace.bin
+            tensor_trace_log(&entry);  //  Write to /tmp/tensor_trace.bin
         }
     #endif
     // ============================================

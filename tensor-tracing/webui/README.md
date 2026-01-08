@@ -1,44 +1,99 @@
-# Tensor Trace Visualizer - WebUI
+# Tensor Trace Visualizer
 
-Interactive 4-view visualization tool for analyzing llama.cpp tensor tracing and computation graphs.
+Interactive visualization for analyzing tensor tracing and computation graphs.
 
-## Features
+**Status**: 🚧 Early development - Basic 4-view layout works, major improvements planned
 
-**4 Synchronized Views:**
-1. **Computation Graph** (Top-left) - Interactive graph visualization with Cytoscape.js
-2. **Timeline & Trace** (Top-right) - Animated timeline with trace table
-3. **Memory Heatmap** (Bottom-left) - GGUF file access visualization
-4. **3D Transformer** (Bottom-right) - 3D transformer architecture
+---
 
-## Tech Stack
+## Current Features
 
-- **Framework:** React 18 + TypeScript 5.3 + Vite 5.0
-- **State:** Zustand 4.5 (global state management)
-- **Styling:** Tailwind CSS 3.4
-- **Graph:** Cytoscape.js 3.28
-- **3D:** React Three Fiber 8.15 + Three.js
-- **Virtual Scrolling:** react-window 1.8
+**4-Panel Layout**:
+1. Computation Graph (Cytoscape.js)
+2. Timeline & Trace table
+3. Memory Heatmap (basic)
+4. 3D Transformer (placeholder)
+
+**Working**: Load JSON, token selector, click nodes, view trace, basic zoom/pan
+
+---
+
+## Quick Start
+
+```bash
+# 1. Generate data
+cd ..
+python3 run_experiment.py
+
+# 2. Install & run
+cd webui
+npm install
+npm run dev  # → http://localhost:5173
+```
+
+---
+
+## Data Structure
+
+Expects in `public/data/`:
+- `memory-map.json` - GGUF structure (201 tensors)
+- `buffer-timeline.json` - Buffer alloc/dealloc events
+- `graphs/token-*.json` - Computation graphs per token
+- `traces/token-*.json` - Trace entries per token
+
+---
+
+## Planned Improvements
+
+### High Priority
+- Full-screen horizontal views (toggle minimize/maximize)
+- Heatmap overhaul (dual-track DISK/BUFFER, magnification, click-to-filter)
+- Timeline playback (play/pause/step)
+- View synchronization
+
+### Medium Priority
+- Virtual scrolling for trace table
+- 3D transformer model
+- Layer-based filtering
+- Performance optimization
+
+---
+
+## Known Issues
+
+1. **Token ID bug**: All traces show token_id=0 (C code issue)
+2. **Graph performance**: Slow with 700+ nodes
+3. **Heatmap**: Hard to identify small tensors
+4. **No correlation**: Views not synchronized yet
+
+---
 
 ## Development
 
 ```bash
-# Install dependencies
-npm install
-
-# Start dev server (running on http://localhost:5173/)
-npm run dev
-
-# Build for production
-npm run build
+npm install        # Dependencies
+npm run dev        # Dev server
+npm run build      # Production build
+npm run preview    # Preview build
 ```
 
-## Current Status
+---
 
-✅ Phase 0: Preprocessing tools - COMPLETE
-✅ Phase 1: React + TypeScript + Vite setup - COMPLETE
-⏳ Phase 2: View 1 - Computation Graph
-⏳ Phase 3: View 2 - Timeline & Trace
-⏳ Phase 4: View 3 - Memory Heatmap
-⏳ Phase 5: View 4 - 3D Transformer
+## Roadmap
 
-See `../WEBUI.md` for complete implementation plan.
+**Phase 1** (Now): ✅ Basic 4-panel layout
+
+**Phase 2** (2-4 weeks): Full-screen views, heatmap improvements, timeline playback
+
+**Phase 3** (1-2 months): 3D model, advanced correlation, virtual scrolling
+
+**Phase 4** (Future): Export/compare experiments, real-time tracing
+
+---
+
+## Documentation
+
+- [Tensor Tracing README](../README.md) - Technical details
+- [Setup Guide](../setup.md) - Build & run
+- [Main README](../../README.md) - Project overview
+- [Journal](../../journal/) - Development history

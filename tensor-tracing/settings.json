@@ -1,0 +1,17 @@
+{
+  "experiment": {
+    "model_path": "tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf",
+    "tokens_to_generate": 1,
+    "prompt": "Hello world"
+  },
+  "paths": {
+    "llama_cpp_dir": "../../llama.cpp",
+    "llama_binary": "build/bin/llama-completion",
+    "webui_data_dir": "webui/public/data"
+  },
+  "temp_files": {
+    "trace_bin": "/tmp/tensor_trace.bin",
+    "buffer_stats": "/tmp/buffer_stats.jsonl",
+    "graphs_dir": "/tmp/graphs"
+  }
+}
