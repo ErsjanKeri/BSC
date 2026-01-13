@@ -31,9 +31,7 @@ export function TraceView({ isFullScreen }: TraceViewProps) {
   } = useAppStore();
 
   const [filteredEntries, setFilteredEntries] = useState<TraceEntry[]>([]);
-  const [hoveredEntry, setHoveredEntry] = useState<{ entry: TraceEntry; x: number; y: number } | null>(null);
   const [hoveredSources, setHoveredSources] = useState<{ entry: TraceEntry; x: number; y: number } | null>(null);
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const sourcesHoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Filter trace entries based on current filters
@@ -78,36 +76,17 @@ export function TraceView({ isFullScreen }: TraceViewProps) {
     setTimelinePosition(entry.timestamp_relative_ms);
   };
 
-  // Handle hover with delay
-  const handleRowHover = (entry: TraceEntry, event: React.MouseEvent) => {
-    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
-
-    hoverTimeoutRef.current = setTimeout(() => {
-      const rect = event.currentTarget.getBoundingClientRect();
-      setHoveredEntry({
-        entry,
-        x: rect.left + 20,
-        y: rect.top,
-      });
-    }, 200); // 200ms delay
-  };
-
-  const handleRowLeave = () => {
-    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
-    setHoveredEntry(null);
-  };
-
-  // Handle sources column hover
+  // Handle sources column hover (150ms delay)
   const handleSourcesHover = (entry: TraceEntry, event: React.MouseEvent) => {
     if (sourcesHoverTimeoutRef.current) clearTimeout(sourcesHoverTimeoutRef.current);
 
+    // Extract rect BEFORE setTimeout (React events are pooled!)
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = rect.left;
+    const y = rect.bottom + 8;
+
     sourcesHoverTimeoutRef.current = setTimeout(() => {
-      const rect = event.currentTarget.getBoundingClientRect();
-      setHoveredSources({
-        entry,
-        x: rect.left,
-        y: rect.bottom + 8,
-      });
+      setHoveredSources({ entry, x, y });
     }, 150);
   };
 
@@ -119,7 +98,6 @@ export function TraceView({ isFullScreen }: TraceViewProps) {
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
-      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
       if (sourcesHoverTimeoutRef.current) clearTimeout(sourcesHoverTimeoutRef.current);
     };
   }, []);
@@ -161,14 +139,12 @@ export function TraceView({ isFullScreen }: TraceViewProps) {
       <div
         style={{ height: '26px', ...style }}
         onClick={() => handleTraceClick(entry)}
-        onMouseEnter={(e) => handleRowHover(entry, e)}
-        onMouseLeave={handleRowLeave}
         className={`
           flex items-center gap-2 px-3 text-xs font-mono border-b border-gray-800 cursor-pointer transition-colors
           ${isSelected ? 'bg-blue-900/50 border-l-2 border-l-blue-500' : 'hover:bg-gray-800'}
           ${isActive ? 'bg-amber-900/30' : ''}
         `}
-        title="Hover for details • Click to select"
+        title="Click to select • Hover sources column for details"
       >
         {/* Correlation indicator */}
         <span className={`w-4 ${hasGraphNode ? 'text-green-400' : 'text-gray-700'}`}>
@@ -297,71 +273,10 @@ export function TraceView({ isFullScreen }: TraceViewProps) {
         ))}
       </div>
 
-      {/* Hover Tooltip - Beautiful Detailed Card */}
-      {hoveredEntry && (
-        <div
-          className="fixed z-50 w-[480px] bg-gray-900/98 border-2 border-gray-600 rounded-lg shadow-2xl p-4 space-y-3 pointer-events-none"
-          style={{
-            left: `${Math.min(hoveredEntry.x, window.innerWidth - 500)}px`,
-            top: `${hoveredEntry.y}px`,
-          }}
-        >
-          {/* Destination Section */}
-          <div>
-            <div className="text-yellow-400 font-semibold text-xs mb-1">DESTINATION:</div>
-            <div className="text-yellow-200 font-mono text-sm">{hoveredEntry.entry.dst_name}</div>
-          </div>
-
-          {/* Sources Section */}
-          <div>
-            <div className="text-blue-400 font-semibold text-xs mb-1">
-              SOURCES ({hoveredEntry.entry.sources.length}):
-            </div>
-            {hoveredEntry.entry.sources.length === 0 ? (
-              <div className="text-gray-500 text-xs italic ml-4">No source tensors</div>
-            ) : (
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {hoveredEntry.entry.sources.map((source, idx) => (
-                  <div key={idx} className="ml-4">
-                    <div className="text-white font-mono text-xs mb-1">
-                      [{idx}] {source.name}
-                    </div>
-                    <div className="flex items-center gap-3 text-[10px] ml-4 flex-wrap">
-                      <span className={`px-2 py-0.5 rounded font-semibold ${
-                        source.memory_source === 'DISK'
-                          ? 'bg-blue-900 text-blue-300'
-                          : 'bg-green-900 text-green-300'
-                      }`}>
-                        {source.memory_source}
-                      </span>
-                      <span className="text-gray-300">{formatSize(source.size_bytes)}</span>
-                      {source.memory_source === 'DISK' && source.disk_offset !== undefined && (
-                        <span className="text-blue-400">offset: 0x{source.disk_offset.toString(16)}</span>
-                      )}
-                      {source.memory_source === 'BUFFER' && source.buffer_id !== undefined && (
-                        <span className="text-green-400">buffer: 0x{source.buffer_id.toString(16)}</span>
-                      )}
-                      {source.layer_id !== null && (
-                        <span className="text-purple-400">L{source.layer_id}</span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Total Size */}
-          <div className="text-gray-500 text-xs border-t border-gray-700 pt-2">
-            Total input size: {formatSize(hoveredEntry.entry.sources.reduce((sum, s) => sum + s.size_bytes, 0))}
-          </div>
-        </div>
-      )}
-
       {/* Sources Hover Tooltip - Beautiful Detailed Card (Same as your screenshot!) */}
       {hoveredSources && (
         <div
-          className="fixed z-50 w-[520px] bg-blue-950/98 border-2 border-blue-600 rounded-lg shadow-2xl p-4 space-y-3 pointer-events-none"
+          className="fixed z-50 w-[520px] bg-blue-950 border-2 border-blue-600 rounded-lg shadow-2xl p-4 space-y-3 pointer-events-none"
           style={{
             left: `${Math.min(hoveredSources.x, window.innerWidth - 540)}px`,
             top: `${hoveredSources.y}px`,
