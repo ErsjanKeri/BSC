@@ -1,12 +1,12 @@
 {
   "experiment": {
-    "model_path": "TinyLlama-1.1B-Chat-v1.0-f16.gguf",
+    "model_path": "/home/keri/BSC/llama.cpp/models/gpt-oss-20b-F16.gguf",
     "tokens_to_generate": 1,
     "prompt": "Hello world",
     "n_predict": 1
   },
   "paths": {
-    "llama_cpp_dir": "../../llama.cpp",
+    "llama_cpp_dir": "/home/keri/llama.cpp",
     "llama_binary": "build/bin/llama-completion",
     "webui_data_dir": "webui/public/data"
   },
