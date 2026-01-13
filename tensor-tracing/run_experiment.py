@@ -288,6 +288,7 @@ def parse_gguf_to_memory_map(paths):
             'python3',
             str(parse_csv_script),
             '--csv', str(csv_path),
+            '--gguf-file', str(paths['model_file']),  # NEW: Pass GGUF file for offset calculation
             '--output', str(output_path)
         ],
         capture_output=True,

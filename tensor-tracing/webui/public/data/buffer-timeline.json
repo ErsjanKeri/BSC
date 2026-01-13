@@ -11,22 +11,22 @@
   },
   "buffers": [
     {
-      "id": 4360295264,
+      "id": 4378887104,
       "name": "KVCache_CPU",
       "size": 46137344,
       "backend": "CPU",
       "usage": 2,
       "usage_name": "COMPUTE",
       "layer": 65535,
-      "alloc_time_ms": 1753464730.445,
+      "alloc_time_ms": 283667103.164,
       "dealloc_time_ms": null
     }
   ],
   "timeline": [
     {
-      "timestamp_ms": 1753464730.445,
+      "timestamp_ms": 283667103.164,
       "event": "alloc",
-      "buffer_id": 4360295264,
+      "buffer_id": 4378887104,
       "buffer_name": "KVCache_CPU",
       "size": 46137344,
       "cumulative_size": 46137344,

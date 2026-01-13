@@ -498,7 +498,7 @@ def main():
     expected_entries = file_size // ENTRY_SIZE
     print(f"Trace file: {trace_path}")
     print(f"File size: {file_size / (1024*1024):.2f} MB ({file_size} bytes)")
-    print(f"Expected entries: {expected_entries} (at 256 bytes each)\n")
+    print(f"Expected entries: {expected_entries} (at 1024 bytes each)\n")
 
     # Parse entries
     entries = []

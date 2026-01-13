@@ -21,6 +21,68 @@ import type {
   FilterState,
 } from '../types/data';
 
+// ============================================================================
+// Helper Functions for Name-Based Correlation
+// ============================================================================
+
+/**
+ * Normalize tensor name by removing common suffixes.
+ *
+ * Examples:
+ *   "Qcur-0 (view)" → "Qcur-0"
+ *   "cache_k_l0 (view) (permuted)" → "cache_k_l0"
+ *   "blk.5.attn_q.weight" → "blk.5.attn_q.weight" (unchanged)
+ *
+ * @param name - Tensor name to normalize
+ * @returns Normalized name (base name without suffixes)
+ */
+function normalizeTensorName(name: string): string {
+  if (!name) return '';
+
+  // Remove common suffixes: (view), (reshaped), (permuted), (copy)
+  return name
+    .replace(/\s*\(view\)/g, '')
+    .replace(/\s*\(reshaped\)/g, '')
+    .replace(/\s*\(permuted\)/g, '')
+    .replace(/\s*\(copy\)/g, '')
+    .trim();
+}
+
+/**
+ * Try to match a tensor name from trace with a graph node.
+ * Handles name variations due to views, reshapes, etc.
+ *
+ * @param traceName - Tensor name from trace
+ * @param graphNodes - Array of graph nodes
+ * @returns Matching graph node or null
+ */
+function findMatchingGraphNode(traceName: string, graphNodes: any[]): any {
+  // Strategy 1: Exact match
+  const exactMatch = graphNodes.find(n => n.label === traceName);
+  if (exactMatch) return exactMatch;
+
+  // Strategy 2: Normalized match (strip suffixes)
+  const normalizedTrace = normalizeTensorName(traceName);
+  const normalizedMatch = graphNodes.find(n =>
+    normalizeTensorName(n.label) === normalizedTrace
+  );
+  if (normalizedMatch) return normalizedMatch;
+
+  // Strategy 3: Prefix match (trace name might be longer with suffixes)
+  const prefixMatch = graphNodes.find(n =>
+    traceName.startsWith(n.label) || n.label.startsWith(traceName)
+  );
+  if (prefixMatch) return prefixMatch;
+
+  return null;
+}
+
+// View types for layout management
+export type ViewType = 'graph' | 'trace' | 'heatmap';
+
+// Heatmap visualization modes
+export type HeatmapMode = 'total-accumulated' | 'current-layer';
+
 interface AppStore {
   // ========================================================================
   // Data State
@@ -40,7 +102,14 @@ interface AppStore {
   hoveredNode: string | null           // Node ID being hovered
   timeline: TimelineState
   filters: FilterState
-  fullScreenView: 'graph' | 'trace' | 'heatmap' | 'transformer' | null  // Which view is full-screen
+  fullScreenView: ViewType | null  // Which view is full-screen
+
+  // Layout state for drag & drop
+  visibleViews: ViewType[]         // Which views are currently shown
+  viewOrder: ViewType[]            // Order of views for rendering
+
+  // Heatmap visualization mode
+  heatmapMode: HeatmapMode         // 'total-accumulated' | 'current-layer'
 
   // ========================================================================
   // Loading State
@@ -83,7 +152,18 @@ interface AppStore {
   // ========================================================================
   // Actions - Full-Screen Mode
   // ========================================================================
-  setFullScreen: (view: 'graph' | 'trace' | 'heatmap' | 'transformer' | null) => void
+  setFullScreen: (view: ViewType | null) => void
+
+  // ========================================================================
+  // Actions - Layout Management
+  // ========================================================================
+  toggleView: (view: ViewType) => void       // Show/hide a view
+  reorderViews: (newOrder: ViewType[]) => void  // Reorder views via drag & drop
+
+  // ========================================================================
+  // Actions - Heatmap Mode
+  // ========================================================================
+  setHeatmapMode: (mode: HeatmapMode) => void  // Toggle between heatmap modes
 }
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -114,6 +194,13 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   fullScreenView: null,
+
+  // Layout state - all 3 views visible by default in order: graph, trace, heatmap
+  visibleViews: ['graph', 'trace', 'heatmap'],
+  viewOrder: ['graph', 'trace', 'heatmap'],
+
+  // Heatmap mode - default to total accumulated
+  heatmapMode: 'total-accumulated',
 
   isLoading: false,
   loadingError: null,
@@ -196,34 +283,62 @@ export const useAppStore = create<AppStore>((set, get) => ({
       return;
     }
 
-    // Build address → node mapping
-    const addressToNode = new Map<string, typeof graphData.nodes[0]>();
-    graphData.nodes.forEach(node => {
-      addressToNode.set(node.address, node);
-    });
+    console.log('Building NAME-BASED correlation index...');
 
-    // Build address → trace entries mapping (NEW: handle multi-source entries)
-    // Each source tensor in an entry gets mapped to that entry
-    const addressToTraces = new Map<string, typeof traceData.entries>();
-    traceData.entries.forEach(entry => {
-      // Map each source tensor to this entry
-      entry.sources.forEach(source => {
-        const existing = addressToTraces.get(source.tensor_ptr) || [];
-        addressToTraces.set(source.tensor_ptr, [...existing, entry]);
-      });
-    });
-
-    // Build node ID → memory tensor mapping (by tensor name)
-    const nodeToMemory = new Map<string, typeof memoryMap.tensors[0]>();
-    const tensorNameMap = new Map(memoryMap.tensors.map(t => [t.name, t]));
+    // Build tensor name → graph node mapping
+    const nameToGraphNode = new Map<string, typeof graphData.nodes[0]>();
     graphData.nodes.forEach(node => {
-      const memTensor = tensorNameMap.get(node.label);
-      if (memTensor) {
-        nodeToMemory.set(node.id, memTensor);
+      // Store both exact name and normalized name
+      nameToGraphNode.set(node.label, node);
+      const normalized = normalizeTensorName(node.label);
+      if (normalized !== node.label) {
+        // Also map normalized name (for fuzzy matching)
+        nameToGraphNode.set(normalized, node);
       }
     });
 
-    // Build layer → nodes mapping
+    // Build tensor name → trace entries mapping (NAME-BASED, not address!)
+    // Each source tensor name maps to all trace entries that accessed it
+    const nameToTraces = new Map<string, typeof traceData.entries>();
+    traceData.entries.forEach(entry => {
+      // Map destination tensor
+      const dstName = entry.dst_name;
+      if (dstName) {
+        const existing = nameToTraces.get(dstName) || [];
+        nameToTraces.set(dstName, [...existing, entry]);
+
+        // Also map normalized name
+        const normalized = normalizeTensorName(dstName);
+        if (normalized !== dstName) {
+          const existingNorm = nameToTraces.get(normalized) || [];
+          nameToTraces.set(normalized, [...existingNorm, entry]);
+        }
+      }
+
+      // Map each source tensor to this entry
+      entry.sources.forEach(source => {
+        const srcName = source.name;
+        if (srcName) {
+          const existing = nameToTraces.get(srcName) || [];
+          nameToTraces.set(srcName, [...existing, entry]);
+
+          // Also map normalized name
+          const normalized = normalizeTensorName(srcName);
+          if (normalized !== srcName) {
+            const existingNorm = nameToTraces.get(normalized) || [];
+            nameToTraces.set(normalized, [...existingNorm, entry]);
+          }
+        }
+      });
+    });
+
+    // Build tensor name → memory tensor mapping (GGUF weights only)
+    const nameToMemory = new Map<string, typeof memoryMap.tensors[0]>();
+    memoryMap.tensors.forEach(tensor => {
+      nameToMemory.set(tensor.name, tensor);
+    });
+
+    // Build layer → nodes mapping (unchanged)
     const layerToNodes = new Map<number, typeof graphData.nodes>();
     graphData.nodes.forEach(node => {
       if (node.layer_id !== null) {
@@ -232,35 +347,43 @@ export const useAppStore = create<AppStore>((set, get) => ({
       }
     });
 
-    // Build time index for animation (NEW: get addresses from sources)
+    // Build time index for animation (NAME-BASED)
     const timestamps = traceData.entries.map(e => e.timestamp_relative_ms);
-    const activeNodes = traceData.entries.map(entry => {
-      // Get all nodes involved in this entry (from all sources)
-      const nodeIds: string[] = [];
+    const activeNodeNames = traceData.entries.map(entry => {
+      // Get all tensor names involved in this entry
+      const names: string[] = [];
+
+      // Add destination
+      if (entry.dst_name) {
+        names.push(entry.dst_name);
+      }
+
+      // Add all sources
       entry.sources.forEach(source => {
-        const node = addressToNode.get(source.tensor_ptr);
-        if (node) {
-          nodeIds.push(node.id);
+        if (source.name) {
+          names.push(source.name);
         }
       });
-      return nodeIds;
+
+      return names;
     });
 
     const correlationIndex: CorrelationIndex = {
-      addressToNode,
-      addressToTraces,
-      nodeToMemory,
+      nameToGraphNode,
+      nameToTraces,
+      nameToMemory,
       layerToNodes,
       timeIndex: {
         timestamps,
-        activeNodes,
+        activeNodeNames,
       },
     };
 
     set({ correlationIndex });
-    console.log('Correlation index built:', {
-      nodes: addressToNode.size,
-      traces: addressToTraces.size,
+    console.log('✓ NAME-BASED correlation index built:', {
+      graphNodes: nameToGraphNode.size,
+      traceEntries: nameToTraces.size,
+      memoryTensors: nameToMemory.size,
       layers: layerToNodes.size,
     });
   },
@@ -272,9 +395,12 @@ export const useAppStore = create<AppStore>((set, get) => ({
   selectNode: (node) => {
     set({ selectedNode: node });
 
-    // If a node is selected, also update timeline to first trace of this node
+    // If a node is selected, also update timeline to first trace of this tensor
     if (node && get().correlationIndex) {
-      const traces = get().correlationIndex!.addressToTraces.get(node.address);
+      const index = get().correlationIndex!;
+
+      // Try to find traces for this tensor by name
+      const traces = index.nameToTraces.get(node.label);
       if (traces && traces.length > 0) {
         set({
           timeline: {
@@ -282,6 +408,22 @@ export const useAppStore = create<AppStore>((set, get) => ({
             currentTime: traces[0].timestamp_relative_ms,
           },
         });
+        console.log(`✓ Found ${traces.length} traces for node '${node.label}'`);
+      } else {
+        // Try normalized name
+        const normalized = normalizeTensorName(node.label);
+        const tracesNorm = index.nameToTraces.get(normalized);
+        if (tracesNorm && tracesNorm.length > 0) {
+          set({
+            timeline: {
+              ...get().timeline,
+              currentTime: tracesNorm[0].timestamp_relative_ms,
+            },
+          });
+          console.log(`✓ Found ${tracesNorm.length} traces for normalized '${normalized}'`);
+        } else {
+          console.log(`⚠️  No traces found for '${node.label}'`);
+        }
       }
     }
   },
@@ -290,38 +432,46 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set({ selectedTrace: trace });
 
     // If a trace is selected, try to highlight corresponding node in graph
-    if (trace && trace.sources && trace.sources.length > 0 && get().correlationIndex) {
+    if (trace && get().correlationIndex) {
       const index = get().correlationIndex!;
       let foundNode = null;
 
-      // Strategy 1: Try to find by address (from any source)
-      for (const source of trace.sources) {
-        const node = index.addressToNode.get(source.tensor_ptr);
-        if (node) {
-          foundNode = node;
-          console.log('✓ Trace→Graph correlation (by address):', {
+      // Try to find graph node by NAME (check destination first, then sources)
+      // Check destination tensor
+      if (trace.dst_name) {
+        foundNode = index.nameToGraphNode.get(trace.dst_name);
+        if (foundNode) {
+          console.log('✓ Trace→Graph correlation (dst exact):', {
             trace_entry: trace.entryId,
-            source: source.name,
-            graph_node: node.label,
-            node_id: node.id,
+            dst_name: trace.dst_name,
+            graph_node: foundNode.label,
           });
-          break;
         }
       }
 
-      // Strategy 2: Try to find by tensor name (fallback)
-      if (!foundNode && get().graphData) {
-        const graphData = get().graphData!;
+      // Check sources if destination not found
+      if (!foundNode && trace.sources) {
         for (const source of trace.sources) {
-          // Try exact match
-          const matchByName = graphData.nodes.find(n => n.label === source.name);
-          if (matchByName) {
-            foundNode = matchByName;
-            console.log('✓ Trace→Graph correlation (by name):', {
+          // Try exact name match
+          foundNode = index.nameToGraphNode.get(source.name);
+          if (foundNode) {
+            console.log('✓ Trace→Graph correlation (source exact):', {
               trace_entry: trace.entryId,
               source: source.name,
-              graph_node: matchByName.label,
-              node_id: matchByName.id,
+              graph_node: foundNode.label,
+            });
+            break;
+          }
+
+          // Try normalized match
+          const normalized = normalizeTensorName(source.name);
+          foundNode = index.nameToGraphNode.get(normalized);
+          if (foundNode) {
+            console.log('✓ Trace→Graph correlation (source normalized):', {
+              trace_entry: trace.entryId,
+              source: source.name,
+              normalized,
+              graph_node: foundNode.label,
             });
             break;
           }
@@ -337,11 +487,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
             label: foundNode.label,
             layer_id: foundNode.layer_id,
           },
-        });
-      } else {
-        console.log('⚠ Trace→Graph correlation failed:', {
-          trace_entry: trace.entryId,
-          sources: trace.sources.map(s => s.name),
         });
       }
     }
@@ -448,5 +593,39 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   setFullScreen: (view) => {
     set({ fullScreenView: view });
+  },
+
+  // ========================================================================
+  // Layout Management Actions
+  // ========================================================================
+
+  toggleView: (view) => {
+    const { visibleViews } = get();
+
+    if (visibleViews.includes(view)) {
+      // Remove view
+      const newVisible = visibleViews.filter(v => v !== view);
+      set({ visibleViews: newVisible });
+      console.log(`✓ View '${view}' hidden. Visible: [${newVisible.join(', ')}]`);
+    } else {
+      // Add view back
+      const newVisible = [...visibleViews, view];
+      set({ visibleViews: newVisible });
+      console.log(`✓ View '${view}' shown. Visible: [${newVisible.join(', ')}]`);
+    }
+  },
+
+  reorderViews: (newOrder) => {
+    set({ viewOrder: newOrder });
+    console.log(`✓ Views reordered: [${newOrder.join(', ')}]`);
+  },
+
+  // ========================================================================
+  // Heatmap Mode Actions
+  // ========================================================================
+
+  setHeatmapMode: (mode) => {
+    set({ heatmapMode: mode });
+    console.log(`✓ Heatmap mode changed to: ${mode}`);
   },
 }));

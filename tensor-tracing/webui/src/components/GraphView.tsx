@@ -48,19 +48,10 @@ export function GraphView({ isFullScreen }: GraphViewProps) {
     setHoveredNode,
     timeline,
     correlationIndex,
-    setFullScreen,
   } = useAppStore();
 
-  // Auto-switch layer view based on full-screen mode
-  useEffect(() => {
-    if (isFullScreen) {
-      // Full screen: show all layers
-      setSelectedLayer('all');
-    } else {
-      // Small screen: show Layer 0
-      setSelectedLayer(0);
-    }
-  }, [isFullScreen]);
+  // Keep the selected layer persistent across layout changes
+  // (User can manually change layer using dropdown)
 
   /**
    * Get nodes for a specific layer, including connected N/A nodes and previous layer outputs
@@ -379,12 +370,16 @@ export function GraphView({ isFullScreen }: GraphViewProps) {
       }
     }
 
-    // Highlight active nodes
-    const activeNodeIds = timeIndex.activeNodes[closestIndex] || [];
-    activeNodeIds.forEach(nodeId => {
-      const node = cy.getElementById(nodeId);
-      if (node) {
-        node.addClass('highlighted');
+    // Highlight active nodes (NAME-BASED now!)
+    const activeNames = timeIndex.activeNodeNames[closestIndex] || [];
+    activeNames.forEach(tensorName => {
+      // Find graph node with this tensor name
+      const graphNode = correlationIndex.nameToGraphNode.get(tensorName);
+      if (graphNode) {
+        const node = cy.getElementById(graphNode.id);
+        if (node) {
+          node.addClass('highlighted');
+        }
       }
     });
   }, [timeline.currentTime, correlationIndex]);
@@ -452,17 +447,6 @@ export function GraphView({ isFullScreen }: GraphViewProps) {
               <option value="all">All Layers</option>
             </select>
           </div>
-
-          {!isFullScreen && (
-            <button
-              onClick={() => setFullScreen('graph')}
-              className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded"
-              title="Enter full-screen mode"
-            >
-              ⛶ Full Screen
-            </button>
-          )}
-     
         </div>
       </div>
 
@@ -536,7 +520,7 @@ export function GraphView({ isFullScreen }: GraphViewProps) {
                 <span className="text-gray-400 text-sm">
                   Trace entries:{' '}
                   <span className="text-white font-semibold">
-                    {correlationIndex.addressToTraces.get(selectedNodeInfo.address)?.length || 0}
+                    {correlationIndex.nameToTraces.get(selectedNodeInfo.label)?.length || 0}
                   </span>
                 </span>
               </div>

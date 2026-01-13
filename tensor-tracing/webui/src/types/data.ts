@@ -13,7 +13,7 @@
 
 export interface GraphNode {
   id: string                  // "node_0", "node_1", ...
-  address: string             // "0x15001a8c0" (CORRELATION KEY)
+  address: string             // "0x15001a8c0" - Address of ggml_tensor STRUCT (NOT data buffer!)
   label: string               // Tensor name: "inp_embd", "Qcur-0", "blk.0.attn_q"
   operation: string           // Operation: "GET_ROWS", "MUL_MAT", "ROPE", "ADD"
   shape: number[]             // Tensor shape: [2048, 14], [1, 1, 2048, 14]
@@ -43,16 +43,16 @@ export interface GraphData {
 }
 
 // ============================================================================
-// Trace Data (from parse_trace.py) - NEW 256-byte format
+// Trace Data (from parse_trace.py) - 1024-byte format with 128-byte names
 // ============================================================================
 
 export interface SourceTensorInfo {
-  name: string                     // Source tensor name (may be truncated to 20 chars)
-  tensor_ptr: string               // Memory address: "0x15001a8c0"
+  name: string                     // Source tensor name - FULL NAME (128 bytes, no truncation!)
+  tensor_ptr: string               // Memory address of tensor->data buffer: "0x15001a8c0"
   size_bytes: number               // Size of tensor in bytes
   layer_id: number | null          // Layer ID or null
-  memory_source: "DISK" | "BUFFER" // Memory source type (NEW!)
-  disk_offset?: number             // If DISK: offset in GGUF file
+  memory_source: "DISK" | "BUFFER" // Memory source type
+  disk_offset?: number             // If DISK: absolute offset in GGUF file
   buffer_id?: number               // If BUFFER: buffer identifier
   tensor_idx?: number | null       // Tensor index in registry (optional)
 }
@@ -83,7 +83,7 @@ export interface TraceMetadata {
   total_entries: number            // Number of trace entries
   duration_ms: number              // Total execution time
   timestamp_start_ns: number       // First timestamp
-  format_version: string           // Format version: "256-byte"
+  format_version: string           // Format version: "1024-byte"
 }
 
 export interface TraceData {
@@ -195,18 +195,18 @@ export interface BufferTimeline {
 }
 
 // ============================================================================
-// Correlation Index Types
+// Correlation Index Types - NAME-BASED (addresses don't match!)
 // ============================================================================
 
 export interface CorrelationIndex {
-  // Address → Node mapping (for graph highlighting from trace)
-  addressToNode: Map<string, GraphNode>
+  // Tensor name → Graph node (for highlighting from trace)
+  nameToGraphNode: Map<string, GraphNode>
 
-  // Address → Trace entries (all accesses to this tensor)
-  addressToTraces: Map<string, TraceEntry[]>
+  // Tensor name → Trace entries (all accesses to this tensor)
+  nameToTraces: Map<string, TraceEntry[]>
 
-  // Node ID → Memory tensor (for memory heatmap)
-  nodeToMemory: Map<string, MemoryTensor>
+  // Tensor name → Memory tensor (GGUF weights only)
+  nameToMemory: Map<string, MemoryTensor>
 
   // Layer ID → Nodes in that layer
   layerToNodes: Map<number, GraphNode[]>
@@ -214,6 +214,6 @@ export interface CorrelationIndex {
   // Time → Active nodes (for timeline animation)
   timeIndex: {
     timestamps: number[]           // Sorted timestamps (ms)
-    activeNodes: string[][]        // Active node IDs at each timestamp
+    activeNodeNames: string[][]    // Active tensor names at each timestamp
   }
 }

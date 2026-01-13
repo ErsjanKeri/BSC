@@ -26,7 +26,6 @@ export function TraceView({ isFullScreen }: TraceViewProps) {
     selectedTrace,
     selectTrace,
     setTimelinePosition,
-    setFullScreen,
     correlationIndex,
     graphData,
   } = useAppStore();
@@ -86,15 +85,10 @@ export function TraceView({ isFullScreen }: TraceViewProps) {
     // Calculate total size from all sources
     const totalSize = entry.sources.reduce((sum, src) => sum + src.size_bytes, 0);
 
-    // Check if this trace entry has a corresponding graph node
+    // Check if this trace entry has a corresponding graph node (NAME-BASED)
     const hasGraphNode = correlationIndex && entry.sources.length > 0 && entry.sources.some(source => {
-      // Check by address
-      if (correlationIndex.addressToNode.has(source.tensor_ptr)) return true;
-      // Check by name
-      if (graphData) {
-        return graphData.nodes.some(n => n.label === source.name);
-      }
-      return false;
+      // Check by name using correlation index
+      return correlationIndex.nameToGraphNode.has(source.name);
     });
 
     // In full-screen mode, show detailed multi-line view
@@ -247,15 +241,6 @@ export function TraceView({ isFullScreen }: TraceViewProps) {
           <div className="text-gray-400 text-sm font-mono">
             {timeline.currentTime.toFixed(2)} / {maxTime.toFixed(2)} ms
           </div>
-          {!isFullScreen && (
-            <button
-              onClick={() => setFullScreen('trace')}
-              className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded"
-              title="Enter full-screen mode"
-            >
-              ⛶ Full Screen
-            </button>
-          )}
         </div>
       </div>
 
