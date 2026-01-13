@@ -5,7 +5,6 @@
  * - 3D visualization of transformer layers (stacked boxes)
  * - Interactive rotation, zoom, pan
  * - Layer highlighting during timeline animation
- * - Click layer to filter other views
  * - Color-coded by access activity
  */
 
@@ -98,7 +97,7 @@ function LayerBox({
 }
 
 function TransformerModel() {
-  const { memoryMap, traceData, timeline, correlationIndex, filters, setLayerFilter } = useAppStore();
+  const { memoryMap, traceData, timeline, correlationIndex } = useAppStore();
 
   if (!memoryMap) return null;
 
@@ -110,7 +109,7 @@ function TransformerModel() {
 
     if (traceData) {
       traceData.entries.forEach(entry => {
-        if (entry.layer_id !== 65535) {
+        if (entry.layer_id !== null && entry.layer_id !== 65535) {
           counts.set(entry.layer_id, (counts.get(entry.layer_id) || 0) + 1);
         }
       });
@@ -132,6 +131,7 @@ function TransformerModel() {
     traceData.entries.forEach(entry => {
       if (
         Math.abs(entry.timestamp_relative_ms - currentTime) < 10 &&
+        entry.layer_id !== null &&
         entry.layer_id !== 65535
       ) {
         active.add(entry.layer_id);
@@ -140,15 +140,6 @@ function TransformerModel() {
 
     return active;
   }, [traceData, correlationIndex, timeline.currentTime]);
-
-  // Handle layer click
-  const handleLayerClick = (layer_id: number) => {
-    if (filters.selectedLayer === layer_id) {
-      setLayerFilter(null); // Deselect
-    } else {
-      setLayerFilter(layer_id); // Select
-    }
-  };
 
   // Generate layer boxes
   const layerSpacing = 0.5;
@@ -164,8 +155,8 @@ function TransformerModel() {
         layer_id={i}
         position={[0, y, 0]}
         isActive={activeLayers.has(i)}
-        isSelected={filters.selectedLayer === i}
-        onClick={() => handleLayerClick(i)}
+        isSelected={false}
+        onClick={() => {}}
         accessCount={accessCount}
         maxAccessCount={maxAccessCount}
       />

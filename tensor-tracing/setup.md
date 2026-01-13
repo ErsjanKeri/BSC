@@ -93,25 +93,20 @@ python3 ../../tools/parse_trace.py /tmp/tensor_trace.bin --stats
 - memory-map.json (~62 KB, 201 tensors)
 - buffer-timeline.json (~737 B)
 - graphs/token-*.json (3 files, ~338 KB each)
-- traces/token-00000.json (~916 KB, all tokens currently)
+- traces/token-*.json (3 files, split by token - fixed 2026-01-08)
 
 ---
 
 ## Known Issues
 
-### 1. Token ID Always 0
-**Problem**: All entries show `token_id=0`
-
-**Impact**: Can't split trace by token
-
-**Workaround**: Graph files correctly split
-
-### 2. Name Truncation
-**Problem**: 19-char limit
+### 1. Name Truncation
+**Problem**: 19-char limit in trace struct
 
 **Example**: `"blk.0.attn_norm.weight"` → `"blk.0.attn_norm.wei"`
 
-**Workaround**: Use address-based correlation
+**Workaround**: Use address-based correlation (tensor_ptr field)
+
+**Note**: Token ID tracking was fixed on 2026-01-08 - traces now properly split by token
 
 ---
 

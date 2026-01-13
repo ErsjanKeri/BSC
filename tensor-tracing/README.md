@@ -157,10 +157,11 @@ python3 tools/parse_buffer_stats.py /tmp/buffer_stats.jsonl \
 - Computation graph dumping
 - Automated pipeline
 - WebUI (basic 4-view layout)
+- ✅ Token ID tracking: properly increments (0, 1, 2, ...) - fixed 2026-01-08
+- ✅ Phase tracking: distinguishes PROMPT vs GENERATE - fixed 2026-01-08
 
 ### ⚠️ Known Issues
-1. **Token ID bug**: All entries show `token_id=0` (C code doesn't increment)
-2. **Name truncation**: 19-char limit in struct
+1. **Name truncation**: 19-char limit in struct
 
 ### 🔄 In Development
 - WebUI: Full-screen views, heatmap improvements, timeline playback

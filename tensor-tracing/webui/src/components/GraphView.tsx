@@ -48,7 +48,6 @@ export function GraphView({ isFullScreen }: GraphViewProps) {
     setHoveredNode,
     timeline,
     correlationIndex,
-    filters,
     setFullScreen,
   } = useAppStore();
 
@@ -209,14 +208,6 @@ export function GraphView({ isFullScreen }: GraphViewProps) {
             'border-width': 4,
             'border-color': '#fbbf24', // amber-400
             'background-opacity': 1,
-          },
-        },
-
-        // Dimmed node (when filtering)
-        {
-          selector: 'node.dimmed',
-          style: {
-            'opacity': 0.3,
           },
         },
 
@@ -397,48 +388,6 @@ export function GraphView({ isFullScreen }: GraphViewProps) {
       }
     });
   }, [timeline.currentTime, correlationIndex]);
-
-  // Apply layer filter
-  useEffect(() => {
-    if (!cyRef.current) return;
-
-    const cy = cyRef.current;
-
-    // Remove previous dimming
-    cy.nodes('.dimmed').removeClass('dimmed');
-
-    // Apply layer filter
-    if (filters.selectedLayer !== null) {
-      cy.nodes().forEach(node => {
-        const layerId = node.data('layer_id');
-        if (layerId !== filters.selectedLayer) {
-          node.addClass('dimmed');
-        }
-      });
-    }
-
-    // Apply category filter
-    if (filters.selectedCategory !== null) {
-      cy.nodes().forEach(node => {
-        const category = node.data('category');
-        if (category !== filters.selectedCategory) {
-          node.addClass('dimmed');
-        }
-      });
-    }
-
-    // Apply search filter
-    if (filters.searchTerm) {
-      const searchLower = filters.searchTerm.toLowerCase();
-      cy.nodes().forEach(node => {
-        const label = node.data('label').toLowerCase();
-        const operation = node.data('operation').toLowerCase();
-        if (!label.includes(searchLower) && !operation.includes(searchLower)) {
-          node.addClass('dimmed');
-        }
-      });
-    }
-  }, [filters]);
 
   // Programmatically select node from store
   useEffect(() => {

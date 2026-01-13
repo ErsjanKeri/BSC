@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """
-Tensor Trace Binary Parser - Phase 1 (256-byte format)
+Tensor Trace Binary Parser - 1024-byte format with 128-byte names
 
-Parses /tmp/tensor_trace.bin with the NEW 256-byte format:
+Parses /tmp/tensor_trace.bin with the 1024-byte format:
 - ONE entry per operation
 - ALL sources embedded (up to 4)
 - Memory source detection (DISK vs BUFFER)
-- Proper GGUF offsets
+- 128-byte names for full tensor names without truncation
 
 Usage:
-    python3 parse_trace_v2.py                       # Show all entries
-    python3 parse_trace_v2.py --limit 20            # Show first 20 entries
-    python3 parse_trace_v2.py --stats               # Show statistics
-    python3 parse_trace_v2.py --verify              # Verify format
+    python3 parse_trace.py                       # Show all entries
+    python3 parse_trace.py --limit 20            # Show first 20 entries
+    python3 parse_trace.py --stats               # Show statistics
+    python3 parse_trace.py --verify              # Verify format
 """
 
 import struct
@@ -22,20 +22,26 @@ import json
 from pathlib import Path
 from collections import Counter, defaultdict
 
-# === Structure Definitions (Phase 1) ===
+# === Structure Definitions (1024-byte format) ===
 
-# TensorAccessLog: 256 bytes total
-# - Header: 24 bytes (metadata + destination)
-# - Sources: 208 bytes (4 × 52 bytes)
+# TensorAccessLog: 1024 bytes total
+# - Metadata: 24 bytes
+# - Destination name: 128 bytes
+# - Sources: 640 bytes (4 × 160 bytes)
+# - Padding: 232 bytes
 
-ENTRY_SIZE = 256
-SOURCE_SIZE = 52
+ENTRY_SIZE = 1024
+SOURCE_SIZE = 160
+METADATA_SIZE = 24
+DST_NAME_SIZE = 128
+SOURCES_TOTAL_SIZE = 640
+PADDING_SIZE = 232
 
-# Header format (24 bytes)
-HEADER_FORMAT = '<QIHHBBB5s24s'  # timestamp, token_id, layer_id, thread_id, op_type, phase, num_sources, padding, dst_name
+# Metadata format (24 bytes)
+METADATA_FORMAT = '<QIHHBBB5s'  # timestamp, token_id, layer_id, thread_id, op_type, phase, num_sources, padding[5]
 
-# Source format (52 bytes)
-SOURCE_FORMAT = '<20sQIHBBQI4s'  # name[20], tensor_ptr, size_bytes, layer_id, memory_source, pad1, disk_offset_or_buffer_id, tensor_idx, pad2[4]
+# Source format (160 bytes)
+SOURCE_FORMAT = '<128sQIHBBQI4s'  # name[128], tensor_ptr, size_bytes, layer_id, memory_source, pad1, disk_offset_or_buffer_id, tensor_idx, pad2[4]
 
 # Operation type names (ggml_op enum)
 # IMPORTANT: This MUST match the exact order in ggml/include/ggml.h
@@ -140,7 +146,7 @@ OPERATION_TYPES = {
 
 
 def parse_source(data, offset):
-    """Parse a single SourceTensorInfo (52 bytes)."""
+    """Parse a single SourceTensorInfo (160 bytes)."""
     try:
         unpacked = struct.unpack_from(SOURCE_FORMAT, data, offset)
 
@@ -159,34 +165,42 @@ def parse_source(data, offset):
 
 
 def parse_entry(data, entry_num):
-    """Parse a complete TensorAccessLog (256 bytes)."""
+    """Parse a complete TensorAccessLog (1024 bytes)."""
     if len(data) < ENTRY_SIZE:
         return None
 
     try:
-        # Parse header (24 bytes)
-        header = struct.unpack_from(HEADER_FORMAT, data, 0)
+        offset = 0
 
-        timestamp_ns = header[0]
+        # Parse metadata (24 bytes)
+        metadata = struct.unpack_from(METADATA_FORMAT, data, offset)
+        offset += METADATA_SIZE
+
+        timestamp_ns = metadata[0]
         if timestamp_ns == 0:  # Empty entry
             return None
 
-        token_id = header[1]
-        layer_id = header[2] if header[2] != 65535 else None
-        thread_id = header[3]
-        operation_type = header[4]
-        phase = header[5]
-        num_sources = header[6]
-        dst_name = header[8].decode('utf-8', errors='ignore').rstrip('\x00')
+        token_id = metadata[1]
+        layer_id = metadata[2] if metadata[2] != 65535 else None
+        thread_id = metadata[3]
+        operation_type = metadata[4]
+        phase = metadata[5]
+        num_sources = metadata[6]
+        # metadata[7] is padding[5] - ignored
 
-        # Parse sources (4 × 52 bytes, starting at offset 48)
+        # Parse dst_name (128 bytes)
+        dst_name = data[offset:offset+DST_NAME_SIZE].decode('utf-8', errors='ignore').rstrip('\x00')
+        offset += DST_NAME_SIZE
+
+        # Parse sources (4 × 160 bytes)
         sources = []
-        source_offset = struct.calcsize(HEADER_FORMAT)
-
         for i in range(4):
-            src = parse_source(data, source_offset + i * SOURCE_SIZE)
+            src = parse_source(data, offset)
             if src and i < num_sources:  # Only include valid sources
                 sources.append(src)
+            offset += SOURCE_SIZE
+
+        # Padding (232 bytes) - just skip, don't need to read
 
         return {
             'entry_num': entry_num,
@@ -441,7 +455,7 @@ def export_to_json_per_token(entries, output_dir):
                 'total_entries': len(token_entries),
                 'duration_ms': round(duration_ms, 3),
                 'timestamp_start_ns': timestamp_start,
-                'format_version': '256-byte'
+                'format_version': '1024-byte'
             },
             'entries': formatted_entries
         }
@@ -459,7 +473,7 @@ def export_to_json_per_token(entries, output_dir):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Parse tensor trace binary (256-byte format)')
+    parser = argparse.ArgumentParser(description='Parse tensor trace binary (1024-byte format with 128-byte names)')
     parser.add_argument('trace_file', nargs='?', default='/tmp/tensor_trace.bin',
                         help='Path to trace binary (default: /tmp/tensor_trace.bin)')
     parser.add_argument('--limit', type=int, default=0,

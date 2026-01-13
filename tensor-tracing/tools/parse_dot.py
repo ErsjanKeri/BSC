@@ -19,21 +19,41 @@ from typing import List, Dict, Any, Tuple
 def extract_layer_id(tensor_name: str) -> int:
     """
     Extract layer ID from tensor name.
-    ONLY matches "blk.N." pattern (consistent with C code in tensor_trace.h)
+
+    Supports TWO patterns:
+    1. "blk.N." - for weight tensors (e.g., "blk.5.attn_q.weight")
+    2. "-N" suffix - for intermediate tensors (e.g., "Qcur-5", "norm-12")
+
+    EXCLUDES:
+    - "leaf_N" - sequential leaf counter, NOT layer-specific
+    - "node_N" - node IDs, NOT layer-specific
 
     Args:
-        tensor_name: Tensor name (e.g., "blk.5.attn_q")
+        tensor_name: Tensor name
 
     Returns:
         Layer ID (0-N), or None for non-layer tensors
     """
-    # ONLY Pattern: "blk.N." format (e.g., "blk.5.attn_q.weight")
+    if not tensor_name:
+        return None
+
+    # Pattern 1: "blk.N." format (e.g., "blk.5.attn_q.weight")
     # This matches the C implementation in tensor_trace_extract_layer_id()
-    if tensor_name and tensor_name.startswith("blk."):
+    if tensor_name.startswith("blk."):
         match = re.search(r'blk\.(\d+)\.', tensor_name)
         if match:
             layer = int(match.group(1))
             if 0 <= layer < 65535:  # Sanity check
+                return layer
+
+    # Pattern 2: "-N" suffix for intermediate tensors (e.g., "Qcur-5", "norm-12")
+    # But EXCLUDE "leaf_N" and "node_N" patterns
+    if not tensor_name.startswith("leaf") and not tensor_name.startswith("node_"):
+        match = re.search(r'-(\d+)$', tensor_name)
+        if match:
+            layer = int(match.group(1))
+            # TinyLlama has 22 layers (0-21), sanity check for reasonable range
+            if 0 <= layer < 100:  # Allow up to 100 layers for larger models
                 return layer
 
     return None  # Not a layer tensor
@@ -64,6 +84,66 @@ def categorize_tensor(tensor_name: str, operation: str) -> str:
         return "output"
     else:
         return "other"
+
+
+def classify_node_type(tensor_name: str, operation: str, layer_id: int) -> str:
+    """
+    Classify node type for graph filtering.
+
+    This classification helps identify shared infrastructure vs layer-specific nodes.
+
+    Args:
+        tensor_name: Tensor name
+        operation: Operation type
+        layer_id: Layer ID (None if not layer-specific)
+
+    Returns:
+        Node type: "infrastructure", "layer", "embedding", "output"
+    """
+    name_lower = tensor_name.lower()
+
+    # Leaf nodes and constants (shared infrastructure)
+    if tensor_name.startswith("leaf") or operation == "CONST":
+        return "infrastructure"
+
+    # Global embeddings (input layer)
+    if "token_embd" in name_lower or "inp_embd" in name_lower:
+        return "embedding"
+
+    # Final output layer
+    if "output" in name_lower or "logits" in name_lower or tensor_name == "result_output":
+        return "output"
+
+    # KV cache operations (used across layers but not layer-specific)
+    if "cache" in name_lower:
+        return "infrastructure"
+
+    # Layer-specific nodes
+    if layer_id is not None:
+        return "layer"
+
+    # Everything else is infrastructure
+    return "infrastructure"
+
+
+def get_semantic_label(tensor_name: str, operation: str, edges: List[Dict]) -> str:
+    """
+    Get a more semantic label for leaf nodes based on their usage.
+
+    Args:
+        tensor_name: Tensor name
+        operation: Operation type
+        edges: List of edges to analyze usage patterns
+
+    Returns:
+        Semantic label or original name
+    """
+    if not tensor_name.startswith("leaf"):
+        return tensor_name
+
+    # For now, keep original name
+    # Could be enhanced in the future to analyze edge patterns
+    return tensor_name
 
 
 def parse_node_label(label: str) -> Tuple[str, str, List[int], str]:
@@ -186,6 +266,9 @@ def parse_dot_file(dot_path: str) -> Dict[str, Any]:
                 # Categorize
                 category = categorize_tensor(name, operation)
 
+                # Classify node type (for filtering)
+                node_type = classify_node_type(name, operation, layer_id)
+
                 # Create node entry
                 node = {
                     "id": f"node_{node_counter}",
@@ -195,7 +278,8 @@ def parse_dot_file(dot_path: str) -> Dict[str, Any]:
                     "shape": shape,
                     "dtype": dtype,
                     "layer_id": layer_id,
-                    "category": category
+                    "category": category,
+                    "node_type": node_type  # NEW: for smart filtering
                 }
 
                 nodes.append(node)

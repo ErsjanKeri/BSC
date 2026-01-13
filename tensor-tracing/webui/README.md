@@ -61,10 +61,11 @@ Expects in `public/data/`:
 
 ## Known Issues
 
-1. **Token ID bug**: All traces show token_id=0 (C code issue)
-2. **Graph performance**: Slow with 700+ nodes
-3. **Heatmap**: Hard to identify small tensors
-4. **No correlation**: Views not synchronized yet
+1. **Graph performance**: Slow with 700+ nodes
+2. **Heatmap**: Hard to identify small tensors
+3. **No correlation**: Views not synchronized yet
+
+**Note**: Token ID tracking bug was fixed on 2026-01-08 - traces now properly split by token
 
 ---
 

@@ -10,7 +10,6 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { List } from 'react-window';
 import { useAppStore } from '../stores/useAppStore';
 import type { TraceEntry } from '../types/data';
 

@@ -81,9 +81,10 @@ See [disk-benchmarking/README.md](disk-benchmarking/README.md) for configuration
 - Buffer tracking, computation graphs
 - Automated pipeline (`run_experiment.py`)
 - WebUI (4-view layout, in development)
+- ✅ Token ID tracking (fixed 2026-01-08)
+- ✅ Phase tracking: PROMPT vs GENERATE (fixed 2026-01-08)
 
 **Known Issues**:
-- Token ID always 0 (C code bug)
 - Name truncation (19-char limit)
 
 ### Thread 1: Disk Benchmarking ✅
