@@ -469,7 +469,9 @@ def export_to_json_per_token(entries, output_dir):
                 'operation_type': entry['operation_name'],
                 'dst_name': entry['dst_name'],
                 'num_sources': entry['num_sources'],
-                'sources': formatted_sources
+                'sources': formatted_sources,
+                'expert_ids': entry.get('expert_ids', []),      # NEW
+                'num_experts': entry.get('num_experts', 0)      # NEW
             }
             formatted_entries.append(formatted_entry)
 
