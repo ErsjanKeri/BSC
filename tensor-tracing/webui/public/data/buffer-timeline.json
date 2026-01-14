@@ -4,49 +4,49 @@
     "total_buffers": 2,
     "peak_occupancy_bytes": 3240099840,
     "peak_occupancy_mb": 3090.0,
-    "duration_ms": 4.932000041007996,
+    "duration_ms": 4.906000018119812,
     "usage_breakdown": {
       "COMPUTE": 2
     }
   },
   "buffers": [
     {
-      "id": 108933962620528,
+      "id": 98645139604320,
       "name": "KVCache_CPU",
       "size": 3221225472,
       "backend": "CPU",
       "usage": 2,
       "usage_name": "COMPUTE",
       "layer": 65535,
-      "alloc_time_ms": 541709309.541,
+      "alloc_time_ms": 600604855.454,
       "dealloc_time_ms": null
     },
     {
-      "id": 108933962603600,
+      "id": 98645139587328,
       "name": "KVCache_CPU",
       "size": 18874368,
       "backend": "CPU",
       "usage": 2,
       "usage_name": "COMPUTE",
       "layer": 65535,
-      "alloc_time_ms": 541709314.473,
+      "alloc_time_ms": 600604860.36,
       "dealloc_time_ms": null
     }
   ],
   "timeline": [
     {
-      "timestamp_ms": 541709309.541,
+      "timestamp_ms": 600604855.454,
       "event": "alloc",
-      "buffer_id": 108933962620528,
+      "buffer_id": 98645139604320,
       "buffer_name": "KVCache_CPU",
       "size": 3221225472,
       "cumulative_size": 3221225472,
       "num_active_buffers": 1
     },
     {
-      "timestamp_ms": 541709314.473,
+      "timestamp_ms": 600604860.36,
       "event": "alloc",
-      "buffer_id": 108933962603600,
+      "buffer_id": 98645139587328,
       "buffer_name": "KVCache_CPU",
       "size": 18874368,
       "cumulative_size": 3240099840,
