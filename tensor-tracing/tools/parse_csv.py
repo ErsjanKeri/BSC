@@ -241,6 +241,14 @@ def parse_csv_to_memory_map(csv_path: str, model_name: str = None, data_offset: 
                 # Extract metadata
                 category = categorize_tensor(component_type, tensor_name)
                 component = get_component_name(component_type)
+
+                # Extract expert ID if this is an expert tensor (name ends with [N])
+                expert_id = None
+                if '[' in tensor_name and tensor_name.endswith(']'):
+                    try:
+                        expert_id = int(tensor_name.split('[')[-1].rstrip(']'))
+                    except ValueError:
+                        pass  # Not an expert tensor
             except (ValueError, TypeError, KeyError) as e:
                 print(f"Warning: Skipping row {row_num} due to parse error: {e}")
                 print(f"  Row data: {dict(list(row.items())[:5])}")  # Show first 5 fields
@@ -274,6 +282,10 @@ def parse_csv_to_memory_map(csv_path: str, model_name: str = None, data_offset: 
                 "component": component,
                 "component_type": component_type  # Keep original for reference
             }
+
+            # Add expert_id if present (for MoE expert tensors)
+            if expert_id is not None:
+                tensor_entry["expert_id"] = expert_id
 
             tensors.append(tensor_entry)
 
