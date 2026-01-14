@@ -28,14 +28,18 @@ from collections import Counter, defaultdict
 # - Metadata: 24 bytes
 # - Destination name: 128 bytes
 # - Sources: 640 bytes (4 × 160 bytes)
-# - Padding: 232 bytes
+# - Expert IDs: 64 bytes (16 × int32)
+# - num_experts: 1 byte
+# - Padding: 167 bytes
 
 ENTRY_SIZE = 1024
 SOURCE_SIZE = 160
 METADATA_SIZE = 24
 DST_NAME_SIZE = 128
 SOURCES_TOTAL_SIZE = 640
-PADDING_SIZE = 232
+EXPERT_IDS_SIZE = 64  # 16 × 4 bytes
+NUM_EXPERTS_SIZE = 1
+PADDING_SIZE = 167
 
 # Metadata format (24 bytes)
 METADATA_FORMAT = '<QIHHBBB5s'  # timestamp, token_id, layer_id, thread_id, op_type, phase, num_sources, padding[5]
@@ -200,7 +204,19 @@ def parse_entry(data, entry_num):
                 sources.append(src)
             offset += SOURCE_SIZE
 
-        # Padding (232 bytes) - just skip, don't need to read
+        # Parse expert IDs (64 bytes = 16 × int32)
+        expert_ids_format = '<16i'  # 16 int32 values
+        expert_ids_raw = struct.unpack_from(expert_ids_format, data, offset)
+        offset += EXPERT_IDS_SIZE
+
+        # Parse num_experts (1 byte)
+        num_experts = struct.unpack_from('<B', data, offset)[0]
+        offset += NUM_EXPERTS_SIZE
+
+        # Extract only valid expert IDs
+        expert_ids = list(expert_ids_raw[:num_experts]) if num_experts > 0 else []
+
+        # Remaining padding (167 bytes) - skip
 
         return {
             'entry_num': entry_num,
@@ -214,6 +230,8 @@ def parse_entry(data, entry_num):
             'num_sources': num_sources,
             'dst_name': dst_name,
             'sources': sources,
+            'expert_ids': expert_ids,       # NEW
+            'num_experts': num_experts,     # NEW
         }
     except Exception as e:
         print(f"Error parsing entry {entry_num}: {e}", file=sys.stderr)
@@ -244,6 +262,13 @@ def display_entries(entries, limit=0):
         print(f"  Token: {entry['token_id']}, Layer: {layer_str}, Thread: {entry['thread_id']}")
         print(f"  Operation: {entry['operation_name']}, Phase: {entry['phase']}")
         print(f"  Destination: '{entry['dst_name']}'")
+
+        # Show expert IDs if present
+        if entry.get('num_experts', 0) > 0:
+            top4 = entry['expert_ids'][:4]  # Show top-4 (actually used)
+            all_ids = entry['expert_ids']
+            print(f"  Experts: TOP-4: {top4}, All: {all_ids}")
+
         print(f"  Sources ({entry['num_sources']}):")
 
         for i, src in enumerate(entry['sources']):

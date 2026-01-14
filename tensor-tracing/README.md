@@ -6,7 +6,8 @@ Application-level instrumentation for tracking tensor operations during LLM infe
 
 - Tensor names & timestamps (ns precision)
 - **ALL operation types** (95 ggml ops: MUL_MAT, ADD, ROPE, RMS_NORM, etc.)
-- **Memory source detection** (DISK-backed GGUF vs BUFFER allocations)
+- **Memory source detection** (DISK-backed GGUF vs BUFFER all
+ocations)
 - **Multi-source tracking** (up to 4 source tensors per operation)
 - Layer-by-layer execution order
 - Computation graphs (per token)
