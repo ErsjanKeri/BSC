@@ -23,7 +23,7 @@ export function HeatmapView({ isFullScreen }: HeatmapViewProps) {
   const { memoryMap, traceData, bufferTimeline, heatmapMode, setHeatmapMode, timeline } = useAppStore();
   const [showAccessCounts, setShowAccessCounts] = useState(false);
   const [hoveredTensor, setHoveredTensor] = useState<any>(null);
-  const [zoomLevel, setZoomLevel] = useState(10); // Scale factor: 1x, 10x, 50x, 100x, 500x
+  const [zoomLevel, setZoomLevel] = useState(1); // Scale factor: 0.1x, 0.5x, 1x, 10x, 50x, 100x, 500x
 
   // Calculate temporal access counts per tensor (respects timeline.currentTime and heatmapMode)
   const tensorAccesses = useMemo(() => {
@@ -69,13 +69,31 @@ export function HeatmapView({ isFullScreen }: HeatmapViewProps) {
         }
       }
 
-      // Count DISK accesses only (GGUF weights)
+      // Count DISK accesses
       entry.sources.forEach((source: any) => {
         if (source.memory_source === 'DISK') {
-          const tensor = findMatchingTensor(source.name, memoryMap.tensors);
-          if (tensor) {
-            counts.set(tensor.name, (counts.get(tensor.name) || 0) + 1);
-            timestamps.get(tensor.name)?.push(entry.timestamp_relative_ms);
+          // Check if this is a MoE expert tensor access
+          const isExpertTensor = source.name.includes('_exps.weight') || source.name.includes('_exps.bias');
+
+          if (isExpertTensor && entry.expert_ids && entry.expert_ids.length > 0) {
+            // For MoE operations: count access for each expert used
+            // Use TOP-4 experts only (first 4 in expert_ids array)
+            const topK = entry.expert_ids.slice(0, 4);
+
+            topK.forEach((expertId: number) => {
+              const expertTensorName = `${source.name}[${expertId}]`;
+              if (counts.has(expertTensorName)) {
+                counts.set(expertTensorName, (counts.get(expertTensorName) || 0) + 1);
+                timestamps.get(expertTensorName)?.push(entry.timestamp_relative_ms);
+              }
+            });
+          } else {
+            // Normal tensor access (non-expert)
+            const tensor = findMatchingTensor(source.name, memoryMap.tensors);
+            if (tensor) {
+              counts.set(tensor.name, (counts.get(tensor.name) || 0) + 1);
+              timestamps.get(tensor.name)?.push(entry.timestamp_relative_ms);
+            }
           }
         }
       });
@@ -142,7 +160,7 @@ export function HeatmapView({ isFullScreen }: HeatmapViewProps) {
           <div className="flex items-center gap-2">
             <span className="text-gray-400 text-xs">Zoom:</span>
             <div className="flex gap-1 bg-gray-800 rounded p-1">
-              {[1, 10, 50, 100, 500].map(zoom => (
+              {[0.1, 0.5, 1, 10, 50, 100, 500].map(zoom => (
                 <button
                   key={zoom}
                   onClick={() => setZoomLevel(zoom)}
@@ -151,7 +169,7 @@ export function HeatmapView({ isFullScreen }: HeatmapViewProps) {
                       ? 'bg-green-600 text-white'
                       : 'text-gray-400 hover:text-white'
                   }`}
-                  title={`${zoom}x zoom (${(2098 * zoom).toFixed(0)}px wide)`}
+                  title={`${zoom}x zoom`}
                 >
                   {zoom}x
                 </button>
@@ -300,6 +318,12 @@ export function HeatmapView({ isFullScreen }: HeatmapViewProps) {
                       {hoveredTensor.tensor.layer_id !== null ? `L${hoveredTensor.tensor.layer_id}` : 'N/A'}
                     </span>
                   </div>
+                  {hoveredTensor.tensor.expert_id !== undefined && (
+                    <div>
+                      <span className="text-gray-400">Expert ID:</span>{' '}
+                      <span className="text-white font-semibold">{hoveredTensor.tensor.expert_id}</span>
+                    </div>
+                  )}
                   <div>
                     <span className="text-gray-400">Size:</span>{' '}
                     <span className="text-white">{formatBytes(hoveredTensor.tensor.size_bytes)}</span>
