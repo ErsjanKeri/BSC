@@ -1,7 +1,32 @@
 # Implementation Plan: Expert-Level Granularity for MoE Heatmap
 
 **Date:** 2026-01-14
+**Status:** ✅ **COMPLETED** 2026-01-17
 **Goal:** Modify tensor tracing pipeline to track and visualize individual MoE expert accesses
+
+---
+
+## ✅ COMPLETION SUMMARY (2026-01-17)
+
+**All 5 phases completed successfully:**
+
+✅ **Phase 1:** gguf-dump modified to split expert tensors into 32 entries
+✅ **Phase 2:** Expert IDs added to trace format (1024-byte with expert_ids[16])
+✅ **Phase 3:** parse_trace.py updated to extract expert IDs
+✅ **Phase 4:** parse_csv.py handles expert entries with expert_id field
+✅ **Phase 5:** Heatmap shows 32 individual expert bars with highlighting
+
+**Critical Bug Fixed (2026-01-17):**
+- MXFP4 quantization support added to gguf-dump.cpp
+- Complete GGML type_traits table (40+ formats)
+- Zero overlaps achieved (was 2,344)
+- Expert tensor sizes correct: 4.2 MB (was 31.6 MB)
+
+**See journal entry:** [2026-01-17.md](../journal/2026-01-17.md)
+
+---
+
+## ORIGINAL PLAN (2026-01-14)
 
 ---
 

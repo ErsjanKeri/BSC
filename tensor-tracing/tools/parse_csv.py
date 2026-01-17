@@ -80,113 +80,21 @@ def get_component_name(component_type: str) -> str:
         return "other"
 
 
-def calculate_gguf_data_offset(gguf_file_path: str) -> int:
-    """
-    Calculate the absolute offset where tensor data starts in a GGUF file.
-
-    The GGUF file structure is:
-    [Header (24 bytes)][Metadata KV pairs][Tensor Info][Alignment padding][DATA SECTION]
-                                                                            ^
-                                                            We need this offset
-
-    Args:
-        gguf_file_path: Path to GGUF file
-
-    Returns:
-        Absolute byte offset where data section starts
-
-    Raises:
-        ValueError: If file is not a valid GGUF file
-    """
-    GGUF_MAGIC = 0x46554747  # "GGUF" in little-endian
-    GGUF_ALIGNMENT = 32       # Default alignment (GGUF_DEFAULT_ALIGNMENT)
-
-    def read_string(f):
-        """Read a length-prefixed string."""
-        length = struct.unpack('<Q', f.read(8))[0]
-        return f.read(length).decode('utf-8')
-
-    def skip_value(f, value_type):
-        """Skip a metadata value based on its type."""
-        # Type sizes from gguf.h
-        type_sizes = {
-            0: 1,   # UINT8
-            1: 1,   # INT8
-            2: 2,   # UINT16
-            3: 2,   # INT16
-            4: 4,   # UINT32
-            5: 4,   # INT32
-            6: 4,   # FLOAT32
-            7: 1,   # BOOL
-            10: 8,  # UINT64
-            11: 8,  # INT64
-            12: 8,  # FLOAT64
-        }
-
-        if value_type in type_sizes:
-            # Simple scalar type
-            f.seek(type_sizes[value_type], 1)
-        elif value_type == 8:  # STRING
-            read_string(f)
-        elif value_type == 9:  # ARRAY
-            array_type = struct.unpack('<I', f.read(4))[0]
-            array_len = struct.unpack('<Q', f.read(8))[0]
-            for _ in range(array_len):
-                skip_value(f, array_type)
-        else:
-            raise ValueError(f"Unknown GGUF value type: {value_type}")
-
-    with open(gguf_file_path, 'rb') as f:
-        # Read header (24 bytes)
-        magic = struct.unpack('<I', f.read(4))[0]
-        if magic != GGUF_MAGIC:
-            raise ValueError(f"Not a valid GGUF file: magic = 0x{magic:08X}, expected 0x{GGUF_MAGIC:08X}")
-
-        version = struct.unpack('<I', f.read(4))[0]
-        n_tensors = struct.unpack('<Q', f.read(8))[0]
-        n_kv = struct.unpack('<Q', f.read(8))[0]
-
-        print(f"  GGUF Header: version={version}, tensors={n_tensors}, metadata_kv={n_kv}")
-
-        # Skip metadata KV pairs
-        for _ in range(n_kv):
-            key = read_string(f)
-            value_type = struct.unpack('<I', f.read(4))[0]
-            skip_value(f, value_type)
-
-        metadata_end = f.tell()
-        print(f"  Metadata ends at: {metadata_end:,} bytes")
-
-        # Skip tensor info
-        for _ in range(n_tensors):
-            name = read_string(f)
-            n_dims = struct.unpack('<I', f.read(4))[0]
-            for _ in range(n_dims):
-                dim = struct.unpack('<Q', f.read(8))[0]
-            tensor_type = struct.unpack('<I', f.read(4))[0]
-            offset = struct.unpack('<Q', f.read(8))[0]
-
-        tensor_info_end = f.tell()
-        print(f"  Tensor info ends at: {tensor_info_end:,} bytes")
-
-        # Apply alignment (round up to GGUF_ALIGNMENT boundary)
-        data_offset = ((tensor_info_end + GGUF_ALIGNMENT - 1) // GGUF_ALIGNMENT) * GGUF_ALIGNMENT
-
-        padding = data_offset - tensor_info_end
-        print(f"  Alignment: {GGUF_ALIGNMENT} bytes, padding: {padding} bytes")
-        print(f"  ✓ Data section starts at: {data_offset:,} bytes ({data_offset / (1024*1024):.2f} MB)")
-
-        return data_offset
+# NOTE: calculate_gguf_data_offset() function removed.
+# The fixed llama-gguf-dump tool now outputs ABSOLUTE offsets (includes data section offset).
+# No need to calculate or add offset here - use CSV values directly.
 
 
-def parse_csv_to_memory_map(csv_path: str, model_name: str = None, data_offset: int = 0) -> Dict[str, Any]:
+def parse_csv_to_memory_map(csv_path: str, model_name: str = None) -> Dict[str, Any]:
     """
     Parse CSV file and generate memory map structure.
 
+    NOTE: Expects CSV from fixed llama-gguf-dump which outputs ABSOLUTE offsets.
+    No offset adjustment needed - CSV values are already absolute file positions.
+
     Args:
-        csv_path: Path to CSV file
+        csv_path: Path to CSV file from llama-gguf-dump
         model_name: Optional model name (inferred from CSV filename if not provided)
-        data_offset: Data section offset to add to all tensor offsets (default: 0)
 
     Returns:
         Dictionary containing memory map data
@@ -266,15 +174,12 @@ def parse_csv_to_memory_map(csv_path: str, model_name: str = None, data_offset: 
                     n_vocab = shape[1]
 
             # Create tensor entry
-            # NOTE: file_offset from CSV is RELATIVE to data section
-            # We add data_offset to get ABSOLUTE file offset
-            absolute_offset_start = file_offset + data_offset
-            absolute_offset_end = absolute_offset_start + size_bytes
-
+            # NOTE: file_offset from fixed gguf-dump is ALREADY ABSOLUTE
+            # No offset adjustment needed
             tensor_entry = {
                 "name": tensor_name,
-                "offset_start": absolute_offset_start,
-                "offset_end": absolute_offset_end,
+                "offset_start": file_offset,
+                "offset_end": file_offset + size_bytes,
                 "size_bytes": size_bytes,
                 "shape": shape,
                 "category": category,
@@ -319,8 +224,8 @@ def main():
     )
     parser.add_argument(
         '--gguf-file',
-        required=True,
-        help='Path to original GGUF file (for calculating data section offset)'
+        required=False,
+        help='[DEPRECATED] Path to original GGUF file (no longer needed - offsets are absolute)'
     )
     parser.add_argument(
         '--output',
@@ -339,15 +244,10 @@ def main():
 
     args = parser.parse_args()
 
-    # Calculate data section offset from GGUF file
-    print(f"Analyzing GGUF file: {args.gguf_file}")
-    data_offset = calculate_gguf_data_offset(args.gguf_file)
-    print()
-
-    # Parse CSV with offset correction
+    # Parse CSV (offsets are already absolute from fixed gguf-dump)
     print(f"Reading CSV: {args.csv}")
-    print(f"Applying data section offset: +{data_offset:,} bytes to all tensor offsets")
-    memory_map = parse_csv_to_memory_map(args.csv, args.model_name, data_offset)
+    print("Note: Using absolute offsets from CSV (no adjustment needed)")
+    memory_map = parse_csv_to_memory_map(args.csv, args.model_name)
 
     print(f"Parsed {memory_map['metadata']['n_tensors']} tensors")
     print(f"Model: {memory_map['model_name']}")

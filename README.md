@@ -71,21 +71,28 @@ See [disk-benchmarking/README.md](disk-benchmarking/README.md) for configuration
 
 ---
 
-## Current Status (2026-01-08)
+## Current Status (2026-01-17)
 
-### Thread 2: Tensor Tracing ✅
+### Thread 2: Tensor Tracing ✅ INFRASTRUCTURE COMPLETE
 
 **Working**:
-- 256-byte trace format (multi-source, memory detection)
+- 1024-byte trace format (128-byte names, expert IDs, zero truncation)
 - ALL operations logged (95 ggml ops)
+- Expert-level MoE tracking (32 experts × 24 layers = 2,304 expert tensors)
 - Buffer tracking, computation graphs
 - Automated pipeline (`run_experiment.py`)
-- WebUI (4-view layout, in development)
-- ✅ Token ID tracking (fixed 2026-01-08)
-- ✅ Phase tracking: PROMPT vs GENERATE (fixed 2026-01-08)
+- WebUI (3-view dynamic layout: Graph + Trace + Heatmap)
+- Name-based correlation (100% accuracy across all views)
+- Temporal heatmap with zoom (0.1x - 500x)
+- ✅ **GGUF parsing completely fixed** (supports all 40+ quantization formats)
+- ✅ **Zero overlaps** (was 2,344 overlaps, now 0)
+- ✅ **MXFP4 quantization** correctly handled (0.53125 bytes/element)
 
-**Known Issues**:
-- Name truncation (19-char limit)
+**All Critical Bugs Fixed**:
+- ✅ Name truncation (expanded to 128 bytes - 2026-01-13)
+- ✅ GGUF offset bug (data section offset added - 2026-01-13)
+- ✅ Address correlation (switched to name-based - 2026-01-13)
+- ✅ Quantization size inflation (gguf-dump fixed with type_traits table - 2026-01-17)
 
 ### Thread 1: Disk Benchmarking ✅
 
@@ -124,8 +131,9 @@ If sequential access confirmed:
 - [docs/](docs/) - Reference material
 
 **Key Journal Entries**:
-- [2026-01-07.md](journal/2026-01-07.md) - 256-byte format + bug fixes
-- [2026-01-08.md](journal/2026-01-08.md) - Automated pipeline
+- [2026-01-13.md](journal/2026-01-13.md) - Critical debugging: GGUF offset bug, Q4_K inflation, address correlation fix
+- [2026-01-14.md](journal/2026-01-14.md) - Complete project summary, MoE expert tracking, MXFP4 bug discovered
+- [2026-01-17.md](journal/2026-01-17.md) - gguf-dump.cpp completely fixed, quantization support, zero overlaps achieved
 
 ---
 
