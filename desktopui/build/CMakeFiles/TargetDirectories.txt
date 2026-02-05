@@ -1,5 +1,0 @@
-/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/imgui.dir
-/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/implot.dir
-/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/tensor-trace-analyzer.dir
-/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/edit_cache.dir
-/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/rebuild_cache.dir

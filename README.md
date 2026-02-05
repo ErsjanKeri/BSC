@@ -128,7 +128,13 @@ See [disk-benchmarking/README.md](disk-benchmarking/README.md) for details.
 - Unified window with docking (professional layout)
 - 110 FPS rendering performance
 
-**Build**: [desktopui/README.md](desktopui/README.md)
+**Build**: [tensor-tracing/desktopui/README.md](tensor-tracing/desktopui/README.md)
+
+**Run**:
+```bash
+cd tensor-tracing/desktopui/build
+./bin/tensor-trace-analyzer ../experiments/expert-analysis-2026-01-26/domain-1-code
+```
 
 ---
 
@@ -303,19 +309,23 @@ If sequential access confirmed:
 ```
 BSC/
 ├── README.md                    ← You are here
-├── journal/                     ← Research logs (2025-12 → 2026-01)
+├── journal/                     ← Research logs (2025-12 → 2026-02)
 ├── docs/                        ← Reference material
 ├── tensor-tracing/              ← Tensor-level instrumentation (primary approach)
 │   ├── run_experiment.py        ← One-command pipeline
+│   ├── run_expert_experiments.sh ← Multi-domain automation
+│   ├── prompts.json             ← Experiment prompts
 │   ├── settings.json            ← Configuration
 │   ├── tools/                   ← Python parsers (binary/CSV/DOT/buffer)
-│   └── webui/                   ← React visualization (1-2 tokens)
-├── desktopui/                   ← C++ desktop analyzer (100+ tokens)
-│   ├── CMakeLists.txt           ← Build configuration
-│   ├── src/                     ← C++ source (main, parsers, views)
-│   ├── external/                ← Dependencies (ImGui, ImPlot, json)
-│   ├── data/                    ← JSON data files (from tensor-tracing)
-│   └── build/                   ← Build output
+│   ├── webui/                   ← React visualization (1-2 tokens)
+│   ├── desktopui/               ← C++ desktop analyzer (100+ tokens)
+│   │   ├── CMakeLists.txt       ← Build configuration
+│   │   ├── src/                 ← C++ source (main, parsers, views)
+│   │   ├── external/            ← Dependencies (ImGui, ImPlot, json)
+│   │   ├── data/                ← JSON data files (experiment results)
+│   │   └── build/               ← Build output
+│   └── experiments/             ← Collected experiment data
+│       └── expert-analysis-2026-01-26/
 └── disk-benchmarking/           ← OS-level disk I/O (historical exploration)
     ├── run_experiment.py        ← Automated blktrace
     ├── settings.json            ← Configuration
