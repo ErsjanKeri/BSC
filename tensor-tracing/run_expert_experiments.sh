@@ -1,139 +1,188 @@
 #!/bin/bash
 #
-# Master script to collect expert activation data across multiple domains
+# Automated expert activation data collection
+# Uses existing run_experiment.py + settings.json workflow
 #
 # Usage: ./run_expert_experiments.sh
 #
-# This script will:
-# 1. Read prompts from prompts.json
-# 2. Run llama-completion for each prompt (100 tokens each)
-# 3. Parse all traces (binary → JSON)
-# 4. Organize by domain
-# 5. Create tarball for transfer
-#
-# Estimated time: 30-60 minutes for 500 tokens total
-#
 
-set -e  # Exit on error
+set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# Load configuration
 echo "===================================================================="
 echo "Expert Activation Pattern Data Collection"
 echo "===================================================================="
 echo ""
 
-# Read experiment name from prompts.json
-EXPERIMENT_NAME=$(python3 -c "import json; print(json.load(open('prompts.json'))['experiment_name'])")
-OUTPUT_BASE="experiments/${EXPERIMENT_NAME}"
+# Backup original settings.json
+cp settings.json settings.json.backup
+echo "✓ Backed up settings.json → settings.json.backup"
+echo ""
 
-echo "Experiment: $EXPERIMENT_NAME"
+# Create experiment directory
+EXPERIMENT_NAME="expert-analysis-2026-01-26"
+OUTPUT_BASE="experiments/${EXPERIMENT_NAME}"
+mkdir -p "$OUTPUT_BASE"
+
 echo "Output directory: $OUTPUT_BASE"
 echo ""
 
-# Create output directory structure
-mkdir -p "$OUTPUT_BASE"
-
-# Get number of prompts
+# Read prompts from prompts.json
 NUM_PROMPTS=$(python3 -c "import json; print(len(json.load(open('prompts.json'))['prompts']))")
 
-echo "Total prompts to process: $NUM_PROMPTS"
+echo "Total prompts: $NUM_PROMPTS"
 echo ""
 
 # Process each prompt
 for i in $(seq 0 $(($NUM_PROMPTS - 1))); do
     echo "===================================================================="
-    echo "Prompt $((i+1))/$NUM_PROMPTS"
+    echo "Experiment $((i+1))/$NUM_PROMPTS"
     echo "===================================================================="
 
-    # Extract prompt data
-    PROMPT_ID=$(python3 -c "import json; print(json.load(open('prompts.json'))['prompts'][$i]['id'])")
-    DOMAIN=$(python3 -c "import json; print(json.load(open('prompts.json'))['prompts'][$i]['domain'])")
-    PROMPT_TEXT=$(python3 -c "import json; print(json.load(open('prompts.json'))['prompts'][$i]['prompt'])")
-    N_PREDICT=$(python3 -c "import json; print(json.load(open('prompts.json'))['prompts'][$i]['n_predict'])")
+    # Extract prompt data using Python
+    PROMPT_DATA=$(python3 -c "
+import json
+p = json.load(open('prompts.json'))['prompts'][$i]
+print(f\"{p['id']}|||{p['domain']}|||{p['prompt']}|||{p['n_predict']}\")
+")
+
+    PROMPT_ID=$(echo "$PROMPT_DATA" | cut -d'|' -f1)
+    DOMAIN=$(echo "$PROMPT_DATA" | cut -d'|' -f2)
+    PROMPT_TEXT=$(echo "$PROMPT_DATA" | cut -d'|' -f3)
+    N_PREDICT=$(echo "$PROMPT_DATA" | cut -d'|' -f4)
 
     echo "Domain: $DOMAIN"
     echo "Prompt ID: $PROMPT_ID"
-    echo "Tokens to generate: $N_PREDICT"
-    echo "Prompt: ${PROMPT_TEXT:0:80}..."
+    echo "Tokens: $N_PREDICT"
     echo ""
 
-    # Create domain output directory
+    # Update settings.json for this prompt
+    python3 << PYTHON
+import json
+
+# Load current settings
+with open('settings.json', 'r') as f:
+    settings = json.load(f)
+
+# Update prompt and n_predict
+settings['prompt'] = """$PROMPT_TEXT"""
+settings['n_predict'] = $N_PREDICT
+
+# Write updated settings
+with open('settings.json', 'w') as f:
+    json.dump(settings, f, indent=2)
+
+print("✓ Updated settings.json")
+PYTHON
+
+    echo ""
+    echo "Running inference..."
+
+    # Run experiment (uses updated settings.json)
+    python3 run_experiment.py
+
+    # Create domain directory
     DOMAIN_DIR="$OUTPUT_BASE/$PROMPT_ID"
     mkdir -p "$DOMAIN_DIR"
 
-    # Run experiment for this prompt
-    echo "Running inference..."
-    python3 run_experiment.py \
-        --prompt "$PROMPT_TEXT" \
-        --n-predict $N_PREDICT \
-        --output-dir "$DOMAIN_DIR" \
-        --domain "$DOMAIN"
+    # Move output to domain folder
+    echo ""
+    echo "Moving data to $DOMAIN_DIR..."
 
+    # Move generated data
+    if [ -f "/tmp/tensor_trace.bin" ]; then
+        mv /tmp/tensor_trace.bin "$DOMAIN_DIR/"
+    fi
+
+    if [ -d "webui/public/data/traces" ]; then
+        mv webui/public/data/traces "$DOMAIN_DIR/"
+    fi
+
+    if [ -d "webui/public/data/graphs" ]; then
+        mv webui/public/data/graphs "$DOMAIN_DIR/"
+    fi
+
+    if [ -f "webui/public/data/buffer-timeline.json" ]; then
+        mv webui/public/data/buffer-timeline.json "$DOMAIN_DIR/"
+    fi
+
+    if [ -f "webui/public/data/memory-map.json" ]; then
+        cp webui/public/data/memory-map.json "$DOMAIN_DIR/"  # Copy, not move (same for all)
+    fi
+
+    echo "✓ Data moved to $DOMAIN_DIR"
     echo ""
-    echo "✓ Completed: $PROMPT_ID"
+
+    # Summary
+    TRACE_COUNT=$(find "$DOMAIN_DIR/traces" -name "*.json" 2>/dev/null | wc -l | tr -d ' ')
+    echo "Collected: $TRACE_COUNT token traces"
     echo ""
-    echo "--------------------------------------------------------------------"
-    echo ""
+
 done
 
-echo "===================================================================="
-echo "All experiments completed!"
-echo "===================================================================="
+# Restore original settings.json
+mv settings.json.backup settings.json
+echo "✓ Restored original settings.json"
 echo ""
 
 # Create summary
-echo "Creating summary..."
 python3 << 'PYTHON'
 import json
-import os
 from pathlib import Path
 
-exp_name = json.load(open('prompts.json'))['experiment_name']
-base_dir = f'experiments/{exp_name}'
+exp_dir = Path('experiments/expert-analysis-2026-01-26')
 
 summary = {
-    'experiment': exp_name,
+    'experiment': 'expert-analysis-2026-01-26',
     'date': '2026-01-26',
+    'model': 'gpt-oss-20b-F16',
     'domains': []
 }
 
-for domain_dir in Path(base_dir).glob('domain-*'):
-    domain_info = {
-        'id': domain_dir.name,
-        'trace_files': len(list((domain_dir / 'traces').glob('*.json'))) if (domain_dir / 'traces').exists() else 0,
-        'size_mb': sum(f.stat().st_size for f in domain_dir.rglob('*') if f.is_file()) / (1024*1024)
-    }
-    summary['domains'].append(domain_info)
+for domain_dir in sorted(exp_dir.glob('domain-*')):
+    traces_dir = domain_dir / 'traces'
+    n_traces = len(list(traces_dir.glob('*.json'))) if traces_dir.exists() else 0
+    size_mb = sum(f.stat().st_size for f in domain_dir.rglob('*') if f.is_file()) / (1024*1024)
 
-with open(f'{base_dir}/summary.json', 'w') as f:
+    summary['domains'].append({
+        'id': domain_dir.name,
+        'tokens': n_traces,
+        'size_mb': round(size_mb, 2)
+    })
+
+with open(exp_dir / 'summary.json', 'w') as f:
     json.dump(summary, f, indent=2)
 
-print(f"Summary written to {base_dir}/summary.json")
+print("✓ Created summary.json")
+
+# Print summary
+print("\nExperiment Summary:")
+print(f"  Total domains: {len(summary['domains'])}")
+print(f"  Total tokens: {sum(d['tokens'] for d in summary['domains'])}")
+print(f"  Total size: {sum(d['size_mb'] for d in summary['domains']):.1f} MB")
 PYTHON
 
-# Create tarball for transfer
 echo ""
-echo "Creating tarball for transfer..."
-TARBALL="${EXPERIMENT_NAME}.tar.gz"
+echo "Creating tarball..."
 cd experiments
-tar -czf "../$TARBALL" "$EXPERIMENT_NAME"
+tar -czf "../${EXPERIMENT_NAME}.tar.gz" "$EXPERIMENT_NAME"
 cd ..
 
-TARBALL_SIZE=$(du -h "$TARBALL" | cut -f1)
-echo "✓ Created: $TARBALL ($TARBALL_SIZE)"
+TARBALL_SIZE=$(du -h "${EXPERIMENT_NAME}.tar.gz" | cut -f1)
+echo "✓ Created: ${EXPERIMENT_NAME}.tar.gz ($TARBALL_SIZE)"
 echo ""
 
 echo "===================================================================="
 echo "Data collection complete!"
 echo "===================================================================="
 echo ""
-echo "To transfer data:"
-echo "  scp $TARBALL your-local-machine:~/Downloads/"
+echo "To transfer to local machine:"
+echo "  scp ${EXPERIMENT_NAME}.tar.gz local:~/Downloads/"
 echo ""
 echo "To extract locally:"
-echo "  tar -xzf $TARBALL"
-echo "  # Data will be in: $EXPERIMENT_NAME/"
+echo "  cd ~/Downloads"
+echo "  tar -xzf ${EXPERIMENT_NAME}.tar.gz"
+echo "  mv ${EXPERIMENT_NAME} ~/Public/LLAMA/BSC/desktopui/data/"
 echo ""
