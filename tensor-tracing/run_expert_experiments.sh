@@ -41,17 +41,11 @@ for i in $(seq 0 $(($NUM_PROMPTS - 1))); do
     echo "Experiment $((i+1))/$NUM_PROMPTS"
     echo "===================================================================="
 
-    # Extract prompt data using Python
-    PROMPT_DATA=$(python3 -c "
-import json
-p = json.load(open('prompts.json'))['prompts'][$i]
-print(f\"{p['id']}|||{p['domain']}|||{p['prompt']}|||{p['n_predict']}\")
-")
-
-    PROMPT_ID=$(echo "$PROMPT_DATA" | cut -d'|' -f1)
-    DOMAIN=$(echo "$PROMPT_DATA" | cut -d'|' -f2)
-    PROMPT_TEXT=$(echo "$PROMPT_DATA" | cut -d'|' -f3)
-    N_PREDICT=$(echo "$PROMPT_DATA" | cut -d'|' -f4)
+    # Extract prompt data using Python (pass $i as argument)
+    PROMPT_ID=$(python3 -c "import json; print(json.load(open('prompts.json'))['prompts'][$i]['id'])")
+    DOMAIN=$(python3 -c "import json; print(json.load(open('prompts.json'))['prompts'][$i]['domain'])")
+    PROMPT_TEXT=$(python3 -c "import json; print(json.load(open('prompts.json'))['prompts'][$i]['prompt'])")
+    N_PREDICT=$(python3 -c "import json; print(json.load(open('prompts.json'))['prompts'][$i]['n_predict'])")
 
     echo "Domain: $DOMAIN"
     echo "Prompt ID: $PROMPT_ID"
