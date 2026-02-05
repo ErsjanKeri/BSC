@@ -60,9 +60,10 @@ import json
 with open('settings.json', 'r') as f:
     settings = json.load(f)
 
-# Update prompt and n_predict
-settings['prompt'] = """$PROMPT_TEXT"""
-settings['n_predict'] = $N_PREDICT
+# Update prompt and n_predict in the experiment section
+settings['experiment']['prompt'] = """$PROMPT_TEXT"""
+settings['experiment']['n_predict'] = $N_PREDICT
+settings['experiment']['tokens_to_generate'] = $N_PREDICT
 
 # Write updated settings
 with open('settings.json', 'w') as f:
