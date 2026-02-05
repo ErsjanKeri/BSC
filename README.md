@@ -15,33 +15,38 @@ Research on understanding and optimizing large language model inference when mod
 4. What is the actual SSD bandwidth utilization during inference?
 5. Can we implement prefetching optimizations based on observed patterns?
 
-**Approach**: Two-thread instrumentation architecture with offline analysis pipeline.
+**Approach**: Application-level tensor tracing with offline analysis pipeline.
 
 ---
 
-## Two-Thread Architecture
+## Instrumentation Approach
 
-### Thread 1: Disk I/O Benchmarking
-**Location**: [disk-benchmarking/](disk-benchmarking/)
-
-**Tool**: Linux `blktrace` (OS-level block I/O tracing)
-
-**Captures**: Raw disk reads/writes, request sizes, timestamps, actual SSD bandwidth
-
-### Thread 2: Tensor-Level Tracing
+### Primary Method: Tensor-Level Tracing
 **Location**: [tensor-tracing/](tensor-tracing/) ([llama.cpp fork](https://github.com/ErsjanKeri/llama.cpp))
 
 **Tool**: Custom instrumentation in llama.cpp GGML backend
 
-**Captures**: Tensor operations (ALL ops), memory source (DISK vs BUFFER), timestamps, computation graphs, buffer allocations
+**Captures**:
+- Tensor operations (ALL 95 GGML ops)
+- Memory source detection (DISK vs BUFFER)
+- MoE expert selection (4-of-32 routing per layer)
+- Multi-source tracking (up to 4 source tensors per operation)
+- Timestamps (nanosecond precision)
+- Computation graphs
+- Buffer allocations
 
-**Combined**: Correlate by timestamp to match tensor accesses with disk I/O events
+**Binary Format**: 1024-byte cache-aligned entries for <1% overhead
+
+### Initial Exploration: Disk I/O Benchmarking (Historical)
+**Location**: [disk-benchmarking/](disk-benchmarking/)
+
+**Note**: This was an initial approach using Linux `blktrace` for OS-level block I/O tracing. While functional, it proved limiting compared to application-level tensor tracing. The tensor tracing approach provides superior granularity (tensor-level vs block-level) and captures semantic information (which experts, which layers) that block-level tracing cannot provide.
 
 ---
 
 ## Quick Start
 
-### Tensor Tracing (Thread 2)
+### Tensor Tracing
 
 **One command:**
 ```bash
@@ -62,7 +67,9 @@ npm run dev  # http://localhost:5173
 
 See [tensor-tracing/README.md](tensor-tracing/README.md) for details.
 
-### Disk I/O Benchmarking (Thread 1)
+### Disk I/O Benchmarking (Historical - Optional)
+
+**Note**: This was an initial exploration approach. For most analysis, use tensor tracing above.
 
 ```bash
 cd disk-benchmarking
@@ -71,13 +78,13 @@ sudo python3 run_experiment.py
 
 Results in `results/experiment_TIMESTAMP/`
 
-See [disk-benchmarking/README.md](disk-benchmarking/README.md) for configuration.
+See [disk-benchmarking/README.md](disk-benchmarking/README.md) for details.
 
 ---
 
-## Current Status (2026-01-17)
+## Current Status (2026-02-05)
 
-### Thread 2: Tensor Tracing ✅ INFRASTRUCTURE COMPLETE
+### Tensor Tracing ✅ INFRASTRUCTURE COMPLETE
 
 **Working**:
 - 1024-byte trace format (128-byte names, expert IDs, zero truncation)
@@ -98,12 +105,14 @@ See [disk-benchmarking/README.md](disk-benchmarking/README.md) for configuration
 - ✅ Address correlation (switched to name-based - 2026-01-13)
 - ✅ Quantization size inflation (gguf-dump fixed with type_traits table - 2026-01-17)
 
-### Thread 1: Disk Benchmarking ✅
+### Expert Activation Analysis ✅ DATA COLLECTED
 
-**Working**:
-- Automated blktrace experiments
-- Memory pressure simulation
-- DuckDB analysis pipeline
+**Completed** (2026-02-05):
+- 5 domain experiments (code, math, creative, factual, mixed)
+- 100 tokens per domain = 500 tokens total
+- ~850 MB tensor trace data
+- Expert activation patterns captured (72 MoE ops per token)
+- Different expert subsets per domain confirmed
 
 ### Desktop UI (2026-01-25) ✅ PRODUCTION-READY
 
@@ -259,7 +268,7 @@ See [disk-benchmarking/README.md](disk-benchmarking/README.md) for configuration
 
 **My hypothesis**: Dense models accessed **sequentially** (layer-by-layer)
 
-**Validation**: Analyze tensor trace layer_id sequence + correlate with blktrace sector patterns
+**Validation**: Analyze tensor trace layer_id sequence to measure access patterns
 
 ---
 
@@ -296,7 +305,7 @@ BSC/
 ├── README.md                    ← You are here
 ├── journal/                     ← Research logs (2025-12 → 2026-01)
 ├── docs/                        ← Reference material
-├── tensor-tracing/              ← Thread 2: Tensor-level instrumentation
+├── tensor-tracing/              ← Tensor-level instrumentation (primary approach)
 │   ├── run_experiment.py        ← One-command pipeline
 │   ├── settings.json            ← Configuration
 │   ├── tools/                   ← Python parsers (binary/CSV/DOT/buffer)
@@ -307,7 +316,7 @@ BSC/
 │   ├── external/                ← Dependencies (ImGui, ImPlot, json)
 │   ├── data/                    ← JSON data files (from tensor-tracing)
 │   └── build/                   ← Build output
-└── disk-benchmarking/           ← Thread 1: OS-level disk I/O
+└── disk-benchmarking/           ← OS-level disk I/O (historical exploration)
     ├── run_experiment.py        ← Automated blktrace
     ├── settings.json            ← Configuration
     └── analysis/                ← DuckDB analysis scripts

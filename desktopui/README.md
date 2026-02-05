@@ -56,10 +56,26 @@ cmake ..
 
 # Build
 cmake --build .
-
-# Run
-./bin/tensor-trace-analyzer
 ```
+
+## Usage
+
+### Single Domain
+
+```bash
+./build/bin/tensor-trace-analyzer <domain-path>
+
+# Example:
+./build/bin/tensor-trace-analyzer ../tensor-tracing/expert-analysis-2026-01-26/domain-1-code
+```
+
+### All 5 Domains at Once
+
+```bash
+./launch_all_domains.sh
+```
+
+This will open 5 separate windows, one for each domain, allowing side-by-side comparison.
 
 ## Project Structure
 
@@ -86,19 +102,45 @@ desktopui/
 - [x] Project structure created
 - [x] CMakeLists.txt configured
 - [x] Data files copied (memory-map, traces, graphs)
-- [ ] Dependencies installed
-- [ ] Minimal window working
-- [ ] Data loading implemented
-- [ ] Visualization implemented
+- [x] Dependencies installed
+- [x] Multi-token visualization working
+- [x] 100+ token support
+- [x] Accumulated heatmap
+- [x] Per-token heatmap rows
+- [x] Command-line domain selection
 
-## Data Files
+## Features
 
-The `data/` directory contains real trace data from GPT-OSS-20B model:
+### Multi-Token Heatmap Visualization
 
-- **Model**: GPT-OSS-20B (12.85 GB, 24 layers, 32 experts per layer)
-- **Tensors**: 2,691 (including expert-level granularity)
-- **Trace entries**: 1,696 for single token
-- **Duration**: 649.5ms inference time
+- **100 token rows**: Each row shows memory access pattern for one token
+- **Accumulated row**: Bottom row shows total accesses across all 100 tokens
+- **Scrollable**: Vertical scrolling to view all tokens
+- **Interactive**: Hover shows token ID, tensor name, access count
+- **File offset X-axis**: Shows access patterns across 12.85 GB model file
+
+### Accumulated Access Graph
+
+- Shows cumulative access pattern across all tokens
+- Step function with quantitative Y-axis
+- Helps identify hot memory regions
+
+## Data Format
+
+Each domain directory should contain:
+```
+domain-X-name/
+├── memory-map.json          # GGUF model structure
+├── traces/
+│   ├── token-00000.json     # Trace for token 0
+│   ├── token-00001.json     # Trace for token 1
+│   └── ... (up to 100 tokens)
+└── graphs/                   # Optional computation graphs
+```
+
+**Model**: GPT-OSS-20B (12.85 GB, 24 layers, 32 experts per layer)
+**Tensors**: 2,691 (including expert-level granularity)
+**MoE Operations**: ~72 per token (3 per layer × 24 layers)
 
 ## Next Steps
 
