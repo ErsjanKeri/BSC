@@ -1,0 +1,36 @@
+{
+  "experiment_name": "expert-analysis-2026-01-26",
+  "description": "Multi-domain expert activation pattern analysis",
+  "prompts": [
+    {
+      "id": "domain-1-code",
+      "domain": "code",
+      "prompt": "Write a Python function that implements a binary search tree with insert, search, and delete operations. Include detailed docstrings explaining each method.",
+      "n_predict": 100
+    },
+    {
+      "id": "domain-2-math",
+      "domain": "math",
+      "prompt": "Solve this problem step by step: If a train travels at 80 km/h for 2.5 hours, then increases speed to 120 km/h for another 1.5 hours, what is the total distance traveled? Show your reasoning clearly.",
+      "n_predict": 100
+    },
+    {
+      "id": "domain-3-creative",
+      "domain": "creative",
+      "prompt": "Write a short story about an AI system discovering the concept of friendship through observing humans in a café. Use vivid sensory descriptions and focus on the AI's internal perspective.",
+      "n_predict": 100
+    },
+    {
+      "id": "domain-4-factual",
+      "domain": "factual",
+      "prompt": "Explain how CRISPR gene editing works, including the role of guide RNA, Cas9 protein, and the DNA repair mechanisms involved. Describe both the mechanism and potential applications.",
+      "n_predict": 100
+    },
+    {
+      "id": "domain-5-mixed",
+      "domain": "mixed",
+      "prompt": "Compare the time complexity of quicksort and mergesort algorithms. Explain when each is preferred, then write a Python implementation of whichever is better for sorting nearly-sorted arrays.",
+      "n_predict": 100
+    }
+  ]
+}
