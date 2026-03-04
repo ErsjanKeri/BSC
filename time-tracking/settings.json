@@ -1,0 +1,21 @@
+{
+  "experiment": {
+    "small_model": "gpt-oss-20b-F16.gguf",
+    "large_model": "gpt-oss-120b-F16.gguf",
+    "tokens_to_generate": 200,
+    "prompt": "Write a Python function to implement binary search in a sorted array",
+    "num_iterations": 10,
+    "cooldown_seconds": 5
+  },
+  "paths": {
+    "llama_cpp_root": "/home/keri/llama.cpp",
+    "models_dir": "/home/keri/llama.cpp/models",
+    "build_prefetch_on": "/home/keri/llama.cpp/build_prefetch_on/bin",
+    "build_prefetch_off": "/home/keri/llama.cpp/build_prefetch_off/bin",
+    "results_dir": "results"
+  },
+  "cleanup": {
+    "drop_caches": true,
+    "clear_pagecache_only": false
+  }
+}

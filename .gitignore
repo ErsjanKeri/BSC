@@ -6,3 +6,5 @@ results/
 node_modules
 
 expert-analysis-*
+
+venv
