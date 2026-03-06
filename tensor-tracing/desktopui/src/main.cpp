@@ -10,12 +10,12 @@
 #include "TraceTableView.h"
 #include "HeatmapView.h"
 
-// Helper: Render accumulated access graph
+// Helper: Render accumulated access graph (sorted by file offset)
 void renderAccumulatedGraph(const MemoryMap& memoryMap,
                            const std::map<std::string, uint32_t>& accumulatedCounts,
                            uint32_t maxCount) {
     ImGui::Separator();
-    ImGui::Text("Accumulated Access Pattern (All 100 Tokens)");
+    ImGui::Text("Accumulated Access Pattern - Spatial View (File Offset Order)");
 
     // Static hover state for tooltips
     static const MemoryTensor* hovered_tensor = nullptr;
@@ -111,6 +111,133 @@ void renderAccumulatedGraph(const MemoryMap& memoryMap,
 
         // Accumulated access count
         auto it = accumulatedCounts.find(hovered_tensor->name);
+        if (it != accumulatedCounts.end() && it->second > 0) {
+            ImGui::Separator();
+            uint32_t count = it->second;
+            float intensity = static_cast<float>(count) / static_cast<float>(maxCount);
+            ImGui::Text("Total Accesses: %u (%.1f%% of max)", count, intensity * 100.0f);
+            ImGui::ProgressBar(intensity, ImVec2(-1, 0), "");
+        } else {
+            ImGui::Separator();
+            ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Not accessed across all tokens");
+        }
+
+        ImGui::EndTooltip();
+    }
+}
+
+// Helper: Render accumulated access graph sorted by access count
+void renderAccumulatedGraphSorted(const MemoryMap& memoryMap,
+                                  const std::map<std::string, uint32_t>& accumulatedCounts,
+                                  uint32_t maxCount) {
+    ImGui::Separator();
+    ImGui::Text("Accumulated Access Pattern - Sorted by Access Count (Hottest First)");
+
+    // Static hover state for tooltips
+    static const MemoryTensor* hovered_tensor_sorted = nullptr;
+    hovered_tensor_sorted = nullptr;  // Reset each frame
+
+    if (ImPlot::BeginPlot("##accumulated_graph_sorted", ImVec2(-1, 450))) {
+        ImPlot::SetupAxis(ImAxis_X1, "Tensor Index (Sorted by Access Count)", ImPlotAxisFlags_None);
+        ImPlot::SetupAxis(ImAxis_Y1, "Total Accesses", ImPlotAxisFlags_None);
+
+        ImPlot::SetupAxisLimits(ImAxis_X1, 0.0, static_cast<double>(memoryMap.tensors.size()), ImGuiCond_Once);
+        ImPlot::SetupAxisLimits(ImAxis_Y1, 0.0, static_cast<double>(maxCount), ImGuiCond_Once);
+
+        // Create sorted list of tensors by access count (descending)
+        struct TensorWithCount {
+            const MemoryTensor* tensor;
+            uint32_t count;
+            size_t original_index;
+        };
+        std::vector<TensorWithCount> sorted_tensors;
+
+        for (size_t i = 0; i < memoryMap.tensors.size(); i++) {
+            const auto& tensor = memoryMap.tensors[i];
+            uint32_t count = 0;
+            auto it = accumulatedCounts.find(tensor.name);
+            if (it != accumulatedCounts.end()) {
+                count = it->second;
+            }
+            sorted_tensors.push_back({&tensor, count, i});
+        }
+
+        // Sort by count (descending)
+        std::sort(sorted_tensors.begin(), sorted_tensors.end(),
+                  [](const TensorWithCount& a, const TensorWithCount& b) {
+                      return a.count > b.count;  // Highest count first
+                  });
+
+        // Build step function with sorted order
+        std::vector<double> step_x, step_y;
+        for (size_t i = 0; i < sorted_tensors.size(); i++) {
+            double x_pos = static_cast<double>(i);
+            double count = static_cast<double>(sorted_tensors[i].count);
+
+            step_x.push_back(x_pos);
+            step_y.push_back(count);
+            step_x.push_back(x_pos + 1.0);
+            step_y.push_back(count);
+        }
+
+        if (!step_x.empty()) {
+            // Blue color (same as original graph)
+            ImVec4 blue_color = ImVec4(0.2f, 0.5f, 0.8f, 1.0f);
+
+            // Draw filled area
+            ImPlot::PushStyleColor(ImPlotCol_Fill, blue_color);
+            ImPlot::PlotShaded("##sorted_fill", step_x.data(), step_y.data(), step_x.size(), 0.0);
+            ImPlot::PopStyleColor();
+
+            // Draw line
+            ImPlot::PushStyleColor(ImPlotCol_Line, blue_color);
+            ImPlot::PlotLine("##sorted_line", step_x.data(), step_y.data(), step_x.size());
+            ImPlot::PopStyleColor();
+        }
+
+        // Hover detection for tooltips
+        if (ImPlot::IsPlotHovered()) {
+            ImPlotPoint mouse_pos = ImPlot::GetPlotMousePos();
+            int tensor_idx = static_cast<int>(mouse_pos.x);
+
+            if (tensor_idx >= 0 && tensor_idx < static_cast<int>(sorted_tensors.size())) {
+                hovered_tensor_sorted = sorted_tensors[tensor_idx].tensor;
+            }
+        }
+
+        ImPlot::EndPlot();
+    }
+
+    // Show tooltip if hovering
+    if (hovered_tensor_sorted) {
+        ImGui::BeginTooltip();
+
+        ImGui::Text("Tensor: %s", hovered_tensor_sorted->name.c_str());
+        ImGui::Separator();
+
+        if (hovered_tensor_sorted->layer_id >= 0) {
+            ImGui::Text("Layer: %d", hovered_tensor_sorted->layer_id);
+        } else {
+            ImGui::Text("Layer: -");
+        }
+
+        if (hovered_tensor_sorted->expert_id >= 0) {
+            ImGui::Text("Expert ID: %d", hovered_tensor_sorted->expert_id);
+        }
+
+        ImGui::Text("Category: %s", hovered_tensor_sorted->category.c_str());
+        ImGui::Text("Component: %s", hovered_tensor_sorted->component_type.c_str());
+
+        ImGui::Separator();
+
+        // Size and position
+        ImGui::Text("Size: %.2f MB", hovered_tensor_sorted->size_bytes / (1024.0 * 1024.0));
+        ImGui::Text("File Offset: %.2f - %.2f GB",
+                    hovered_tensor_sorted->offset_start / (1024.0 * 1024.0 * 1024.0),
+                    hovered_tensor_sorted->offset_end / (1024.0 * 1024.0 * 1024.0));
+
+        // Accumulated access count
+        auto it = accumulatedCounts.find(hovered_tensor_sorted->name);
         if (it != accumulatedCounts.end() && it->second > 0) {
             ImGui::Separator();
             uint32_t count = it->second;
@@ -362,8 +489,11 @@ int main(int argc, char** argv) {
         if (dataLoaded) {
             heatmapView.render();
 
-            // Accumulated graph below heatmap
+            // Accumulated graph below heatmap (spatial order)
             renderAccumulatedGraph(memoryMap, accumulatedCounts, maxAccumulatedCount);
+
+            // Accumulated graph sorted by access count (hottest first)
+            renderAccumulatedGraphSorted(memoryMap, accumulatedCounts, maxAccumulatedCount);
         }
 
         ImGui::End();

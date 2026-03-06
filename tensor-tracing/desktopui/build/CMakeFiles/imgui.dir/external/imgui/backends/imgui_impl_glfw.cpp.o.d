@@ -1,7 +1,7 @@
 CMakeFiles/imgui.dir/external/imgui/backends/imgui_impl_glfw.cpp.o: \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/external/imgui/backends/imgui_impl_glfw.cpp \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/external/imgui/imgui.h \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/external/imgui/imconfig.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/imgui/backends/imgui_impl_glfw.cpp \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/imgui/imgui.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/imgui/imconfig.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/float.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__config \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__config_site \
@@ -83,7 +83,7 @@ CMakeFiles/imgui.dir/external/imgui/backends/imgui_impl_glfw.cpp.o: \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/malloc/_malloc.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/sys/_types/_dev_t.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/sys/_types/_mode_t.h \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/external/imgui/backends/imgui_impl_glfw.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/imgui/backends/imgui_impl_glfw.h \
   /opt/homebrew/include/GLFW/glfw3.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework/Headers/gl.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework/Headers/gltypes.h \

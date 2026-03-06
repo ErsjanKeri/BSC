@@ -1,7 +1,7 @@
 CMakeFiles/tensor-trace-analyzer.dir/src/main.cpp.o: \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/main.cpp \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/external/imgui/imgui.h \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/external/imgui/imconfig.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/main.cpp \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/imgui/imgui.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/imgui/imconfig.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/float.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__config \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__config_site \
@@ -83,10 +83,10 @@ CMakeFiles/tensor-trace-analyzer.dir/src/main.cpp.o: \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/malloc/_malloc.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/sys/_types/_dev_t.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/sys/_types/_mode_t.h \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/external/imgui/backends/imgui_impl_glfw.h \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/external/imgui/backends/imgui_impl_opengl3.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/imgui/backends/imgui_impl_glfw.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/imgui/backends/imgui_impl_opengl3.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/TargetConditionals.h \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/external/implot/implot.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/implot/implot.h \
   /opt/homebrew/include/GLFW/glfw3.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework/Headers/gl.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework/Headers/gltypes.h \
@@ -745,10 +745,10 @@ CMakeFiles/tensor-trace-analyzer.dir/src/main.cpp.o: \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/sys/_types/_fsfilcnt_t.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/_types/_nl_item.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__bsd_locale_defaults.h \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/JSONLoader.h \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/MemoryMap.h \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/TraceData.h \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/TraceTableView.h \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/HeatmapView.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/JSONLoader.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/MemoryMap.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/TraceData.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/TraceTableView.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/HeatmapView.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/map \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__tree

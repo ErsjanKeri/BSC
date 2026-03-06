@@ -1,7 +1,7 @@
 CMakeFiles/imgui.dir/external/imgui/imgui_draw.cpp.o: \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/external/imgui/imgui_draw.cpp \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/external/imgui/imgui.h \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/external/imgui/imconfig.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/imgui/imgui_draw.cpp \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/imgui/imgui.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/imgui/imconfig.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/float.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__config \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__config_site \
@@ -83,7 +83,7 @@ CMakeFiles/imgui.dir/external/imgui/imgui_draw.cpp.o: \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/malloc/_malloc.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/sys/_types/_dev_t.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/sys/_types/_mode_t.h \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/external/imgui/imgui_internal.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/imgui/imgui_internal.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/stdio.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/stdio.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/_stdio.h \
@@ -223,5 +223,5 @@ CMakeFiles/imgui.dir/external/imgui/imgui_draw.cpp.o: \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/arm/limits.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/arm/_limits.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/sys/syslimits.h \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/external/imgui/imstb_rectpack.h \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/external/imgui/imstb_truetype.h
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/imgui/imstb_rectpack.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/imgui/imstb_truetype.h

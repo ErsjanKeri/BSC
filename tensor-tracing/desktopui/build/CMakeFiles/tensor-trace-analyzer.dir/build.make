@@ -53,10 +53,10 @@ RM = /opt/homebrew/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/ersibesi/Public/LLAMA/BSC/desktopui
+CMAKE_SOURCE_DIR = /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/ersibesi/Public/LLAMA/BSC/desktopui/build
+CMAKE_BINARY_DIR = /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/tensor-trace-analyzer.dir/depend.make
@@ -73,60 +73,60 @@ CMakeFiles/tensor-trace-analyzer.dir/codegen:
 .PHONY : CMakeFiles/tensor-trace-analyzer.dir/codegen
 
 CMakeFiles/tensor-trace-analyzer.dir/src/main.cpp.o: CMakeFiles/tensor-trace-analyzer.dir/flags.make
-CMakeFiles/tensor-trace-analyzer.dir/src/main.cpp.o: /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/main.cpp
+CMakeFiles/tensor-trace-analyzer.dir/src/main.cpp.o: /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/main.cpp
 CMakeFiles/tensor-trace-analyzer.dir/src/main.cpp.o: CMakeFiles/tensor-trace-analyzer.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/tensor-trace-analyzer.dir/src/main.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tensor-trace-analyzer.dir/src/main.cpp.o -MF CMakeFiles/tensor-trace-analyzer.dir/src/main.cpp.o.d -o CMakeFiles/tensor-trace-analyzer.dir/src/main.cpp.o -c /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/tensor-trace-analyzer.dir/src/main.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tensor-trace-analyzer.dir/src/main.cpp.o -MF CMakeFiles/tensor-trace-analyzer.dir/src/main.cpp.o.d -o CMakeFiles/tensor-trace-analyzer.dir/src/main.cpp.o -c /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/main.cpp
 
 CMakeFiles/tensor-trace-analyzer.dir/src/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/tensor-trace-analyzer.dir/src/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/main.cpp > CMakeFiles/tensor-trace-analyzer.dir/src/main.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/main.cpp > CMakeFiles/tensor-trace-analyzer.dir/src/main.cpp.i
 
 CMakeFiles/tensor-trace-analyzer.dir/src/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/tensor-trace-analyzer.dir/src/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/main.cpp -o CMakeFiles/tensor-trace-analyzer.dir/src/main.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/main.cpp -o CMakeFiles/tensor-trace-analyzer.dir/src/main.cpp.s
 
 CMakeFiles/tensor-trace-analyzer.dir/src/JSONLoader.cpp.o: CMakeFiles/tensor-trace-analyzer.dir/flags.make
-CMakeFiles/tensor-trace-analyzer.dir/src/JSONLoader.cpp.o: /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/JSONLoader.cpp
+CMakeFiles/tensor-trace-analyzer.dir/src/JSONLoader.cpp.o: /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/JSONLoader.cpp
 CMakeFiles/tensor-trace-analyzer.dir/src/JSONLoader.cpp.o: CMakeFiles/tensor-trace-analyzer.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/tensor-trace-analyzer.dir/src/JSONLoader.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tensor-trace-analyzer.dir/src/JSONLoader.cpp.o -MF CMakeFiles/tensor-trace-analyzer.dir/src/JSONLoader.cpp.o.d -o CMakeFiles/tensor-trace-analyzer.dir/src/JSONLoader.cpp.o -c /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/JSONLoader.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/tensor-trace-analyzer.dir/src/JSONLoader.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tensor-trace-analyzer.dir/src/JSONLoader.cpp.o -MF CMakeFiles/tensor-trace-analyzer.dir/src/JSONLoader.cpp.o.d -o CMakeFiles/tensor-trace-analyzer.dir/src/JSONLoader.cpp.o -c /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/JSONLoader.cpp
 
 CMakeFiles/tensor-trace-analyzer.dir/src/JSONLoader.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/tensor-trace-analyzer.dir/src/JSONLoader.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/JSONLoader.cpp > CMakeFiles/tensor-trace-analyzer.dir/src/JSONLoader.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/JSONLoader.cpp > CMakeFiles/tensor-trace-analyzer.dir/src/JSONLoader.cpp.i
 
 CMakeFiles/tensor-trace-analyzer.dir/src/JSONLoader.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/tensor-trace-analyzer.dir/src/JSONLoader.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/JSONLoader.cpp -o CMakeFiles/tensor-trace-analyzer.dir/src/JSONLoader.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/JSONLoader.cpp -o CMakeFiles/tensor-trace-analyzer.dir/src/JSONLoader.cpp.s
 
 CMakeFiles/tensor-trace-analyzer.dir/src/TraceTableView.cpp.o: CMakeFiles/tensor-trace-analyzer.dir/flags.make
-CMakeFiles/tensor-trace-analyzer.dir/src/TraceTableView.cpp.o: /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/TraceTableView.cpp
+CMakeFiles/tensor-trace-analyzer.dir/src/TraceTableView.cpp.o: /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/TraceTableView.cpp
 CMakeFiles/tensor-trace-analyzer.dir/src/TraceTableView.cpp.o: CMakeFiles/tensor-trace-analyzer.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/tensor-trace-analyzer.dir/src/TraceTableView.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tensor-trace-analyzer.dir/src/TraceTableView.cpp.o -MF CMakeFiles/tensor-trace-analyzer.dir/src/TraceTableView.cpp.o.d -o CMakeFiles/tensor-trace-analyzer.dir/src/TraceTableView.cpp.o -c /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/TraceTableView.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/tensor-trace-analyzer.dir/src/TraceTableView.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tensor-trace-analyzer.dir/src/TraceTableView.cpp.o -MF CMakeFiles/tensor-trace-analyzer.dir/src/TraceTableView.cpp.o.d -o CMakeFiles/tensor-trace-analyzer.dir/src/TraceTableView.cpp.o -c /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/TraceTableView.cpp
 
 CMakeFiles/tensor-trace-analyzer.dir/src/TraceTableView.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/tensor-trace-analyzer.dir/src/TraceTableView.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/TraceTableView.cpp > CMakeFiles/tensor-trace-analyzer.dir/src/TraceTableView.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/TraceTableView.cpp > CMakeFiles/tensor-trace-analyzer.dir/src/TraceTableView.cpp.i
 
 CMakeFiles/tensor-trace-analyzer.dir/src/TraceTableView.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/tensor-trace-analyzer.dir/src/TraceTableView.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/TraceTableView.cpp -o CMakeFiles/tensor-trace-analyzer.dir/src/TraceTableView.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/TraceTableView.cpp -o CMakeFiles/tensor-trace-analyzer.dir/src/TraceTableView.cpp.s
 
 CMakeFiles/tensor-trace-analyzer.dir/src/HeatmapView.cpp.o: CMakeFiles/tensor-trace-analyzer.dir/flags.make
-CMakeFiles/tensor-trace-analyzer.dir/src/HeatmapView.cpp.o: /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/HeatmapView.cpp
+CMakeFiles/tensor-trace-analyzer.dir/src/HeatmapView.cpp.o: /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/HeatmapView.cpp
 CMakeFiles/tensor-trace-analyzer.dir/src/HeatmapView.cpp.o: CMakeFiles/tensor-trace-analyzer.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/tensor-trace-analyzer.dir/src/HeatmapView.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tensor-trace-analyzer.dir/src/HeatmapView.cpp.o -MF CMakeFiles/tensor-trace-analyzer.dir/src/HeatmapView.cpp.o.d -o CMakeFiles/tensor-trace-analyzer.dir/src/HeatmapView.cpp.o -c /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/HeatmapView.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/tensor-trace-analyzer.dir/src/HeatmapView.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tensor-trace-analyzer.dir/src/HeatmapView.cpp.o -MF CMakeFiles/tensor-trace-analyzer.dir/src/HeatmapView.cpp.o.d -o CMakeFiles/tensor-trace-analyzer.dir/src/HeatmapView.cpp.o -c /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/HeatmapView.cpp
 
 CMakeFiles/tensor-trace-analyzer.dir/src/HeatmapView.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/tensor-trace-analyzer.dir/src/HeatmapView.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/HeatmapView.cpp > CMakeFiles/tensor-trace-analyzer.dir/src/HeatmapView.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/HeatmapView.cpp > CMakeFiles/tensor-trace-analyzer.dir/src/HeatmapView.cpp.i
 
 CMakeFiles/tensor-trace-analyzer.dir/src/HeatmapView.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/tensor-trace-analyzer.dir/src/HeatmapView.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/HeatmapView.cpp -o CMakeFiles/tensor-trace-analyzer.dir/src/HeatmapView.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/HeatmapView.cpp -o CMakeFiles/tensor-trace-analyzer.dir/src/HeatmapView.cpp.s
 
 # Object files for target tensor-trace-analyzer
 tensor__trace__analyzer_OBJECTS = \
@@ -150,7 +150,7 @@ bin/tensor-trace-analyzer: libimgui.a
 bin/tensor-trace-analyzer: /opt/homebrew/lib/libglfw.3.4.dylib
 bin/tensor-trace-analyzer: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework
 bin/tensor-trace-analyzer: CMakeFiles/tensor-trace-analyzer.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable bin/tensor-trace-analyzer"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable bin/tensor-trace-analyzer"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/tensor-trace-analyzer.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -162,6 +162,6 @@ CMakeFiles/tensor-trace-analyzer.dir/clean:
 .PHONY : CMakeFiles/tensor-trace-analyzer.dir/clean
 
 CMakeFiles/tensor-trace-analyzer.dir/depend:
-	cd /Users/ersibesi/Public/LLAMA/BSC/desktopui/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/ersibesi/Public/LLAMA/BSC/desktopui /Users/ersibesi/Public/LLAMA/BSC/desktopui /Users/ersibesi/Public/LLAMA/BSC/desktopui/build /Users/ersibesi/Public/LLAMA/BSC/desktopui/build /Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/tensor-trace-analyzer.dir/DependInfo.cmake "--color=$(COLOR)" tensor-trace-analyzer
+	cd /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles/tensor-trace-analyzer.dir/DependInfo.cmake "--color=$(COLOR)" tensor-trace-analyzer
 .PHONY : CMakeFiles/tensor-trace-analyzer.dir/depend
 

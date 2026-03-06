@@ -1,7 +1,7 @@
 CMakeFiles/tensor-trace-analyzer.dir/src/HeatmapView.cpp.o: \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/HeatmapView.cpp \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/HeatmapView.h \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/MemoryMap.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/HeatmapView.cpp \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/HeatmapView.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/MemoryMap.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/string \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/max.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/comp.h \
@@ -676,15 +676,15 @@ CMakeFiles/tensor-trace-analyzer.dir/src/HeatmapView.cpp.o: \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/pointer_to_binary_function.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/pointer_to_unary_function.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/unary_negate.h \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/TraceData.h \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/external/imgui/imgui.h \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/external/imgui/imconfig.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/TraceData.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/imgui/imgui.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/imgui/imconfig.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/float.h \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/14.0.3/include/float.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/float.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/map \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__tree \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/external/implot/implot.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/implot/implot.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/sstream \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/istream \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/ostream \

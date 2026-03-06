@@ -8,8 +8,8 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/Users/ersibesi/Public/LLAMA/BSC/desktopui/external/implot/implot.cpp" "CMakeFiles/implot.dir/external/implot/implot.cpp.o" "gcc" "CMakeFiles/implot.dir/external/implot/implot.cpp.o.d"
-  "/Users/ersibesi/Public/LLAMA/BSC/desktopui/external/implot/implot_items.cpp" "CMakeFiles/implot.dir/external/implot/implot_items.cpp.o" "gcc" "CMakeFiles/implot.dir/external/implot/implot_items.cpp.o.d"
+  "/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/implot/implot.cpp" "CMakeFiles/implot.dir/external/implot/implot.cpp.o" "gcc" "CMakeFiles/implot.dir/external/implot/implot.cpp.o.d"
+  "/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/implot/implot_items.cpp" "CMakeFiles/implot.dir/external/implot/implot_items.cpp.o" "gcc" "CMakeFiles/implot.dir/external/implot/implot_items.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

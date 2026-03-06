@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/Users/ersibesi/Public/LLAMA/BSC/desktopui/src -I/Users/ersibesi/Public/LLAMA/BSC/desktopui/external/json -I/Users/ersibesi/Public/LLAMA/BSC/desktopui/external/imgui -I/Users/ersibesi/Public/LLAMA/BSC/desktopui/external/imgui/backends -I/Users/ersibesi/Public/LLAMA/BSC/desktopui/external/implot -isystem /opt/homebrew/include -iframework /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks
+CXX_INCLUDES = -I/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src -I/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/json -I/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/imgui -I/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/imgui/backends -I/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/implot -isystem /opt/homebrew/include -iframework /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks
 
 CXX_FLAGSarm64 = -std=c++17 -arch arm64
 

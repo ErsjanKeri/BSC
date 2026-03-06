@@ -54,10 +54,10 @@ RM = /opt/homebrew/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/ersibesi/Public/LLAMA/BSC/desktopui
+CMAKE_SOURCE_DIR = /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/ersibesi/Public/LLAMA/BSC/desktopui/build
+CMAKE_BINARY_DIR = /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build
 
 #=============================================================================
 # Directory level rules for the build root directory
@@ -91,14 +91,14 @@ clean: CMakeFiles/tensor-trace-analyzer.dir/clean
 CMakeFiles/imgui.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/imgui.dir/build.make CMakeFiles/imgui.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/imgui.dir/build.make CMakeFiles/imgui.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles --progress-num=1,2,3,4,5,6,7 "Built target imgui"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles --progress-num=1,2,3,4,5,6,7 "Built target imgui"
 .PHONY : CMakeFiles/imgui.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/imgui.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles 7
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles 7
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/imgui.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles 0
 .PHONY : CMakeFiles/imgui.dir/rule
 
 # Convenience name for target.
@@ -108,7 +108,7 @@ imgui: CMakeFiles/imgui.dir/rule
 # codegen rule for target.
 CMakeFiles/imgui.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/imgui.dir/build.make CMakeFiles/imgui.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles --progress-num=1,2,3,4,5,6,7 "Finished codegen for target imgui"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles --progress-num=1,2,3,4,5,6,7 "Finished codegen for target imgui"
 .PHONY : CMakeFiles/imgui.dir/codegen
 
 # clean rule for target.
@@ -123,14 +123,14 @@ CMakeFiles/imgui.dir/clean:
 CMakeFiles/implot.dir/all: CMakeFiles/imgui.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/implot.dir/build.make CMakeFiles/implot.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/implot.dir/build.make CMakeFiles/implot.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles --progress-num=8,9,10 "Built target implot"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles --progress-num=8,9,10 "Built target implot"
 .PHONY : CMakeFiles/implot.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/implot.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles 10
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles 10
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/implot.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles 0
 .PHONY : CMakeFiles/implot.dir/rule
 
 # Convenience name for target.
@@ -140,7 +140,7 @@ implot: CMakeFiles/implot.dir/rule
 # codegen rule for target.
 CMakeFiles/implot.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/implot.dir/build.make CMakeFiles/implot.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles --progress-num=8,9,10 "Finished codegen for target implot"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles --progress-num=8,9,10 "Finished codegen for target implot"
 .PHONY : CMakeFiles/implot.dir/codegen
 
 # clean rule for target.
@@ -156,14 +156,14 @@ CMakeFiles/tensor-trace-analyzer.dir/all: CMakeFiles/imgui.dir/all
 CMakeFiles/tensor-trace-analyzer.dir/all: CMakeFiles/implot.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/tensor-trace-analyzer.dir/build.make CMakeFiles/tensor-trace-analyzer.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/tensor-trace-analyzer.dir/build.make CMakeFiles/tensor-trace-analyzer.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles --progress-num=11,12,13,14,15 "Built target tensor-trace-analyzer"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles --progress-num=11,12,13,14,15 "Built target tensor-trace-analyzer"
 .PHONY : CMakeFiles/tensor-trace-analyzer.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/tensor-trace-analyzer.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles 15
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/tensor-trace-analyzer.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles 0
 .PHONY : CMakeFiles/tensor-trace-analyzer.dir/rule
 
 # Convenience name for target.
@@ -173,7 +173,7 @@ tensor-trace-analyzer: CMakeFiles/tensor-trace-analyzer.dir/rule
 # codegen rule for target.
 CMakeFiles/tensor-trace-analyzer.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/tensor-trace-analyzer.dir/build.make CMakeFiles/tensor-trace-analyzer.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles --progress-num=11,12,13,14,15 "Finished codegen for target tensor-trace-analyzer"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles --progress-num=11,12,13,14,15 "Finished codegen for target tensor-trace-analyzer"
 .PHONY : CMakeFiles/tensor-trace-analyzer.dir/codegen
 
 # clean rule for target.

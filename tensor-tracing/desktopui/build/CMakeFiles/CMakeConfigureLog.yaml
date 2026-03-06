@@ -20,6 +20,7 @@ events:
     names:
       - "uname"
     candidate_directories:
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/"
       - "/Users/ersibesi/.antigravity/antigravity/bin/"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/"
       - "/Library/TeX/texbin/"
@@ -41,6 +42,7 @@ events:
       - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
       - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
     searched_directories:
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/uname"
       - "/Users/ersibesi/.antigravity/antigravity/bin/uname"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/uname"
       - "/Library/TeX/texbin/uname"
@@ -54,6 +56,7 @@ events:
     found: "/usr/bin/uname"
     search_context:
       ENV{PATH}:
+        - "/Users/ersibesi/Public/LLAMA/.venv/bin"
         - "/Users/ersibesi/.antigravity/antigravity/bin"
         - "/Users/ersibesi/Downloads/google-cloud-sdk/bin"
         - "/Library/TeX/texbin"
@@ -103,6 +106,7 @@ events:
       - "make"
       - "smake"
     candidate_directories:
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/"
       - "/Users/ersibesi/.antigravity/antigravity/bin/"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/"
       - "/Library/TeX/texbin/"
@@ -124,6 +128,7 @@ events:
       - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
       - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
     searched_directories:
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/gmake"
       - "/Users/ersibesi/.antigravity/antigravity/bin/gmake"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/gmake"
       - "/Library/TeX/texbin/gmake"
@@ -134,6 +139,7 @@ events:
     found: "/opt/homebrew/bin/gmake"
     search_context:
       ENV{PATH}:
+        - "/Users/ersibesi/Public/LLAMA/.venv/bin"
         - "/Users/ersibesi/.antigravity/antigravity/bin"
         - "/Users/ersibesi/Downloads/google-cloud-sdk/bin"
         - "/Library/TeX/texbin"
@@ -181,6 +187,7 @@ events:
       - "icx"
       - "clang++"
     candidate_directories:
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/"
       - "/Users/ersibesi/.antigravity/antigravity/bin/"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/"
       - "/Library/TeX/texbin/"
@@ -202,6 +209,7 @@ events:
       - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
       - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
     searched_directories:
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/c++"
       - "/Users/ersibesi/.antigravity/antigravity/bin/c++"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/c++"
       - "/Library/TeX/texbin/c++"
@@ -215,6 +223,7 @@ events:
     found: "/usr/bin/c++"
     search_context:
       ENV{PATH}:
+        - "/Users/ersibesi/Public/LLAMA/.venv/bin"
         - "/Users/ersibesi/.antigravity/antigravity/bin"
         - "/Users/ersibesi/Downloads/google-cloud-sdk/bin"
         - "/Library/TeX/texbin"
@@ -263,6 +272,7 @@ events:
     found: "/opt/homebrew/share/cmake/Modules/CMakeCXXCompilerId.cpp.in"
     search_context:
       ENV{PATH}:
+        - "/Users/ersibesi/Public/LLAMA/.venv/bin"
         - "/Users/ersibesi/.antigravity/antigravity/bin"
         - "/Users/ersibesi/Downloads/google-cloud-sdk/bin"
         - "/Library/TeX/texbin"
@@ -304,7 +314,7 @@ events:
       Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
       
       The CXX compiler identification is AppleClang, found in:
-        /Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/4.2.1/CompilerIdCXX/a.out
+        /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles/4.2.1/CompilerIdCXX/a.out
       
   -
     kind: "message-v1"
@@ -355,6 +365,7 @@ events:
       - "ar"
     candidate_directories:
       - "/usr/bin/"
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/"
       - "/Users/ersibesi/.antigravity/antigravity/bin/"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/"
       - "/Library/TeX/texbin/"
@@ -377,6 +388,7 @@ events:
     found: "/usr/bin/ar"
     search_context:
       ENV{PATH}:
+        - "/Users/ersibesi/Public/LLAMA/.venv/bin"
         - "/Users/ersibesi/.antigravity/antigravity/bin"
         - "/Users/ersibesi/Downloads/google-cloud-sdk/bin"
         - "/Library/TeX/texbin"
@@ -419,6 +431,7 @@ events:
       - "ranlib"
     candidate_directories:
       - "/usr/bin/"
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/"
       - "/Users/ersibesi/.antigravity/antigravity/bin/"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/"
       - "/Library/TeX/texbin/"
@@ -441,6 +454,7 @@ events:
     found: "/usr/bin/ranlib"
     search_context:
       ENV{PATH}:
+        - "/Users/ersibesi/Public/LLAMA/.venv/bin"
         - "/Users/ersibesi/.antigravity/antigravity/bin"
         - "/Users/ersibesi/Downloads/google-cloud-sdk/bin"
         - "/Library/TeX/texbin"
@@ -483,6 +497,7 @@ events:
       - "strip"
     candidate_directories:
       - "/usr/bin/"
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/"
       - "/Users/ersibesi/.antigravity/antigravity/bin/"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/"
       - "/Library/TeX/texbin/"
@@ -505,6 +520,7 @@ events:
     found: "/usr/bin/strip"
     search_context:
       ENV{PATH}:
+        - "/Users/ersibesi/Public/LLAMA/.venv/bin"
         - "/Users/ersibesi/.antigravity/antigravity/bin"
         - "/Users/ersibesi/Downloads/google-cloud-sdk/bin"
         - "/Library/TeX/texbin"
@@ -547,6 +563,7 @@ events:
       - "ld"
     candidate_directories:
       - "/usr/bin/"
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/"
       - "/Users/ersibesi/.antigravity/antigravity/bin/"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/"
       - "/Library/TeX/texbin/"
@@ -569,6 +586,7 @@ events:
     found: "/usr/bin/ld"
     search_context:
       ENV{PATH}:
+        - "/Users/ersibesi/Public/LLAMA/.venv/bin"
         - "/Users/ersibesi/.antigravity/antigravity/bin"
         - "/Users/ersibesi/Downloads/google-cloud-sdk/bin"
         - "/Library/TeX/texbin"
@@ -611,6 +629,7 @@ events:
       - "nm"
     candidate_directories:
       - "/usr/bin/"
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/"
       - "/Users/ersibesi/.antigravity/antigravity/bin/"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/"
       - "/Library/TeX/texbin/"
@@ -633,6 +652,7 @@ events:
     found: "/usr/bin/nm"
     search_context:
       ENV{PATH}:
+        - "/Users/ersibesi/Public/LLAMA/.venv/bin"
         - "/Users/ersibesi/.antigravity/antigravity/bin"
         - "/Users/ersibesi/Downloads/google-cloud-sdk/bin"
         - "/Library/TeX/texbin"
@@ -675,6 +695,7 @@ events:
       - "objdump"
     candidate_directories:
       - "/usr/bin/"
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/"
       - "/Users/ersibesi/.antigravity/antigravity/bin/"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/"
       - "/Library/TeX/texbin/"
@@ -697,6 +718,7 @@ events:
     found: "/usr/bin/objdump"
     search_context:
       ENV{PATH}:
+        - "/Users/ersibesi/Public/LLAMA/.venv/bin"
         - "/Users/ersibesi/.antigravity/antigravity/bin"
         - "/Users/ersibesi/Downloads/google-cloud-sdk/bin"
         - "/Library/TeX/texbin"
@@ -739,6 +761,7 @@ events:
       - "objcopy"
     candidate_directories:
       - "/usr/bin/"
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/"
       - "/Users/ersibesi/.antigravity/antigravity/bin/"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/"
       - "/Library/TeX/texbin/"
@@ -760,6 +783,7 @@ events:
       - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
     searched_directories:
       - "/usr/bin/objcopy"
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/objcopy"
       - "/Users/ersibesi/.antigravity/antigravity/bin/objcopy"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/objcopy"
       - "/Library/TeX/texbin/objcopy"
@@ -782,6 +806,7 @@ events:
     found: false
     search_context:
       ENV{PATH}:
+        - "/Users/ersibesi/Public/LLAMA/.venv/bin"
         - "/Users/ersibesi/.antigravity/antigravity/bin"
         - "/Users/ersibesi/Downloads/google-cloud-sdk/bin"
         - "/Library/TeX/texbin"
@@ -824,6 +849,7 @@ events:
       - "readelf"
     candidate_directories:
       - "/usr/bin/"
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/"
       - "/Users/ersibesi/.antigravity/antigravity/bin/"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/"
       - "/Library/TeX/texbin/"
@@ -845,6 +871,7 @@ events:
       - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
     searched_directories:
       - "/usr/bin/readelf"
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/readelf"
       - "/Users/ersibesi/.antigravity/antigravity/bin/readelf"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/readelf"
       - "/Library/TeX/texbin/readelf"
@@ -867,6 +894,7 @@ events:
     found: false
     search_context:
       ENV{PATH}:
+        - "/Users/ersibesi/Public/LLAMA/.venv/bin"
         - "/Users/ersibesi/.antigravity/antigravity/bin"
         - "/Users/ersibesi/Downloads/google-cloud-sdk/bin"
         - "/Library/TeX/texbin"
@@ -909,6 +937,7 @@ events:
       - "dlltool"
     candidate_directories:
       - "/usr/bin/"
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/"
       - "/Users/ersibesi/.antigravity/antigravity/bin/"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/"
       - "/Library/TeX/texbin/"
@@ -930,6 +959,7 @@ events:
       - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
     searched_directories:
       - "/usr/bin/dlltool"
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/dlltool"
       - "/Users/ersibesi/.antigravity/antigravity/bin/dlltool"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/dlltool"
       - "/Library/TeX/texbin/dlltool"
@@ -952,6 +982,7 @@ events:
     found: false
     search_context:
       ENV{PATH}:
+        - "/Users/ersibesi/Public/LLAMA/.venv/bin"
         - "/Users/ersibesi/.antigravity/antigravity/bin"
         - "/Users/ersibesi/Downloads/google-cloud-sdk/bin"
         - "/Library/TeX/texbin"
@@ -994,6 +1025,7 @@ events:
       - "addr2line"
     candidate_directories:
       - "/usr/bin/"
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/"
       - "/Users/ersibesi/.antigravity/antigravity/bin/"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/"
       - "/Library/TeX/texbin/"
@@ -1015,6 +1047,7 @@ events:
       - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
     searched_directories:
       - "/usr/bin/addr2line"
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/addr2line"
       - "/Users/ersibesi/.antigravity/antigravity/bin/addr2line"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/addr2line"
       - "/Library/TeX/texbin/addr2line"
@@ -1037,6 +1070,7 @@ events:
     found: false
     search_context:
       ENV{PATH}:
+        - "/Users/ersibesi/Public/LLAMA/.venv/bin"
         - "/Users/ersibesi/.antigravity/antigravity/bin"
         - "/Users/ersibesi/Downloads/google-cloud-sdk/bin"
         - "/Library/TeX/texbin"
@@ -1079,6 +1113,7 @@ events:
       - "tapi"
     candidate_directories:
       - "/usr/bin/"
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/"
       - "/Users/ersibesi/.antigravity/antigravity/bin/"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/"
       - "/Library/TeX/texbin/"
@@ -1100,6 +1135,7 @@ events:
       - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
     searched_directories:
       - "/usr/bin/tapi"
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/tapi"
       - "/Users/ersibesi/.antigravity/antigravity/bin/tapi"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/tapi"
       - "/Library/TeX/texbin/tapi"
@@ -1122,6 +1158,7 @@ events:
     found: false
     search_context:
       ENV{PATH}:
+        - "/Users/ersibesi/Public/LLAMA/.venv/bin"
         - "/Users/ersibesi/.antigravity/antigravity/bin"
         - "/Users/ersibesi/Downloads/google-cloud-sdk/bin"
         - "/Library/TeX/texbin"
@@ -1163,6 +1200,7 @@ events:
     names:
       - "install_name_tool"
     candidate_directories:
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/"
       - "/Users/ersibesi/.antigravity/antigravity/bin/"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/"
       - "/Library/TeX/texbin/"
@@ -1184,6 +1222,7 @@ events:
       - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
       - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
     searched_directories:
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/install_name_tool"
       - "/Users/ersibesi/.antigravity/antigravity/bin/install_name_tool"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/install_name_tool"
       - "/Library/TeX/texbin/install_name_tool"
@@ -1197,6 +1236,7 @@ events:
     found: "/usr/bin/install_name_tool"
     search_context:
       ENV{PATH}:
+        - "/Users/ersibesi/Public/LLAMA/.venv/bin"
         - "/Users/ersibesi/.antigravity/antigravity/bin"
         - "/Users/ersibesi/Downloads/google-cloud-sdk/bin"
         - "/Library/TeX/texbin"
@@ -1228,8 +1268,8 @@ events:
     checks:
       - "Detecting CXX compiler ABI info"
     directories:
-      source: "/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-YEeD1x"
-      binary: "/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-YEeD1x"
+      source: "/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-ZFY0yN"
+      binary: "/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-ZFY0yN"
     cmakeVariables:
       CMAKE_CXX_FLAGS: ""
       CMAKE_CXX_FLAGS_DEBUG: "-g"
@@ -1242,19 +1282,19 @@ events:
       variable: "CMAKE_CXX_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: '/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-YEeD1x'
+        Change Dir: '/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-ZFY0yN'
         
-        Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /opt/homebrew/bin/gmake -f Makefile cmTC_685b9/fast
-        /opt/homebrew/bin/gmake  -f CMakeFiles/cmTC_685b9.dir/build.make CMakeFiles/cmTC_685b9.dir/build
-        gmake[1]: Entering directory '/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-YEeD1x'
-        Building CXX object CMakeFiles/cmTC_685b9.dir/CMakeCXXCompilerABI.cpp.o
-        /usr/bin/c++   -arch arm64   -v -Wl,-v -MD -MT CMakeFiles/cmTC_685b9.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_685b9.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_685b9.dir/CMakeCXXCompilerABI.cpp.o -c /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+        Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /opt/homebrew/bin/gmake -f Makefile cmTC_e5c7e/fast
+        /opt/homebrew/bin/gmake  -f CMakeFiles/cmTC_e5c7e.dir/build.make CMakeFiles/cmTC_e5c7e.dir/build
+        gmake[1]: Entering directory '/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-ZFY0yN'
+        Building CXX object CMakeFiles/cmTC_e5c7e.dir/CMakeCXXCompilerABI.cpp.o
+        /usr/bin/c++   -arch arm64   -v -Wl,-v -MD -MT CMakeFiles/cmTC_e5c7e.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_e5c7e.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_e5c7e.dir/CMakeCXXCompilerABI.cpp.o -c /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp
         Apple clang version 14.0.3 (clang-1403.0.22.14.1)
         Target: arm64-apple-darwin22.6.0
         Thread model: posix
         InstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin
         clang: warning: -Wl,-v: 'linker' input unused [-Wunused-command-line-argument]
-         "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang" -cc1 -triple arm64-apple-macosx13.0.0 -Wundef-prefix=TARGET_OS_ -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -Werror=implicit-function-declaration -emit-obj -mrelax-all --mrelax-relocations -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -fno-strict-return -ffp-contract=on -fno-rounding-math -funwind-tables=1 -fobjc-msgsend-selector-stubs -target-sdk-version=13.3 -fvisibility-inlines-hidden-static-local-var -target-cpu apple-m1 -target-feature +v8.5a -target-feature +crc -target-feature +lse -target-feature +rdm -target-feature +crypto -target-feature +dotprod -target-feature +fp-armv8 -target-feature +neon -target-feature +fp16fml -target-feature +ras -target-feature +rcpc -target-feature +zcm -target-feature +zcz -target-feature +fullfp16 -target-feature +sm4 -target-feature +sha3 -target-feature +sha2 -target-feature +aes -target-abi darwinpcs -fallow-half-arguments-and-returns -mllvm -treat-scalable-fixed-error-as-warning -debugger-tuning=lldb -target-linker-version 857.1 -v -fcoverage-compilation-dir=/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-YEeD1x -resource-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/14.0.3 -dependency-file CMakeFiles/cmTC_685b9.dir/CMakeCXXCompilerABI.cpp.o.d -skip-unused-modulemap-deps -MT CMakeFiles/cmTC_685b9.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -I/usr/local/include -stdlib=libc++ -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1 -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/local/include -internal-isystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/14.0.3/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -Wno-reorder-init-list -Wno-implicit-int-float-conversion -Wno-c99-designator -Wno-final-dtor-non-final-class -Wno-extra-semi-stmt -Wno-misleading-indentation -Wno-quoted-include-in-framework-header -Wno-implicit-fallthrough -Wno-enum-enum-conversion -Wno-enum-float-conversion -Wno-elaborated-enum-base -Wno-reserved-identifier -Wno-gnu-folding-constant -fdeprecated-macro -fdebug-compilation-dir=/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-YEeD1x -ferror-limit 19 -stack-protector 1 -fstack-check -mdarwin-stkchk-strong-link -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fno-cxx-modules -no-opaque-pointers -fcxx-exceptions -fexceptions -fmax-type-align=16 -fcommon -clang-vendor-feature=+disableNonDependentMemberExprInCurrentInstantiation -fno-odr-hash-protocols -clang-vendor-feature=+enableAggressiveVLAFolding -clang-vendor-feature=+revert09abecef7bbf -clang-vendor-feature=+thisNoAlignAttr -clang-vendor-feature=+thisNoNullAttr -mllvm -disable-aligned-alloc-awareness=1 -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_685b9.dir/CMakeCXXCompilerABI.cpp.o -x c++ /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+         "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang" -cc1 -triple arm64-apple-macosx13.0.0 -Wundef-prefix=TARGET_OS_ -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -Werror=implicit-function-declaration -emit-obj -mrelax-all --mrelax-relocations -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -fno-strict-return -ffp-contract=on -fno-rounding-math -funwind-tables=1 -fobjc-msgsend-selector-stubs -target-sdk-version=13.3 -fvisibility-inlines-hidden-static-local-var -target-cpu apple-m1 -target-feature +v8.5a -target-feature +crc -target-feature +lse -target-feature +rdm -target-feature +crypto -target-feature +dotprod -target-feature +fp-armv8 -target-feature +neon -target-feature +fp16fml -target-feature +ras -target-feature +rcpc -target-feature +zcm -target-feature +zcz -target-feature +fullfp16 -target-feature +sm4 -target-feature +sha3 -target-feature +sha2 -target-feature +aes -target-abi darwinpcs -fallow-half-arguments-and-returns -mllvm -treat-scalable-fixed-error-as-warning -debugger-tuning=lldb -target-linker-version 857.1 -v -fcoverage-compilation-dir=/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-ZFY0yN -resource-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/14.0.3 -dependency-file CMakeFiles/cmTC_e5c7e.dir/CMakeCXXCompilerABI.cpp.o.d -skip-unused-modulemap-deps -MT CMakeFiles/cmTC_e5c7e.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -I/usr/local/include -stdlib=libc++ -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1 -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/local/include -internal-isystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/14.0.3/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -Wno-reorder-init-list -Wno-implicit-int-float-conversion -Wno-c99-designator -Wno-final-dtor-non-final-class -Wno-extra-semi-stmt -Wno-misleading-indentation -Wno-quoted-include-in-framework-header -Wno-implicit-fallthrough -Wno-enum-enum-conversion -Wno-enum-float-conversion -Wno-elaborated-enum-base -Wno-reserved-identifier -Wno-gnu-folding-constant -fdeprecated-macro -fdebug-compilation-dir=/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-ZFY0yN -ferror-limit 19 -stack-protector 1 -fstack-check -mdarwin-stkchk-strong-link -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fno-cxx-modules -no-opaque-pointers -fcxx-exceptions -fexceptions -fmax-type-align=16 -fcommon -clang-vendor-feature=+disableNonDependentMemberExprInCurrentInstantiation -fno-odr-hash-protocols -clang-vendor-feature=+enableAggressiveVLAFolding -clang-vendor-feature=+revert09abecef7bbf -clang-vendor-feature=+thisNoAlignAttr -clang-vendor-feature=+thisNoNullAttr -mllvm -disable-aligned-alloc-awareness=1 -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_e5c7e.dir/CMakeCXXCompilerABI.cpp.o -x c++ /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp
         clang -cc1 version 14.0.3 (clang-1403.0.22.14.1) default target arm64-apple-darwin22.6.0
         ignoring nonexistent directory "/usr/local/include"
         ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/local/include"
@@ -1267,13 +1307,13 @@ events:
          /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include
          /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks (framework directory)
         End of search list.
-        Linking CXX executable cmTC_685b9
-        /opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_685b9.dir/link.txt --verbose=1
+        Linking CXX executable cmTC_e5c7e
+        /opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_e5c7e.dir/link.txt --verbose=1
         Apple clang version 14.0.3 (clang-1403.0.22.14.1)
         Target: arm64-apple-darwin22.6.0
         Thread model: posix
         InstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin
-         "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld" -demangle -lto_library /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 13.0.0 13.3 -syslibroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -o cmTC_685b9 -L/usr/local/lib -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_685b9.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lSystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/14.0.3/lib/darwin/libclang_rt.osx.a
+         "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld" -demangle -lto_library /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 13.0.0 13.3 -syslibroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -o cmTC_e5c7e -L/usr/local/lib -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_e5c7e.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lSystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/14.0.3/lib/darwin/libclang_rt.osx.a
         @(#)PROGRAM:ld  PROJECT:ld64-857.1
         BUILD 23:13:29 May  7 2023
         configured to support archs: armv6 armv7 armv7s arm64 arm64e arm64_32 i386 x86_64 x86_64h armv6m armv7k armv7m armv7em
@@ -1281,8 +1321,8 @@ events:
         	/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib
         Framework search paths:
         	/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/
-        /usr/bin/c++  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names  -v -Wl,-v CMakeFiles/cmTC_685b9.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_685b9
-        gmake[1]: Leaving directory '/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-YEeD1x'
+        /usr/bin/c++  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names  -v -Wl,-v CMakeFiles/cmTC_e5c7e.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_e5c7e
+        gmake[1]: Leaving directory '/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-ZFY0yN'
         
       exitCode: 0
   -
@@ -1326,19 +1366,19 @@ events:
       Parsed CXX implicit link information:
         link line regex: [^( *|.*[/\\])(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
         linker tool regex: [^[ 	]*(->|"|[0-9]+>[ 	-]*Build:[ 	0-9]+ ms[ 	]*)?[ 	]*(([^"]*[/\\])?(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)))("|,| |$)]
-        ignore line: [Change Dir: '/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-YEeD1x']
+        ignore line: [Change Dir: '/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-ZFY0yN']
         ignore line: []
-        ignore line: [Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /opt/homebrew/bin/gmake -f Makefile cmTC_685b9/fast]
-        ignore line: [/opt/homebrew/bin/gmake  -f CMakeFiles/cmTC_685b9.dir/build.make CMakeFiles/cmTC_685b9.dir/build]
-        ignore line: [gmake[1]: Entering directory '/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-YEeD1x']
-        ignore line: [Building CXX object CMakeFiles/cmTC_685b9.dir/CMakeCXXCompilerABI.cpp.o]
-        ignore line: [/usr/bin/c++   -arch arm64   -v -Wl -v -MD -MT CMakeFiles/cmTC_685b9.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_685b9.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_685b9.dir/CMakeCXXCompilerABI.cpp.o -c /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /opt/homebrew/bin/gmake -f Makefile cmTC_e5c7e/fast]
+        ignore line: [/opt/homebrew/bin/gmake  -f CMakeFiles/cmTC_e5c7e.dir/build.make CMakeFiles/cmTC_e5c7e.dir/build]
+        ignore line: [gmake[1]: Entering directory '/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-ZFY0yN']
+        ignore line: [Building CXX object CMakeFiles/cmTC_e5c7e.dir/CMakeCXXCompilerABI.cpp.o]
+        ignore line: [/usr/bin/c++   -arch arm64   -v -Wl -v -MD -MT CMakeFiles/cmTC_e5c7e.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_e5c7e.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_e5c7e.dir/CMakeCXXCompilerABI.cpp.o -c /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
         ignore line: [Apple clang version 14.0.3 (clang-1403.0.22.14.1)]
         ignore line: [Target: arm64-apple-darwin22.6.0]
         ignore line: [Thread model: posix]
         ignore line: [InstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin]
         ignore line: [clang: warning: -Wl -v: 'linker' input unused [-Wunused-command-line-argument]]
-        ignore line: [ "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang" -cc1 -triple arm64-apple-macosx13.0.0 -Wundef-prefix=TARGET_OS_ -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -Werror=implicit-function-declaration -emit-obj -mrelax-all --mrelax-relocations -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -fno-strict-return -ffp-contract=on -fno-rounding-math -funwind-tables=1 -fobjc-msgsend-selector-stubs -target-sdk-version=13.3 -fvisibility-inlines-hidden-static-local-var -target-cpu apple-m1 -target-feature +v8.5a -target-feature +crc -target-feature +lse -target-feature +rdm -target-feature +crypto -target-feature +dotprod -target-feature +fp-armv8 -target-feature +neon -target-feature +fp16fml -target-feature +ras -target-feature +rcpc -target-feature +zcm -target-feature +zcz -target-feature +fullfp16 -target-feature +sm4 -target-feature +sha3 -target-feature +sha2 -target-feature +aes -target-abi darwinpcs -fallow-half-arguments-and-returns -mllvm -treat-scalable-fixed-error-as-warning -debugger-tuning=lldb -target-linker-version 857.1 -v -fcoverage-compilation-dir=/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-YEeD1x -resource-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/14.0.3 -dependency-file CMakeFiles/cmTC_685b9.dir/CMakeCXXCompilerABI.cpp.o.d -skip-unused-modulemap-deps -MT CMakeFiles/cmTC_685b9.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -I/usr/local/include -stdlib=libc++ -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1 -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/local/include -internal-isystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/14.0.3/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -Wno-reorder-init-list -Wno-implicit-int-float-conversion -Wno-c99-designator -Wno-final-dtor-non-final-class -Wno-extra-semi-stmt -Wno-misleading-indentation -Wno-quoted-include-in-framework-header -Wno-implicit-fallthrough -Wno-enum-enum-conversion -Wno-enum-float-conversion -Wno-elaborated-enum-base -Wno-reserved-identifier -Wno-gnu-folding-constant -fdeprecated-macro -fdebug-compilation-dir=/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-YEeD1x -ferror-limit 19 -stack-protector 1 -fstack-check -mdarwin-stkchk-strong-link -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fno-cxx-modules -no-opaque-pointers -fcxx-exceptions -fexceptions -fmax-type-align=16 -fcommon -clang-vendor-feature=+disableNonDependentMemberExprInCurrentInstantiation -fno-odr-hash-protocols -clang-vendor-feature=+enableAggressiveVLAFolding -clang-vendor-feature=+revert09abecef7bbf -clang-vendor-feature=+thisNoAlignAttr -clang-vendor-feature=+thisNoNullAttr -mllvm -disable-aligned-alloc-awareness=1 -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_685b9.dir/CMakeCXXCompilerABI.cpp.o -x c++ /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [ "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang" -cc1 -triple arm64-apple-macosx13.0.0 -Wundef-prefix=TARGET_OS_ -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -Werror=implicit-function-declaration -emit-obj -mrelax-all --mrelax-relocations -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -fno-strict-return -ffp-contract=on -fno-rounding-math -funwind-tables=1 -fobjc-msgsend-selector-stubs -target-sdk-version=13.3 -fvisibility-inlines-hidden-static-local-var -target-cpu apple-m1 -target-feature +v8.5a -target-feature +crc -target-feature +lse -target-feature +rdm -target-feature +crypto -target-feature +dotprod -target-feature +fp-armv8 -target-feature +neon -target-feature +fp16fml -target-feature +ras -target-feature +rcpc -target-feature +zcm -target-feature +zcz -target-feature +fullfp16 -target-feature +sm4 -target-feature +sha3 -target-feature +sha2 -target-feature +aes -target-abi darwinpcs -fallow-half-arguments-and-returns -mllvm -treat-scalable-fixed-error-as-warning -debugger-tuning=lldb -target-linker-version 857.1 -v -fcoverage-compilation-dir=/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-ZFY0yN -resource-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/14.0.3 -dependency-file CMakeFiles/cmTC_e5c7e.dir/CMakeCXXCompilerABI.cpp.o.d -skip-unused-modulemap-deps -MT CMakeFiles/cmTC_e5c7e.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -I/usr/local/include -stdlib=libc++ -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1 -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/local/include -internal-isystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/14.0.3/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -Wno-reorder-init-list -Wno-implicit-int-float-conversion -Wno-c99-designator -Wno-final-dtor-non-final-class -Wno-extra-semi-stmt -Wno-misleading-indentation -Wno-quoted-include-in-framework-header -Wno-implicit-fallthrough -Wno-enum-enum-conversion -Wno-enum-float-conversion -Wno-elaborated-enum-base -Wno-reserved-identifier -Wno-gnu-folding-constant -fdeprecated-macro -fdebug-compilation-dir=/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-ZFY0yN -ferror-limit 19 -stack-protector 1 -fstack-check -mdarwin-stkchk-strong-link -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fno-cxx-modules -no-opaque-pointers -fcxx-exceptions -fexceptions -fmax-type-align=16 -fcommon -clang-vendor-feature=+disableNonDependentMemberExprInCurrentInstantiation -fno-odr-hash-protocols -clang-vendor-feature=+enableAggressiveVLAFolding -clang-vendor-feature=+revert09abecef7bbf -clang-vendor-feature=+thisNoAlignAttr -clang-vendor-feature=+thisNoNullAttr -mllvm -disable-aligned-alloc-awareness=1 -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_e5c7e.dir/CMakeCXXCompilerABI.cpp.o -x c++ /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
         ignore line: [clang -cc1 version 14.0.3 (clang-1403.0.22.14.1) default target arm64-apple-darwin22.6.0]
         ignore line: [ignoring nonexistent directory "/usr/local/include"]
         ignore line: [ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/local/include"]
@@ -1351,13 +1391,13 @@ events:
         ignore line: [ /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include]
         ignore line: [ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks (framework directory)]
         ignore line: [End of search list.]
-        ignore line: [Linking CXX executable cmTC_685b9]
-        ignore line: [/opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_685b9.dir/link.txt --verbose=1]
+        ignore line: [Linking CXX executable cmTC_e5c7e]
+        ignore line: [/opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_e5c7e.dir/link.txt --verbose=1]
         ignore line: [Apple clang version 14.0.3 (clang-1403.0.22.14.1)]
         ignore line: [Target: arm64-apple-darwin22.6.0]
         ignore line: [Thread model: posix]
         ignore line: [InstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin]
-        link line: [ "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld" -demangle -lto_library /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 13.0.0 13.3 -syslibroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -o cmTC_685b9 -L/usr/local/lib -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_685b9.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lSystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/14.0.3/lib/darwin/libclang_rt.osx.a]
+        link line: [ "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld" -demangle -lto_library /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 13.0.0 13.3 -syslibroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -o cmTC_e5c7e -L/usr/local/lib -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_e5c7e.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lSystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/14.0.3/lib/darwin/libclang_rt.osx.a]
           arg [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld] ==> ignore
           arg [-demangle] ==> ignore
           arg [-lto_library] ==> ignore, skip following value
@@ -1372,12 +1412,12 @@ events:
           arg [-syslibroot] ==> ignore
           arg [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk] ==> ignore
           arg [-o] ==> ignore
-          arg [cmTC_685b9] ==> ignore
+          arg [cmTC_e5c7e] ==> ignore
           arg [-L/usr/local/lib] ==> dir [/usr/local/lib]
           arg [-search_paths_first] ==> ignore
           arg [-headerpad_max_install_names] ==> ignore
           arg [-v] ==> ignore
-          arg [CMakeFiles/cmTC_685b9.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+          arg [CMakeFiles/cmTC_e5c7e.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
           arg [-lc++] ==> lib [c++]
           arg [-lSystem] ==> lib [System]
           arg [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/14.0.3/lib/darwin/libclang_rt.osx.a] ==> lib [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/14.0.3/lib/darwin/libclang_rt.osx.a]
@@ -1429,6 +1469,7 @@ events:
       - "OpenGL"
       - "GL"
     candidate_directories:
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/"
       - "/Users/ersibesi/.antigravity/antigravity/bin/"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/"
       - "/Library/TeX/texbin/"
@@ -1463,6 +1504,7 @@ events:
     found: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework"
     search_context:
       ENV{PATH}:
+        - "/Users/ersibesi/Public/LLAMA/.venv/bin"
         - "/Users/ersibesi/.antigravity/antigravity/bin"
         - "/Users/ersibesi/Downloads/google-cloud-sdk/bin"
         - "/Library/TeX/texbin"
@@ -1530,6 +1572,7 @@ events:
       - "OpenGL"
       - "GLU"
     candidate_directories:
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/"
       - "/Users/ersibesi/.antigravity/antigravity/bin/"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/"
       - "/Library/TeX/texbin/"
@@ -1564,6 +1607,7 @@ events:
     found: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework"
     search_context:
       ENV{PATH}:
+        - "/Users/ersibesi/Public/LLAMA/.venv/bin"
         - "/Users/ersibesi/.antigravity/antigravity/bin"
         - "/Users/ersibesi/Downloads/google-cloud-sdk/bin"
         - "/Library/TeX/texbin"
@@ -1631,6 +1675,7 @@ events:
       - "OpenGL/gl.h"
       - "GL/gl.h"
     candidate_directories:
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/"
       - "/Users/ersibesi/.antigravity/antigravity/bin/"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/"
       - "/Library/TeX/texbin/"
@@ -1681,6 +1726,7 @@ events:
       - "/Network/Library/Frameworks/"
       - "/System/Library/Frameworks/"
     searched_directories:
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/OpenGL.framework/Headers/gl.h"
       - "/Users/ersibesi/.antigravity/antigravity/bin/OpenGL.framework/Headers/gl.h"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/OpenGL.framework/Headers/gl.h"
       - "/Library/TeX/texbin/OpenGL.framework/Headers/gl.h"
@@ -1727,6 +1773,7 @@ events:
     found: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework"
     search_context:
       ENV{PATH}:
+        - "/Users/ersibesi/Public/LLAMA/.venv/bin"
         - "/Users/ersibesi/.antigravity/antigravity/bin"
         - "/Users/ersibesi/Downloads/google-cloud-sdk/bin"
         - "/Library/TeX/texbin"
@@ -1794,6 +1841,7 @@ events:
       - "OpenGL/glu.h"
       - "GL/glu.h"
     candidate_directories:
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/"
       - "/Users/ersibesi/.antigravity/antigravity/bin/"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/"
       - "/Library/TeX/texbin/"
@@ -1844,6 +1892,7 @@ events:
       - "/Network/Library/Frameworks/"
       - "/System/Library/Frameworks/"
     searched_directories:
+      - "/Users/ersibesi/Public/LLAMA/.venv/bin/OpenGL.framework/Headers/glu.h"
       - "/Users/ersibesi/.antigravity/antigravity/bin/OpenGL.framework/Headers/glu.h"
       - "/Users/ersibesi/Downloads/google-cloud-sdk/bin/OpenGL.framework/Headers/glu.h"
       - "/Library/TeX/texbin/OpenGL.framework/Headers/glu.h"
@@ -1890,6 +1939,7 @@ events:
     found: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework"
     search_context:
       ENV{PATH}:
+        - "/Users/ersibesi/Public/LLAMA/.venv/bin"
         - "/Users/ersibesi/.antigravity/antigravity/bin"
         - "/Users/ersibesi/Downloads/google-cloud-sdk/bin"
         - "/Library/TeX/texbin"
@@ -1951,8 +2001,8 @@ events:
     checks:
       - "Performing Test CMAKE_HAVE_LIBC_PTHREAD"
     directories:
-      source: "/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-vjThjF"
-      binary: "/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-vjThjF"
+      source: "/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-T6Mhtm"
+      binary: "/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-T6Mhtm"
     cmakeVariables:
       CMAKE_CXX_FLAGS: ""
       CMAKE_CXX_FLAGS_DEBUG: "-g"
@@ -1964,17 +2014,17 @@ events:
       variable: "CMAKE_HAVE_LIBC_PTHREAD"
       cached: true
       stdout: |
-        Change Dir: '/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-vjThjF'
+        Change Dir: '/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-T6Mhtm'
         
-        Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /opt/homebrew/bin/gmake -f Makefile cmTC_d7a6f/fast
-        /opt/homebrew/bin/gmake  -f CMakeFiles/cmTC_d7a6f.dir/build.make CMakeFiles/cmTC_d7a6f.dir/build
-        gmake[1]: Entering directory '/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-vjThjF'
-        Building CXX object CMakeFiles/cmTC_d7a6f.dir/src.cxx.o
-        /usr/bin/c++ -DCMAKE_HAVE_LIBC_PTHREAD  -std=c++17 -arch arm64 -MD -MT CMakeFiles/cmTC_d7a6f.dir/src.cxx.o -MF CMakeFiles/cmTC_d7a6f.dir/src.cxx.o.d -o CMakeFiles/cmTC_d7a6f.dir/src.cxx.o -c /Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-vjThjF/src.cxx
-        Linking CXX executable cmTC_d7a6f
-        /opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_d7a6f.dir/link.txt --verbose=1
-        /usr/bin/c++  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/cmTC_d7a6f.dir/src.cxx.o -o cmTC_d7a6f
-        gmake[1]: Leaving directory '/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-vjThjF'
+        Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /opt/homebrew/bin/gmake -f Makefile cmTC_6d844/fast
+        /opt/homebrew/bin/gmake  -f CMakeFiles/cmTC_6d844.dir/build.make CMakeFiles/cmTC_6d844.dir/build
+        gmake[1]: Entering directory '/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-T6Mhtm'
+        Building CXX object CMakeFiles/cmTC_6d844.dir/src.cxx.o
+        /usr/bin/c++ -DCMAKE_HAVE_LIBC_PTHREAD  -std=c++17 -arch arm64 -MD -MT CMakeFiles/cmTC_6d844.dir/src.cxx.o -MF CMakeFiles/cmTC_6d844.dir/src.cxx.o.d -o CMakeFiles/cmTC_6d844.dir/src.cxx.o -c /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-T6Mhtm/src.cxx
+        Linking CXX executable cmTC_6d844
+        /opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_6d844.dir/link.txt --verbose=1
+        /usr/bin/c++  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/cmTC_6d844.dir/src.cxx.o -o cmTC_6d844
+        gmake[1]: Leaving directory '/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles/CMakeScratch/TryCompile-T6Mhtm'
         
       exitCode: 0
   -
@@ -2013,11 +2063,19 @@ events:
         CMAKE_FIND_ROOT_PATH_MODE: "BOTH"
     candidates:
       -
-        path: "/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/pkgRedirects/glfw3Config.cmake"
+        path: "/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles/pkgRedirects/glfw3Config.cmake"
         mode: "config"
         reason: "no_exist"
       -
-        path: "/Users/ersibesi/Public/LLAMA/BSC/desktopui/build/CMakeFiles/pkgRedirects/glfw3-config.cmake"
+        path: "/Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/build/CMakeFiles/pkgRedirects/glfw3-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "/Users/ersibesi/Public/LLAMA/.venv/glfw3Config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "/Users/ersibesi/Public/LLAMA/.venv/glfw3-config.cmake"
         mode: "config"
         reason: "no_exist"
       -
@@ -2090,6 +2148,7 @@ events:
       version: "3.4.0"
     search_context:
       ENV{PATH}:
+        - "/Users/ersibesi/Public/LLAMA/.venv/bin"
         - "/Users/ersibesi/.antigravity/antigravity/bin"
         - "/Users/ersibesi/Downloads/google-cloud-sdk/bin"
         - "/Library/TeX/texbin"

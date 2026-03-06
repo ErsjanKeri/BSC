@@ -1,7 +1,7 @@
 CMakeFiles/tensor-trace-analyzer.dir/src/JSONLoader.cpp.o: \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/JSONLoader.cpp \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/JSONLoader.h \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/MemoryMap.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/JSONLoader.cpp \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/JSONLoader.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/MemoryMap.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/string \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/max.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/comp.h \
@@ -676,8 +676,8 @@ CMakeFiles/tensor-trace-analyzer.dir/src/JSONLoader.cpp.o: \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/pointer_to_binary_function.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/pointer_to_unary_function.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/unary_negate.h \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/src/TraceData.h \
-  /Users/ersibesi/Public/LLAMA/BSC/desktopui/external/json/json.hpp \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/src/TraceData.h \
+  /Users/ersibesi/Public/LLAMA/BSC/tensor-tracing/desktopui/external/json/json.hpp \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/forward_list \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/map \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__tree \

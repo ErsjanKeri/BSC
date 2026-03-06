@@ -405,6 +405,90 @@ def verify_format(entries):
         return True
 
 
+def export_to_csv(entries, output_path):
+    """
+    Export trace entries to wide-format CSV for DuckDB analysis.
+
+    Args:
+        entries: List of parsed trace entries
+        output_path: Output CSV file path
+
+    Returns:
+        Number of rows written
+    """
+    import csv
+
+    output_file = Path(output_path)
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(output_file, 'w', newline='') as f:
+        writer = csv.writer(f)
+
+        # Write header
+        header = [
+            'timestamp_ns', 'token_id', 'layer_id', 'thread_id',
+            'operation_type', 'phase', 'dst_name', 'num_sources', 'num_experts'
+        ]
+
+        # Add columns for 4 sources (6 fields each)
+        for i in range(4):
+            header.extend([
+                f'src{i}_name',
+                f'src{i}_size_bytes',
+                f'src{i}_memory_source',
+                f'src{i}_offset',
+                f'src{i}_layer_id',
+                f'src{i}_tensor_idx'
+            ])
+
+        # Expert IDs as single comma-separated string
+        header.append('expert_ids')
+
+        writer.writerow(header)
+
+        # Write data rows
+        for entry in entries:
+            row = [
+                entry['timestamp_ns'],
+                entry['token_id'],
+                entry['layer_id'] if entry['layer_id'] is not None else '',
+                entry['thread_id'],
+                entry['operation_name'],
+                entry['phase'],
+                entry['dst_name'],
+                entry['num_sources'],
+                entry['num_experts']
+            ]
+
+            # Add source data (pad with empty strings if < 4 sources)
+            sources = entry['sources']
+            for i in range(4):
+                if i < len(sources):
+                    src = sources[i]
+                    row.extend([
+                        src['name'],
+                        src['size_bytes'],
+                        src['memory_source'],
+                        src['disk_offset_or_buffer_id'],
+                        src['layer_id'] if src['layer_id'] is not None else '',
+                        src['tensor_idx'] if src['tensor_idx'] is not None else ''
+                    ])
+                else:
+                    # Empty columns for unused sources
+                    row.extend(['', '', '', '', '', ''])
+
+            # Expert IDs as comma-separated string
+            expert_ids_str = ','.join(str(x) for x in entry['expert_ids']) if entry['expert_ids'] else ''
+            row.append(expert_ids_str)
+
+            writer.writerow(row)
+
+    print(f"✓ Exported {len(entries)} entries to {output_file}")
+    print(f"  File size: {output_file.stat().st_size / (1024*1024):.2f} MB")
+
+    return len(entries)
+
+
 def export_to_json_per_token(entries, output_dir):
     """
     Export trace entries as JSON files, one per token.
@@ -511,6 +595,8 @@ def main():
                         help='Verify format correctness')
     parser.add_argument('--export-json', type=str, metavar='OUTPUT_DIR',
                         help='Export entries to JSON files per token (e.g., webui/public/data/traces/)')
+    parser.add_argument('--export-csv', type=str, metavar='OUTPUT_FILE',
+                        help='Export entries to wide-format CSV for DuckDB analysis (e.g., traces.csv)')
 
     args = parser.parse_args()
 
@@ -554,6 +640,10 @@ def main():
         print(f"\nExporting to JSON (grouped by token)...")
         num_files = export_to_json_per_token(entries, args.export_json)
         print(f"\n✓ Exported {num_files} token files to {args.export_json}")
+    elif args.export_csv:
+        print(f"\nExporting to CSV (wide format for DuckDB)...")
+        num_rows = export_to_csv(entries, args.export_csv)
+        print(f"\n✓ Exported {num_rows} rows to {args.export_csv}")
     elif args.verify:
         verify_format(entries)
     elif args.stats:
