@@ -34,7 +34,7 @@ def load_settings():
         return json.load(f)
 
 
-def run_single_iteration(binary_path, lib_path, model_path, prompt, n_tokens, run_num, result_dir):
+def run_single_iteration(binary_path, lib_path, model_path, prompt, n_tokens, run_num, result_dir, extra_args=None):
     """Run a single inference iteration
 
     Args:
@@ -45,6 +45,7 @@ def run_single_iteration(binary_path, lib_path, model_path, prompt, n_tokens, ru
         n_tokens: Number of tokens to generate
         run_num: Run number
         result_dir: Results directory
+        extra_args: Additional CLI arguments (e.g., ['--no-warmup'])
 
     Returns:
         dict: Parsed metrics or None
@@ -62,6 +63,8 @@ def run_single_iteration(binary_path, lib_path, model_path, prompt, n_tokens, ru
         '-n', str(n_tokens),
         '-no-cnv'
     ]
+    if extra_args:
+        cmd.extend(extra_args)
 
     # Run inference
     try:
@@ -89,7 +92,7 @@ def run_single_iteration(binary_path, lib_path, model_path, prompt, n_tokens, ru
         return None
 
 
-def run_experiment_set(exp_name, binary_path, lib_path, model_path, settings, result_dir):
+def run_experiment_set(exp_name, binary_path, lib_path, model_path, settings, result_dir, extra_args=None):
     """Run a complete set of experiments (multiple iterations)
 
     Args:
@@ -99,6 +102,7 @@ def run_experiment_set(exp_name, binary_path, lib_path, model_path, settings, re
         model_path: Path to model file
         settings: Settings dict
         result_dir: Results directory
+        extra_args: Additional CLI arguments (e.g., ['--no-warmup'])
 
     Returns:
         dict: Statistics
@@ -128,7 +132,7 @@ def run_experiment_set(exp_name, binary_path, lib_path, model_path, settings, re
         # Run iteration
         metrics = run_single_iteration(
             binary_path, lib_path, model_path,
-            prompt, n_tokens, i, result_dir
+            prompt, n_tokens, i, result_dir, extra_args=extra_args
         )
 
         # Save to CSV
@@ -218,6 +222,14 @@ def main():
                 small_model, settings, result_dir
             )
 
+            # Experiment 5: Small + MAP_POPULATE=OFF + NO WARMUP
+            results['exp5'] = run_experiment_set(
+                "exp5_small_prefetch_off_no_warmup",
+                bin_prefetch_off, lib_prefetch_off,
+                small_model, settings, result_dir,
+                extra_args=['--no-warmup']
+            )
+
     # === LARGE MODEL EXPERIMENTS ===
     if not args.small_only:
         large_model = models_dir / "gpt-oss-120b" / settings['experiment']['large_model']
@@ -241,6 +253,14 @@ def main():
                 "exp4_large_prefetch_off",
                 bin_prefetch_off, lib_prefetch_off,
                 large_model, settings, result_dir
+            )
+
+            # Experiment 6: Large + MAP_POPULATE=OFF + NO WARMUP
+            results['exp6'] = run_experiment_set(
+                "exp6_large_prefetch_off_no_warmup",
+                bin_prefetch_off, lib_prefetch_off,
+                large_model, settings, result_dir,
+                extra_args=['--no-warmup']
             )
 
     # === SUMMARY ===
