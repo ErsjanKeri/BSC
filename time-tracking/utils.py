@@ -3,6 +3,7 @@
 Utility functions for MAP_POPULATE time-tracking experiments
 """
 
+import json
 import subprocess
 import sys
 import time
@@ -96,15 +97,65 @@ def parse_llama_output(output):
         dict: Parsed metrics or None if parsing failed
     """
     metrics = {
+        # llama.cpp's own metrics (post-reset, kept for reference)
         'load_time_ms': None,
         'prompt_eval_time_ms': None,
         'eval_time_ms': None,
         'eval_tokens': None,
-        'total_time_ms': None
+        'total_time_ms': None,
+        'major_page_faults': None,
+        'mlock_mib': None,
+        # BSC phase timing (independent, never affected by reset)
+        'phase_metadata_ms': None,
+        'phase_mmap_ms': None,
+        'phase_tensors_ms': None,
+        'phase_pinning_ms': None,
+        'phase_context_ms': None,
+        'phase_warmup_ms': None,
+        'phase_prompt_eval_ms': None,
+        'phase_generation_ms': None,
+        'phase_total_wall_ms': None,
+        'phase_metadata_faults': None,
+        'phase_mmap_faults': None,
+        'phase_tensors_faults': None,
+        'phase_pinning_faults': None,
+        'phase_context_faults': None,
+        'phase_warmup_faults': None,
+        'phase_prompt_eval_faults': None,
+        'phase_generation_faults': None,
+        'phase_total_faults': None,
+        'phase_t0_abs_us': None,
     }
 
     for line in output.split('\n'):
-        if 'load time' in line:
+        if '[bsc_phases_json]' in line:
+            # Parse the JSON block
+            try:
+                json_str = line.split('[bsc_phases_json]')[1].strip()
+                phases = json.loads(json_str)
+                metrics['phase_t0_abs_us'] = phases.get('t0_abs_us')
+                metrics['phase_metadata_ms'] = phases.get('metadata_ms')
+                metrics['phase_mmap_ms'] = phases.get('mmap_ms')
+                metrics['phase_tensors_ms'] = phases.get('tensors_ms')
+                metrics['phase_pinning_ms'] = phases.get('pinning_ms')
+                metrics['phase_context_ms'] = phases.get('context_ms')
+                metrics['phase_warmup_ms'] = phases.get('warmup_ms')
+                metrics['phase_prompt_eval_ms'] = phases.get('prompt_eval_ms')
+                metrics['phase_generation_ms'] = phases.get('generation_ms')
+                metrics['phase_total_wall_ms'] = phases.get('total_wall_ms')
+                metrics['phase_metadata_faults'] = phases.get('metadata_faults')
+                metrics['phase_mmap_faults'] = phases.get('mmap_faults')
+                metrics['phase_tensors_faults'] = phases.get('tensors_faults')
+                metrics['phase_pinning_faults'] = phases.get('pinning_faults')
+                metrics['phase_context_faults'] = phases.get('context_faults')
+                metrics['phase_warmup_faults'] = phases.get('warmup_faults')
+                metrics['phase_prompt_eval_faults'] = phases.get('prompt_eval_faults')
+                metrics['phase_generation_faults'] = phases.get('generation_faults')
+                metrics['phase_total_faults'] = phases.get('total_faults')
+            except (json.JSONDecodeError, IndexError, ValueError):
+                pass
+
+        elif 'load time' in line and '[timing]' not in line:
             # Extract: "load time =    2073.36 ms"
             parts = line.split('=')
             if len(parts) >= 2:
@@ -143,48 +194,67 @@ def parse_llama_output(output):
                 except (ValueError, IndexError):
                     pass
 
-    # Check if we got the critical metrics
-    if metrics['load_time_ms'] is not None and metrics['eval_time_ms'] is not None:
+        elif 'Major (requiring I/O) page faults' in line:
+            # Extract from /usr/bin/time -v output
+            try:
+                metrics['major_page_faults'] = int(line.strip().split(':')[-1].strip())
+            except (ValueError, IndexError):
+                pass
+
+        elif 'pin_compute_weights:' in line and 'locked' in line:
+            # Extract: "pin_compute_weights: attempted 470 tensors, locked 2979.7 MiB, failed 0 tensors, took 1128.45 ms"
+            try:
+                metrics['mlock_mib'] = float(line.split('locked')[1].strip().split()[0])
+            except (ValueError, IndexError):
+                pass
+
+    # Check if we got the critical metrics (either old or new system)
+    has_old = metrics['load_time_ms'] is not None and metrics['eval_time_ms'] is not None
+    has_new = metrics['phase_total_wall_ms'] is not None
+    if has_old or has_new:
         return metrics
     else:
         return None
 
 
-def write_csv_header(csv_path):
-    """Write CSV header
+# CSV column definitions — single source of truth
+CSV_COLUMNS = [
+    'run',
+    # llama.cpp metrics (post-reset, for reference)
+    'load_time_ms', 'prompt_eval_time_ms', 'eval_time_ms', 'eval_tokens', 'total_time_ms',
+    'major_page_faults', 'mlock_mib',
+    # BSC phase durations (independent, never affected by reset)
+    'phase_metadata_ms', 'phase_mmap_ms', 'phase_tensors_ms', 'phase_pinning_ms',
+    'phase_context_ms', 'phase_warmup_ms', 'phase_prompt_eval_ms', 'phase_generation_ms',
+    'phase_total_wall_ms',
+    # BSC phase page faults
+    'phase_metadata_faults', 'phase_mmap_faults', 'phase_tensors_faults', 'phase_pinning_faults',
+    'phase_context_faults', 'phase_warmup_faults', 'phase_prompt_eval_faults', 'phase_generation_faults',
+    'phase_total_faults',
+    # Absolute timestamp for sanity checking
+    'phase_t0_abs_us',
+]
 
-    Args:
-        csv_path: Path to CSV file
-    """
+
+def write_csv_header(csv_path):
+    """Write CSV header"""
     with open(csv_path, 'w') as f:
-        f.write("run,load_time_ms,prompt_eval_time_ms,eval_time_ms,eval_tokens,total_time_ms,exp_run_time_ms\n")
+        f.write(','.join(CSV_COLUMNS) + '\n')
 
 
 def append_csv_row(csv_path, run_num, metrics):
-    """Append row to CSV
+    """Append row to CSV"""
+    def v(key):
+        """Get metric value, converting None to empty string for CSV."""
+        val = metrics.get(key)
+        return '' if val is None else val
 
-    Args:
-        csv_path: Path to CSV file
-        run_num: Run number
-        metrics: Metrics dictionary
-    """
-    # Calculate exp_run_time = load_time + total_time (end-to-end performance)
-    load_time = metrics.get('load_time_ms', None)
-    total_time = metrics.get('total_time_ms', None)
-
-    if load_time is not None and total_time is not None:
-        exp_run_time = load_time + total_time
-    else:
-        exp_run_time = ''
+    values = [str(run_num)]
+    for col in CSV_COLUMNS[1:]:  # skip 'run', already added
+        values.append(str(v(col)))
 
     with open(csv_path, 'a') as f:
-        f.write(f"{run_num},"
-                f"{metrics.get('load_time_ms', '')},"
-                f"{metrics.get('prompt_eval_time_ms', '')},"
-                f"{metrics.get('eval_time_ms', '')},"
-                f"{metrics.get('eval_tokens', '')},"
-                f"{metrics.get('total_time_ms', '')},"
-                f"{exp_run_time}\n")
+        f.write(','.join(values) + '\n')
 
 
 def calculate_statistics(csv_path):

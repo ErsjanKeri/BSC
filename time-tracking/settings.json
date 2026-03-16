@@ -1,21 +1,36 @@
 {
-  "experiment": {
-    "small_model": "gpt-oss-20b-F16.gguf",
-    "large_model": "gpt-oss-120b-F16.gguf",
-    "tokens_to_generate": 200,
-    "prompt": "Write a Python function to implement binary search in a sorted array",
-    "num_iterations": 10,
+  "models": {
+    "small": "gpt-oss-20b-F16.gguf",
+    "large": "gpt-oss-120b/gpt-oss-120b-F16.gguf"
+  },
+  "defaults": {
+    "tokens_to_generate": 2000,
+    "prompt": "Write a detailed essay about the history and evolution of computer science, covering key milestones, influential figures, and how the field has shaped modern society",
+    "num_iterations": 3,
     "cooldown_seconds": 5
   },
   "paths": {
     "llama_cpp_root": "/home/keri/llama.cpp",
     "models_dir": "/home/keri/llama.cpp/models",
-    "build_prefetch_on": "/home/keri/llama.cpp/build_prefetch_on/bin",
-    "build_prefetch_off": "/home/keri/llama.cpp/build_prefetch_off/bin",
+    "bin_prefetch_on": "/home/keri/llama.cpp/bin_prefetch_on",
+    "bin_prefetch_off": "/home/keri/llama.cpp/bin_prefetch_off",
+    "mlock_tool": "/home/keri/BSC/disk-benchmarking/utils/mlock_tool",
     "results_dir": "results"
   },
   "cleanup": {
     "drop_caches": true,
     "clear_pagecache_only": false
-  }
+  },
+  "experiments": [
+    {
+      "name": "small_default_p12_mem24_2kgen",
+      "model": "small",
+      "binary": "prefetch_on",
+      "args": [
+        "--seed",
+        "42"
+      ],
+      "memory_pressure_gib": 24
+    }
+  ]
 }

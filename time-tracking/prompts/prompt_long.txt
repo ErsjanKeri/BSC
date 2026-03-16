@@ -1,0 +1,168 @@
+You are a senior software engineer reviewing a codebase. Please analyze the following code and provide a detailed review covering correctness, performance, security, and maintainability. Here is the code:
+
+```python
+import hashlib
+import sqlite3
+import os
+from datetime import datetime, timedelta
+from functools import lru_cache
+
+class UserAuthManager:
+    def __init__(self, db_path="users.db"):
+        self.db_path = db_path
+        self.conn = sqlite3.connect(db_path)
+        self.cursor = self.conn.cursor()
+        self.setup_database()
+    
+    def setup_database(self):
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                salt TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_login TIMESTAMP,
+                failed_attempts INTEGER DEFAULT 0,
+                locked_until TIMESTAMP
+            )
+        ''')
+        self.conn.commit()
+    
+    def hash_password(self, password, salt=None):
+        if salt is None:
+            salt = os.urandom(32).hex()
+        hashed = hashlib.pbkdf2_hmac('sha256', password.encode(), salt.encode(), 100000)
+        return hashed.hex(), salt
+    
+    def register_user(self, username, password):
+        password_hash, salt = self.hash_password(password)
+        try:
+            self.cursor.execute(
+                "INSERT INTO users (username, password_hash, salt) VALUES (?, ?, ?)",
+                (username, password_hash, salt)
+            )
+            self.conn.commit()
+            return True
+        except sqlite3.IntegrityError:
+            return False
+    
+    def authenticate(self, username, password):
+        self.cursor.execute(
+            "SELECT password_hash, salt, failed_attempts, locked_until FROM users WHERE username = ?",
+            (username,)
+        )
+        row = self.cursor.fetchone()
+        if not row:
+            return False
+        
+        stored_hash, salt, failed_attempts, locked_until = row
+        
+        if locked_until and datetime.now() < datetime.fromisoformat(locked_until):
+            return False
+        
+        computed_hash, _ = self.hash_password(password, salt)
+        
+        if computed_hash == stored_hash:
+            self.cursor.execute(
+                "UPDATE users SET last_login = ?, failed_attempts = 0, locked_until = NULL WHERE username = ?",
+                (datetime.now().isoformat(), username)
+            )
+            self.conn.commit()
+            return True
+        else:
+            failed_attempts += 1
+            locked_until_new = None
+            if failed_attempts >= 5:
+                locked_until_new = (datetime.now() + timedelta(minutes=30)).isoformat()
+            self.cursor.execute(
+                "UPDATE users SET failed_attempts = ?, locked_until = ? WHERE username = ?",
+                (failed_attempts, locked_until_new, username)
+            )
+            self.conn.commit()
+            return False
+```
+
+Please provide your analysis.
+
+Additionally, please also review this companion module that handles session management and API rate limiting:
+
+```python
+import time
+import json
+import redis
+import secrets
+from dataclasses import dataclass, field
+from typing import Optional, Dict, List
+from collections import defaultdict
+
+@dataclass
+class Session:
+    session_id: str
+    user_id: int
+    created_at: float
+    last_activity: float
+    ip_address: str
+    user_agent: str
+    data: Dict = field(default_factory=dict)
+    
+    def is_expired(self, max_age=3600):
+        return time.time() - self.last_activity > max_age
+
+class SessionManager:
+    def __init__(self, redis_client=None, max_sessions_per_user=5):
+        self.redis = redis_client or redis.Redis()
+        self.max_sessions = max_sessions_per_user
+        self.session_prefix = "session:"
+    
+    def create_session(self, user_id, ip_address, user_agent):
+        session_id = secrets.token_urlsafe(32)
+        session = Session(
+            session_id=session_id,
+            user_id=user_id,
+            created_at=time.time(),
+            last_activity=time.time(),
+            ip_address=ip_address,
+            user_agent=user_agent
+        )
+        
+        existing = self.get_user_sessions(user_id)
+        if len(existing) >= self.max_sessions:
+            oldest = min(existing, key=lambda s: s.last_activity)
+            self.destroy_session(oldest.session_id)
+        
+        key = f"{self.session_prefix}{session_id}"
+        self.redis.setex(key, 3600, json.dumps({
+            'session_id': session.session_id,
+            'user_id': session.user_id,
+            'created_at': session.created_at,
+            'last_activity': session.last_activity,
+            'ip_address': session.ip_address,
+            'user_agent': session.user_agent,
+            'data': session.data
+        }))
+        
+        self.redis.sadd(f"user_sessions:{user_id}", session_id)
+        return session
+    
+    def get_session(self, session_id):
+        key = f"{self.session_prefix}{session_id}"
+        data = self.redis.get(key)
+        if not data:
+            return None
+        parsed = json.loads(data)
+        session = Session(**parsed)
+        session.last_activity = time.time()
+        self.redis.setex(key, 3600, json.dumps({
+            'session_id': session.session_id,
+            'user_id': session.user_id,
+            'created_at': session.created_at,
+            'last_activity': session.last_activity,
+            'ip_address': session.ip_address,
+            'user_agent': session.user_agent,
+            'data': session.data
+        }))
+        return session
+```
+
+Please analyze both modules together. Are there any race conditions, security vulnerabilities, or performance bottlenecks?
