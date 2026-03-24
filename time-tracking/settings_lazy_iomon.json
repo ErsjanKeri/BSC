@@ -1,0 +1,45 @@
+{
+  "models": {
+    "small": "gpt-oss-20b-F16.gguf",
+    "large": "gpt-oss-120b/gpt-oss-120b-F16.gguf"
+  },
+  "defaults": {
+    "tokens_to_generate": 2000,
+    "prompt": "Write a detailed essay about the history of computer science",
+    "num_iterations": 1,
+    "cooldown_seconds": 5
+  },
+  "paths": {
+    "llama_cpp_root": "/home/keri/llama.cpp",
+    "models_dir": "/home/keri/llama.cpp/models",
+    "bin_prefetch_on": "/home/keri/llama.cpp/bin_prefetch_on",
+    "bin_prefetch_off": "/home/keri/llama.cpp/bin_prefetch_off",
+    "mlock_tool": "/home/keri/BSC/disk-benchmarking/utils/mlock_tool",
+    "results_dir": "results"
+  },
+  "cleanup": {
+    "drop_caches": true,
+    "clear_pagecache_only": false
+  },
+  "blktrace": {
+    "enabled": false
+  },
+  "io_monitor": {
+    "enabled": true,
+    "device": "nvme1n1"
+  },
+  "experiments": [
+    {
+      "name": "lazy_ctx131k_mem22_2kgen_iomon_lazy_only",
+      "model": "small",
+      "binary": "prefetch_off",
+      "args": [
+        "--no-warmup",
+        "--seed",
+        "42"
+      ],
+      "memory_pressure_gib": 22,
+      "tokens_to_generate": 2000
+    }
+  ]
+}

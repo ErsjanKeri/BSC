@@ -7,6 +7,7 @@ import json
 import subprocess
 import sys
 import time
+import threading
 from pathlib import Path
 from datetime import datetime
 
@@ -301,3 +302,101 @@ def calculate_statistics(csv_path):
             'count': len(eval_times)
         }
     }
+
+
+class IOMonitor:
+    """Polls /proc/diskstats every 25ms on a background thread.
+
+    Records read/write byte deltas for a specific block device.
+    Zero memory overhead (~50 bytes per sample, stored in a list).
+    Zero page cache impact (reads a tiny proc file).
+
+    Usage:
+        monitor = IOMonitor(device="nvme1n1", interval_ms=25)
+        monitor.start()
+        # ... run inference ...
+        monitor.stop()
+        monitor.to_csv("/path/to/output.csv")
+    """
+
+    def __init__(self, device="nvme1n1", interval_ms=25):
+        self.device = device
+        self.interval = interval_ms / 1000.0
+        self.samples = []
+        self._running = False
+        self._thread = None
+
+    def _read_stats(self):
+        """Read sectors_read and sectors_written from /proc/diskstats."""
+        with open('/proc/diskstats') as f:
+            for line in f:
+                parts = line.split()
+                if len(parts) >= 14 and parts[2] == self.device:
+                    return {
+                        'sectors_read': int(parts[5]),
+                        'sectors_written': int(parts[9]),
+                    }
+        return None
+
+    def _poll(self):
+        """Background polling loop."""
+        prev = self._read_stats()
+        if prev is None:
+            return
+        t0 = time.monotonic()
+        prev_t = t0
+
+        while self._running:
+            time.sleep(self.interval)
+            curr = self._read_stats()
+            if curr is None:
+                continue
+            now = time.monotonic()
+
+            # Actual elapsed time (not assumed interval — sleep is imprecise)
+            dt = now - prev_t
+
+            # Delta in bytes (sectors are 512 bytes)
+            read_bytes = (curr['sectors_read'] - prev['sectors_read']) * 512
+            write_bytes = (curr['sectors_written'] - prev['sectors_written']) * 512
+
+            self.samples.append({
+                'timestamp_s': now - t0,
+                'dt_s': dt,
+                'read_bytes': read_bytes,
+                'write_bytes': write_bytes,
+            })
+
+            prev = curr
+            prev_t = now
+
+    def start(self):
+        """Start background monitoring thread."""
+        self.samples = []
+        self._running = True
+        self._thread = threading.Thread(target=self._poll, daemon=True)
+        self._thread.start()
+
+    def stop(self):
+        """Stop monitoring and wait for thread to finish."""
+        self._running = False
+        if self._thread:
+            self._thread.join(timeout=2)
+            self._thread = None
+
+    def to_csv(self, path):
+        """Write samples to CSV file."""
+        path = Path(path)
+        with open(path, 'w') as f:
+            f.write("timestamp_s,dt_ms,read_bytes,write_bytes,read_mib_s,write_mib_s\n")
+            for s in self.samples:
+                dt = s['dt_s']
+                if dt > 0:
+                    read_mib_s = s['read_bytes'] / (1024 * 1024) / dt
+                    write_mib_s = s['write_bytes'] / (1024 * 1024) / dt
+                else:
+                    read_mib_s = 0
+                    write_mib_s = 0
+                f.write(f"{s['timestamp_s']:.4f},{dt*1000:.1f},{s['read_bytes']},"
+                        f"{s['write_bytes']},{read_mib_s:.1f},{write_mib_s:.1f}\n")
+        return len(self.samples)

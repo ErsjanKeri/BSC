@@ -1,0 +1,348 @@
+[2026-03-24 08:20:32] [INFO] Results directory: /home/keri/BSC/time-tracking/results/experiment_20260324_082032
+[2026-03-24 08:20:32] [INFO] Binary [prefetch_on]: /home/keri/llama.cpp/bin_prefetch_on/llama-completion
+[2026-03-24 08:20:32] [INFO] Binary [prefetch_off]: /home/keri/llama.cpp/bin_prefetch_off/llama-completion
+[2026-03-24 08:20:32] [INFO] Binary [current]: /home/keri/llama.cpp/build/bin/llama-completion
+[2026-03-24 08:20:32] [INFO] I/O monitor enabled: polling /proc/diskstats for nvme1n1 every 25ms
+[2026-03-24 08:20:32] [INFO] Running 9 experiment(s)...
+[2026-03-24 08:20:32] [INFO] 
+######################################################################
+[2026-03-24 08:20:32] [INFO] PHASE 1: 1 experiments WITHOUT memory pressure
+[2026-03-24 08:20:32] [INFO] ######################################################################
+
+[2026-03-24 08:20:32] [INFO] 
+======================================================================
+[2026-03-24 08:20:32] [INFO] Starting 1_default_no_pressure
+[2026-03-24 08:20:32] [INFO] Binary: /home/keri/llama.cpp/bin_prefetch_on/llama-completion
+[2026-03-24 08:20:32] [INFO] Lib: /home/keri/llama.cpp/bin_prefetch_on
+[2026-03-24 08:20:32] [INFO] Model: /home/keri/llama.cpp/models/gpt-oss-20b-F16.gguf
+[2026-03-24 08:20:32] [INFO] Args: ['--seed', '42']
+[2026-03-24 08:20:32] [INFO] Prompt: Write a detailed essay about the history of computer science
+[2026-03-24 08:20:32] [INFO] Iterations: 1
+[2026-03-24 08:20:32] [INFO] ======================================================================
+
+[2026-03-24 08:20:32] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 08:20:32] [INFO] Caches dropped successfully
+[2026-03-24 08:20:32] [INFO] Starting run 1...
+[2026-03-24 08:22:56] [INFO] I/O monitor: 5544 samples saved to 1_default_no_pressure_io_1.csv
+[2026-03-24 08:22:56] [INFO] Run 1 completed: wall=142440.8ms, gen=135993.8ms, faults=39
+[2026-03-24 08:22:56] [INFO] 
+1_default_no_pressure Statistics:
+[2026-03-24 08:22:56] [INFO]   Load time: 6155.62 +/- 0.00 ms (range: 6155.62-6155.62)
+[2026-03-24 08:22:56] [INFO]   Eval time: 135626.34 +/- 0.00 ms (range: 135626.34-135626.34)
+[2026-03-24 08:22:56] [INFO] 
+######################################################################
+[2026-03-24 08:22:56] [INFO] PHASE 2: 4 experiments WITH 20 GiB memory pressure
+[2026-03-24 08:22:56] [INFO] ######################################################################
+
+[2026-03-24 08:22:56] [INFO] Starting memory pressure: locking 20 GiB...
+[2026-03-24 08:23:01] [INFO] Memory pressure active: 20 GiB locked (PID 1681086)
+[2026-03-24 08:23:01] [INFO] 
+======================================================================
+[2026-03-24 08:23:01] [INFO] Starting 2_lazy_20g
+[2026-03-24 08:23:01] [INFO] Binary: /home/keri/llama.cpp/build/bin/llama-completion
+[2026-03-24 08:23:01] [INFO] Lib: /home/keri/llama.cpp/build/bin
+[2026-03-24 08:23:01] [INFO] Model: /home/keri/llama.cpp/models/gpt-oss-20b-F16.gguf
+[2026-03-24 08:23:01] [INFO] Args: ['--no-warmup', '--seed', '42']
+[2026-03-24 08:23:01] [INFO] Prompt: Write a detailed essay about the history of computer science
+[2026-03-24 08:23:01] [INFO] Iterations: 3
+[2026-03-24 08:23:01] [INFO] ======================================================================
+
+[2026-03-24 08:23:01] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 08:23:02] [INFO] Caches dropped successfully
+[2026-03-24 08:23:02] [INFO] Starting run 1...
+[2026-03-24 08:28:58] [INFO] I/O monitor: 14091 samples saved to 2_lazy_20g_io_1.csv
+[2026-03-24 08:28:58] [INFO] Run 1 completed: wall=355869.5ms, gen=352425.6ms, faults=6519962
+[2026-03-24 08:28:58] [INFO] Cooling down for 5s...
+[2026-03-24 08:29:03] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 08:29:04] [INFO] Caches dropped successfully
+[2026-03-24 08:29:04] [INFO] Starting run 2...
+[2026-03-24 08:35:01] [INFO] I/O monitor: 14077 samples saved to 2_lazy_20g_io_2.csv
+[2026-03-24 08:35:01] [INFO] Run 2 completed: wall=355652.6ms, gen=352334.8ms, faults=6524461
+[2026-03-24 08:35:01] [INFO] Cooling down for 5s...
+[2026-03-24 08:35:06] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 08:35:07] [INFO] Caches dropped successfully
+[2026-03-24 08:35:07] [INFO] Starting run 3...
+[2026-03-24 08:41:02] [INFO] I/O monitor: 14049 samples saved to 2_lazy_20g_io_3.csv
+[2026-03-24 08:41:02] [INFO] Run 3 completed: wall=354897.9ms, gen=351561.5ms, faults=6511746
+[2026-03-24 08:41:02] [INFO] 
+2_lazy_20g Statistics:
+[2026-03-24 08:41:02] [INFO]   Load time: 2114.33 +/- 8.84 ms (range: 2105.12-2122.74)
+[2026-03-24 08:41:02] [INFO]   Eval time: 351744.23 +/- 479.04 ms (range: 351194.22-352070.20)
+[2026-03-24 08:41:02] [INFO] 
+======================================================================
+[2026-03-24 08:41:02] [INFO] Starting 3_lazy_pinned_20g
+[2026-03-24 08:41:02] [INFO] Binary: /home/keri/llama.cpp/build/bin/llama-completion
+[2026-03-24 08:41:02] [INFO] Lib: /home/keri/llama.cpp/build/bin
+[2026-03-24 08:41:02] [INFO] Model: /home/keri/llama.cpp/models/gpt-oss-20b-F16.gguf
+[2026-03-24 08:41:02] [INFO] Args: ['--no-warmup', '--pin-compute-weights', '--seed', '42']
+[2026-03-24 08:41:02] [INFO] Prompt: Write a detailed essay about the history of computer science
+[2026-03-24 08:41:02] [INFO] Iterations: 3
+[2026-03-24 08:41:02] [INFO] ======================================================================
+
+[2026-03-24 08:41:02] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 08:41:03] [INFO] Caches dropped successfully
+[2026-03-24 08:41:03] [INFO] Starting run 1...
+[2026-03-24 08:46:33] [INFO] I/O monitor: 12990 samples saved to 3_lazy_pinned_20g_io_1.csv
+[2026-03-24 08:46:33] [INFO] Run 1 completed: wall=328999.8ms, gen=325281.9ms, faults=5678085, mlock=2329.3MiB
+[2026-03-24 08:46:33] [INFO] Cooling down for 5s...
+[2026-03-24 08:46:38] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 08:46:39] [INFO] Caches dropped successfully
+[2026-03-24 08:46:39] [INFO] Starting run 2...
+[2026-03-24 08:52:08] [INFO] I/O monitor: 12962 samples saved to 3_lazy_pinned_20g_io_2.csv
+[2026-03-24 08:52:08] [INFO] Run 2 completed: wall=328311.6ms, gen=324551.8ms, faults=5663859, mlock=2329.3MiB
+[2026-03-24 08:52:08] [INFO] Cooling down for 5s...
+[2026-03-24 08:52:13] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 08:52:14] [INFO] Caches dropped successfully
+[2026-03-24 08:52:14] [INFO] Starting run 3...
+[2026-03-24 08:57:44] [INFO] I/O monitor: 12991 samples saved to 3_lazy_pinned_20g_io_3.csv
+[2026-03-24 08:57:44] [INFO] Run 3 completed: wall=329025.1ms, gen=325262.1ms, faults=5679488, mlock=2329.3MiB
+[2026-03-24 08:57:44] [INFO] 
+3_lazy_pinned_20g Statistics:
+[2026-03-24 08:57:44] [INFO]   Load time: 1649.00 +/- 6.58 ms (range: 1641.88-1654.87)
+[2026-03-24 08:57:44] [INFO]   Eval time: 324667.67 +/- 420.81 ms (range: 324182.02-324924.33)
+[2026-03-24 08:57:44] [INFO] 
+======================================================================
+[2026-03-24 08:57:44] [INFO] Starting 4_lazy_madvise_20g
+[2026-03-24 08:57:44] [INFO] Binary: /home/keri/llama.cpp/build/bin/llama-completion
+[2026-03-24 08:57:44] [INFO] Lib: /home/keri/llama.cpp/build/bin
+[2026-03-24 08:57:44] [INFO] Model: /home/keri/llama.cpp/models/gpt-oss-20b-F16.gguf
+[2026-03-24 08:57:44] [INFO] Args: ['--no-warmup', '--moe-prefetch', '--seed', '42']
+[2026-03-24 08:57:44] [INFO] Prompt: Write a detailed essay about the history of computer science
+[2026-03-24 08:57:44] [INFO] Iterations: 3
+[2026-03-24 08:57:44] [INFO] ======================================================================
+
+[2026-03-24 08:57:44] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 08:57:44] [INFO] Caches dropped successfully
+[2026-03-24 08:57:44] [INFO] Starting run 1...
+[2026-03-24 09:03:53] [INFO] I/O monitor: 14575 samples saved to 4_lazy_madvise_20g_io_1.csv
+[2026-03-24 09:03:53] [INFO] Run 1 completed: wall=368147.7ms, gen=363500.9ms, faults=6917352
+[2026-03-24 09:03:53] [INFO] Cooling down for 5s...
+[2026-03-24 09:03:58] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 09:03:59] [INFO] Caches dropped successfully
+[2026-03-24 09:03:59] [INFO] Starting run 2...
+[2026-03-24 09:10:06] [INFO] I/O monitor: 14502 samples saved to 4_lazy_madvise_20g_io_2.csv
+[2026-03-24 09:10:06] [INFO] Run 2 completed: wall=366253.2ms, gen=361688.1ms, faults=6848060
+[2026-03-24 09:10:06] [INFO] Cooling down for 5s...
+[2026-03-24 09:10:11] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 09:10:12] [INFO] Caches dropped successfully
+[2026-03-24 09:10:12] [INFO] Starting run 3...
+[2026-03-24 09:16:19] [INFO] I/O monitor: 14505 samples saved to 4_lazy_madvise_20g_io_3.csv
+[2026-03-24 09:16:19] [INFO] Run 3 completed: wall=366369.1ms, gen=361741.5ms, faults=6846271
+[2026-03-24 09:16:19] [INFO] 
+4_lazy_madvise_20g Statistics:
+[2026-03-24 09:16:19] [INFO]   Load time: 3390.30 +/- 40.58 ms (range: 3343.95-3419.44)
+[2026-03-24 09:16:19] [INFO]   Eval time: 361941.49 +/- 1033.37 ms (range: 361318.18-363134.32)
+[2026-03-24 09:16:19] [INFO] 
+======================================================================
+[2026-03-24 09:16:19] [INFO] Starting 5_lazy_madvise_pinned_20g
+[2026-03-24 09:16:19] [INFO] Binary: /home/keri/llama.cpp/build/bin/llama-completion
+[2026-03-24 09:16:19] [INFO] Lib: /home/keri/llama.cpp/build/bin
+[2026-03-24 09:16:19] [INFO] Model: /home/keri/llama.cpp/models/gpt-oss-20b-F16.gguf
+[2026-03-24 09:16:19] [INFO] Args: ['--no-warmup', '--moe-prefetch', '--pin-compute-weights', '--seed', '42']
+[2026-03-24 09:16:19] [INFO] Prompt: Write a detailed essay about the history of computer science
+[2026-03-24 09:16:19] [INFO] Iterations: 3
+[2026-03-24 09:16:19] [INFO] ======================================================================
+
+[2026-03-24 09:16:19] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 09:16:20] [INFO] Caches dropped successfully
+[2026-03-24 09:16:20] [INFO] Starting run 1...
+[2026-03-24 09:22:00] [INFO] I/O monitor: 13378 samples saved to 5_lazy_madvise_pinned_20g_io_1.csv
+[2026-03-24 09:22:00] [INFO] Run 1 completed: wall=338652.8ms, gen=333668.2ms, faults=5971099, mlock=2329.3MiB
+[2026-03-24 09:22:00] [INFO] Cooling down for 5s...
+[2026-03-24 09:22:05] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 09:22:05] [INFO] Caches dropped successfully
+[2026-03-24 09:22:05] [INFO] Starting run 2...
+[2026-03-24 09:27:45] [INFO] I/O monitor: 13365 samples saved to 5_lazy_madvise_pinned_20g_io_2.csv
+[2026-03-24 09:27:45] [INFO] Run 2 completed: wall=338400.6ms, gen=333412.1ms, faults=5969423, mlock=2329.3MiB
+[2026-03-24 09:27:45] [INFO] Cooling down for 5s...
+[2026-03-24 09:27:50] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 09:27:51] [INFO] Caches dropped successfully
+[2026-03-24 09:27:51] [INFO] Starting run 3...
+[2026-03-24 09:33:30] [INFO] I/O monitor: 13365 samples saved to 5_lazy_madvise_pinned_20g_io_3.csv
+[2026-03-24 09:33:30] [INFO] Run 3 completed: wall=338464.3ms, gen=333493.7ms, faults=5972400, mlock=2329.3MiB
+[2026-03-24 09:33:30] [INFO] 
+5_lazy_madvise_pinned_20g Statistics:
+[2026-03-24 09:33:30] [INFO]   Load time: 2883.00 +/- 1.95 ms (range: 2880.88-2884.71)
+[2026-03-24 09:33:30] [INFO]   Eval time: 333155.37 +/- 129.69 ms (range: 333043.34-333297.45)
+[2026-03-24 09:33:30] [INFO] Stopping memory pressure (PID 1681086)...
+[2026-03-24 09:33:31] [INFO] Memory pressure released
+[2026-03-24 09:33:31] [INFO] 
+######################################################################
+[2026-03-24 09:33:31] [INFO] PHASE 2: 4 experiments WITH 22 GiB memory pressure
+[2026-03-24 09:33:31] [INFO] ######################################################################
+
+[2026-03-24 09:33:31] [INFO] Starting memory pressure: locking 22 GiB...
+[2026-03-24 09:33:36] [INFO] Memory pressure active: 22 GiB locked (PID 1708633)
+[2026-03-24 09:33:36] [INFO] 
+======================================================================
+[2026-03-24 09:33:36] [INFO] Starting 2_lazy_22g
+[2026-03-24 09:33:36] [INFO] Binary: /home/keri/llama.cpp/build/bin/llama-completion
+[2026-03-24 09:33:36] [INFO] Lib: /home/keri/llama.cpp/build/bin
+[2026-03-24 09:33:36] [INFO] Model: /home/keri/llama.cpp/models/gpt-oss-20b-F16.gguf
+[2026-03-24 09:33:36] [INFO] Args: ['--no-warmup', '--seed', '42']
+[2026-03-24 09:33:36] [INFO] Prompt: Write a detailed essay about the history of computer science
+[2026-03-24 09:33:36] [INFO] Iterations: 3
+[2026-03-24 09:33:36] [INFO] ======================================================================
+
+[2026-03-24 09:33:36] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 09:33:37] [INFO] Caches dropped successfully
+[2026-03-24 09:33:37] [INFO] Starting run 1...
+[2026-03-24 09:52:47] [INFO] I/O monitor: 45590 samples saved to 2_lazy_22g_io_1.csv
+[2026-03-24 09:52:47] [INFO] Run 1 completed: wall=1148983.9ms, gen=1145499.0ms, faults=23298757
+[2026-03-24 09:52:47] [INFO] Cooling down for 5s...
+[2026-03-24 09:52:52] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 09:52:53] [INFO] Caches dropped successfully
+[2026-03-24 09:52:53] [INFO] Starting run 2...
+[2026-03-24 10:12:06] [INFO] I/O monitor: 45710 samples saved to 2_lazy_22g_io_2.csv
+[2026-03-24 10:12:06] [INFO] Run 2 completed: wall=1152192.2ms, gen=1148846.2ms, faults=23351847
+[2026-03-24 10:12:06] [INFO] Cooling down for 5s...
+[2026-03-24 10:12:11] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 10:12:11] [INFO] Caches dropped successfully
+[2026-03-24 10:12:11] [INFO] Starting run 3...
+[2026-03-24 10:31:26] [INFO] I/O monitor: 45755 samples saved to 2_lazy_22g_io_3.csv
+[2026-03-24 10:31:26] [INFO] Run 3 completed: wall=1153338.2ms, gen=1149988.4ms, faults=23358317
+[2026-03-24 10:31:26] [INFO] 
+2_lazy_22g Statistics:
+[2026-03-24 10:31:26] [INFO]   Load time: 2131.52 +/- 2.49 ms (range: 2128.65-2133.02)
+[2026-03-24 10:31:26] [INFO]   Eval time: 1146710.70 +/- 2351.03 ms (range: 1144073.64-1148587.61)
+[2026-03-24 10:31:26] [INFO] 
+======================================================================
+[2026-03-24 10:31:26] [INFO] Starting 3_lazy_pinned_22g
+[2026-03-24 10:31:26] [INFO] Binary: /home/keri/llama.cpp/build/bin/llama-completion
+[2026-03-24 10:31:26] [INFO] Lib: /home/keri/llama.cpp/build/bin
+[2026-03-24 10:31:26] [INFO] Model: /home/keri/llama.cpp/models/gpt-oss-20b-F16.gguf
+[2026-03-24 10:31:26] [INFO] Args: ['--no-warmup', '--pin-compute-weights', '--seed', '42']
+[2026-03-24 10:31:26] [INFO] Prompt: Write a detailed essay about the history of computer science
+[2026-03-24 10:31:26] [INFO] Iterations: 3
+[2026-03-24 10:31:26] [INFO] ======================================================================
+
+[2026-03-24 10:31:26] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 10:31:26] [INFO] Caches dropped successfully
+[2026-03-24 10:31:26] [INFO] Starting run 1...
+[2026-03-24 10:42:51] [INFO] I/O monitor: 27080 samples saved to 3_lazy_pinned_22g_io_1.csv
+[2026-03-24 10:42:51] [INFO] Run 1 completed: wall=684202.6ms, gen=680380.9ms, faults=16340860, mlock=2329.3MiB
+[2026-03-24 10:42:51] [INFO] Cooling down for 5s...
+[2026-03-24 10:42:56] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 10:42:57] [INFO] Caches dropped successfully
+[2026-03-24 10:42:57] [INFO] Starting run 2...
+[2026-03-24 10:54:22] [INFO] I/O monitor: 27101 samples saved to 3_lazy_pinned_22g_io_2.csv
+[2026-03-24 10:54:22] [INFO] Run 2 completed: wall=684283.4ms, gen=680469.7ms, faults=16346632, mlock=2329.3MiB
+[2026-03-24 10:54:22] [INFO] Cooling down for 5s...
+[2026-03-24 10:54:27] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 10:54:28] [INFO] Caches dropped successfully
+[2026-03-24 10:54:28] [INFO] Starting run 3...
+[2026-03-24 11:05:50] [INFO] I/O monitor: 26997 samples saved to 3_lazy_pinned_22g_io_3.csv
+[2026-03-24 11:05:50] [INFO] Run 3 completed: wall=682099.3ms, gen=678279.6ms, faults=16269153, mlock=2329.3MiB
+[2026-03-24 11:05:50] [INFO] 
+3_lazy_pinned_22g Statistics:
+[2026-03-24 11:05:50] [INFO]   Load time: 1718.50 +/- 1.09 ms (range: 1717.24-1719.20)
+[2026-03-24 11:05:50] [INFO]   Eval time: 677741.72 +/- 1179.45 ms (range: 676383.03-678502.18)
+[2026-03-24 11:05:50] [INFO] 
+======================================================================
+[2026-03-24 11:05:50] [INFO] Starting 4_lazy_madvise_22g
+[2026-03-24 11:05:50] [INFO] Binary: /home/keri/llama.cpp/build/bin/llama-completion
+[2026-03-24 11:05:50] [INFO] Lib: /home/keri/llama.cpp/build/bin
+[2026-03-24 11:05:50] [INFO] Model: /home/keri/llama.cpp/models/gpt-oss-20b-F16.gguf
+[2026-03-24 11:05:50] [INFO] Args: ['--no-warmup', '--moe-prefetch', '--seed', '42']
+[2026-03-24 11:05:50] [INFO] Prompt: Write a detailed essay about the history of computer science
+[2026-03-24 11:05:50] [INFO] Iterations: 3
+[2026-03-24 11:05:50] [INFO] ======================================================================
+
+[2026-03-24 11:05:50] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 11:05:51] [INFO] Caches dropped successfully
+[2026-03-24 11:05:51] [INFO] Starting run 1...
+[2026-03-24 11:18:32] [INFO] I/O monitor: 30142 samples saved to 4_lazy_madvise_22g_io_1.csv
+[2026-03-24 11:18:32] [INFO] Run 1 completed: wall=759777.8ms, gen=755088.4ms, faults=15918072
+[2026-03-24 11:18:32] [INFO] Cooling down for 5s...
+[2026-03-24 11:18:37] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 11:18:37] [INFO] Caches dropped successfully
+[2026-03-24 11:18:37] [INFO] Starting run 2...
+[2026-03-24 11:28:56] [INFO] I/O monitor: 24522 samples saved to 4_lazy_madvise_22g_io_2.csv
+[2026-03-24 11:28:56] [INFO] Run 2 completed: wall=618290.4ms, gen=613676.2ms, faults=12825126
+[2026-03-24 11:28:56] [INFO] Cooling down for 5s...
+[2026-03-24 11:29:01] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 11:29:02] [INFO] Caches dropped successfully
+[2026-03-24 11:29:02] [INFO] Starting run 3...
+[2026-03-24 11:47:24] [INFO] I/O monitor: 43695 samples saved to 4_lazy_madvise_22g_io_3.csv
+[2026-03-24 11:47:24] [INFO] Run 3 completed: wall=1101358.1ms, gen=1096626.9ms, faults=22767754
+[2026-03-24 11:47:24] [INFO] 
+4_lazy_madvise_22g Statistics:
+[2026-03-24 11:47:24] [INFO]   Load time: 3431.67 +/- 50.84 ms (range: 3373.55-3467.90)
+[2026-03-24 11:47:24] [INFO]   Eval time: 820922.72 +/- 247902.77 ms (range: 613110.69-1095317.45)
+[2026-03-24 11:47:24] [INFO] 
+======================================================================
+[2026-03-24 11:47:24] [INFO] Starting 5_lazy_madvise_pinned_22g
+[2026-03-24 11:47:24] [INFO] Binary: /home/keri/llama.cpp/build/bin/llama-completion
+[2026-03-24 11:47:24] [INFO] Lib: /home/keri/llama.cpp/build/bin
+[2026-03-24 11:47:24] [INFO] Model: /home/keri/llama.cpp/models/gpt-oss-20b-F16.gguf
+[2026-03-24 11:47:24] [INFO] Args: ['--no-warmup', '--moe-prefetch', '--pin-compute-weights', '--seed', '42']
+[2026-03-24 11:47:24] [INFO] Prompt: Write a detailed essay about the history of computer science
+[2026-03-24 11:47:24] [INFO] Iterations: 3
+[2026-03-24 11:47:24] [INFO] ======================================================================
+
+[2026-03-24 11:47:24] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 11:47:25] [INFO] Caches dropped successfully
+[2026-03-24 11:47:25] [INFO] Starting run 1...
+[2026-03-24 11:58:27] [INFO] I/O monitor: 26155 samples saved to 5_lazy_madvise_pinned_22g_io_1.csv
+[2026-03-24 11:58:27] [INFO] Run 1 completed: wall=660862.6ms, gen=655738.4ms, faults=15577015, mlock=2329.3MiB
+[2026-03-24 11:58:27] [INFO] Cooling down for 5s...
+[2026-03-24 11:58:32] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 11:58:32] [INFO] Caches dropped successfully
+[2026-03-24 11:58:32] [INFO] Starting run 2...
+[2026-03-24 12:09:30] [INFO] I/O monitor: 25996 samples saved to 5_lazy_madvise_pinned_22g_io_2.csv
+[2026-03-24 12:09:30] [INFO] Run 2 completed: wall=656861.6ms, gen=651735.6ms, faults=15468572, mlock=2329.3MiB
+[2026-03-24 12:09:30] [INFO] Cooling down for 5s...
+[2026-03-24 12:09:35] [INFO] Dropping caches (page cache + dentries + inodes)...
+[2026-03-24 12:09:36] [INFO] Caches dropped successfully
+[2026-03-24 12:09:36] [INFO] Starting run 3...
+[2026-03-24 12:20:34] [INFO] I/O monitor: 26024 samples saved to 5_lazy_madvise_pinned_22g_io_3.csv
+[2026-03-24 12:20:34] [INFO] Run 3 completed: wall=657514.8ms, gen=652391.6ms, faults=15485313, mlock=2329.3MiB
+[2026-03-24 12:20:34] [INFO] 
+5_lazy_madvise_pinned_22g Statistics:
+[2026-03-24 12:20:34] [INFO]   Load time: 3012.78 +/- 4.77 ms (range: 3008.35-3017.83)
+[2026-03-24 12:20:34] [INFO]   Eval time: 651607.74 +/- 2034.06 ms (range: 650134.27-653928.48)
+[2026-03-24 12:20:34] [INFO] Stopping memory pressure (PID 1708633)...
+[2026-03-24 12:20:36] [INFO] Memory pressure released
+[2026-03-24 12:20:36] [INFO] 
+======================================================================
+[2026-03-24 12:20:36] [INFO] EXPERIMENT SUMMARY
+[2026-03-24 12:20:36] [INFO] ======================================================================
+[2026-03-24 12:20:36] [INFO] Results saved to: /home/keri/BSC/time-tracking/results/experiment_20260324_082032
+[2026-03-24 12:20:36] [INFO] 
+1_default_no_pressure:
+[2026-03-24 12:20:36] [INFO]   Load: 6155.62 +/- 0.00 ms
+[2026-03-24 12:20:36] [INFO]   Eval: 135626.34 +/- 0.00 ms
+[2026-03-24 12:20:36] [INFO] 
+2_lazy_20g:
+[2026-03-24 12:20:36] [INFO]   Load: 2114.33 +/- 8.84 ms
+[2026-03-24 12:20:36] [INFO]   Eval: 351744.23 +/- 479.04 ms
+[2026-03-24 12:20:36] [INFO] 
+3_lazy_pinned_20g:
+[2026-03-24 12:20:36] [INFO]   Load: 1649.00 +/- 6.58 ms
+[2026-03-24 12:20:36] [INFO]   Eval: 324667.67 +/- 420.81 ms
+[2026-03-24 12:20:36] [INFO] 
+4_lazy_madvise_20g:
+[2026-03-24 12:20:36] [INFO]   Load: 3390.30 +/- 40.58 ms
+[2026-03-24 12:20:36] [INFO]   Eval: 361941.49 +/- 1033.37 ms
+[2026-03-24 12:20:36] [INFO] 
+5_lazy_madvise_pinned_20g:
+[2026-03-24 12:20:36] [INFO]   Load: 2883.00 +/- 1.95 ms
+[2026-03-24 12:20:36] [INFO]   Eval: 333155.37 +/- 129.69 ms
+[2026-03-24 12:20:36] [INFO] 
+2_lazy_22g:
+[2026-03-24 12:20:36] [INFO]   Load: 2131.52 +/- 2.49 ms
+[2026-03-24 12:20:36] [INFO]   Eval: 1146710.70 +/- 2351.03 ms
+[2026-03-24 12:20:36] [INFO] 
+3_lazy_pinned_22g:
+[2026-03-24 12:20:36] [INFO]   Load: 1718.50 +/- 1.09 ms
+[2026-03-24 12:20:36] [INFO]   Eval: 677741.72 +/- 1179.45 ms
+[2026-03-24 12:20:36] [INFO] 
+4_lazy_madvise_22g:
+[2026-03-24 12:20:36] [INFO]   Load: 3431.67 +/- 50.84 ms
+[2026-03-24 12:20:36] [INFO]   Eval: 820922.72 +/- 247902.77 ms
+[2026-03-24 12:20:36] [INFO] 
+5_lazy_madvise_pinned_22g:
+[2026-03-24 12:20:36] [INFO]   Load: 3012.78 +/- 4.77 ms
+[2026-03-24 12:20:36] [INFO]   Eval: 651607.74 +/- 2034.06 ms
+[2026-03-24 12:20:36] [INFO] 
+All experiments complete!

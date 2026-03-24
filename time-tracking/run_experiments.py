@@ -27,7 +27,8 @@ from utils import (
     parse_llama_output,
     write_csv_header,
     append_csv_row,
-    calculate_statistics
+    calculate_statistics,
+    IOMonitor
 )
 
 
@@ -81,8 +82,13 @@ def stop_memory_pressure(proc):
     log("Memory pressure released")
 
 
-def run_single_iteration(binary_path, lib_path, model_path, prompt, n_tokens, run_num, result_dir, extra_args=None, prompt_file=None):
-    """Run a single inference iteration"""
+def run_single_iteration(binary_path, lib_path, model_path, prompt, n_tokens, run_num, result_dir, exp_name="", extra_args=None, prompt_file=None, blktrace_config=None, io_monitor_device=None):
+    """Run a single inference iteration, optionally with blktrace capture and I/O monitoring.
+
+    Args:
+        blktrace_config: dict with 'block_device' and 'output_base_dir' keys, or None to disable.
+        io_monitor_device: device name (e.g. 'nvme1n1') to monitor via /proc/diskstats, or None.
+    """
     log(f"Starting run {run_num}...")
 
     cmd = [
@@ -106,17 +112,65 @@ def run_single_iteration(binary_path, lib_path, model_path, prompt, n_tokens, ru
     env = os.environ.copy()
     env['LD_LIBRARY_PATH'] = str(lib_path)
 
+    bt = None
+    io_mon = None
     try:
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=600,
-            env=env
-        )
-        output = result.stdout + result.stderr
+        # Start I/O monitor if configured
+        if io_monitor_device:
+            io_mon = IOMonitor(device=io_monitor_device, interval_ms=25)
+            io_mon.start()
 
-        log_path = result_dir / f"run_{run_num}.log"
+        # Start blktrace if configured
+        if blktrace_config:
+            from blktrace_utils import BlktraceCapture
+            bt_dir = Path(blktrace_config['output_base_dir']) / f"run_{run_num}"
+            bt = BlktraceCapture(
+                block_device=blktrace_config['block_device'],
+                output_dir=bt_dir
+            )
+            bt.__enter__()
+
+        # Use Popen when blktrace is enabled (need PID), subprocess.run otherwise
+        if bt:
+            proc = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                env=env
+            )
+            bt.set_pid(proc.pid)
+            try:
+                stdout, stderr = proc.communicate(timeout=3600)
+                output = stdout.decode() + stderr.decode()
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                stdout, stderr = proc.communicate()
+                output = stdout.decode() + stderr.decode()
+                log(f"Run {run_num}: inference timed out", "ERROR")
+        else:
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=3600,
+                env=env
+            )
+            output = result.stdout + result.stderr
+
+        # Stop blktrace (but defer CSV conversion — it needs RAM, which may be locked)
+        if bt:
+            bt.__exit__(None, None, None)
+            bt = None  # prevent double-exit in except
+
+        # Stop I/O monitor and save CSV
+        if io_mon:
+            io_mon.stop()
+            io_csv_path = result_dir / f"{exp_name}_io_{run_num}.csv"
+            n_samples = io_mon.to_csv(io_csv_path)
+            log(f"I/O monitor: {n_samples} samples saved to {io_csv_path.name}")
+            io_mon = None
+
+        log_path = result_dir / f"{exp_name}_run_{run_num}.log"
         with open(log_path, 'w') as f:
             f.write(output)
 
@@ -139,10 +193,15 @@ def run_single_iteration(binary_path, lib_path, model_path, prompt, n_tokens, ru
 
     except Exception as e:
         log(f"Run {run_num} failed: {e}", "ERROR")
+        if bt:
+            try:
+                bt.__exit__(None, None, None)
+            except Exception:
+                pass
         return None
 
 
-def run_experiment_set(exp_name, binary_path, lib_path, model_path, defaults, cleanup, result_dir, extra_args=None, prompt_file=None):
+def run_experiment_set(exp_name, binary_path, lib_path, model_path, defaults, cleanup, result_dir, extra_args=None, prompt_file=None, blktrace_config=None, io_monitor_device=None):
     """Run a complete set of experiments (multiple iterations)"""
     log(f"\n{'='*70}")
     log(f"Starting {exp_name}")
@@ -152,6 +211,8 @@ def run_experiment_set(exp_name, binary_path, lib_path, model_path, defaults, cl
     log(f"Args: {extra_args or []}")
     log(f"Prompt: {prompt_file or defaults['prompt']}")
     log(f"Iterations: {defaults['num_iterations']}")
+    if blktrace_config:
+        log(f"blktrace: {blktrace_config['block_device']} → {blktrace_config['output_base_dir']}")
     log(f"{'='*70}\n")
 
     csv_path = result_dir / f"{exp_name}.csv"
@@ -168,8 +229,11 @@ def run_experiment_set(exp_name, binary_path, lib_path, model_path, defaults, cl
 
         metrics = run_single_iteration(
             binary_path, lib_path, model_path,
-            prompt, n_tokens, i, result_dir, extra_args=extra_args,
-            prompt_file=prompt_file
+            prompt, n_tokens, i, result_dir, exp_name=exp_name,
+            extra_args=extra_args,
+            prompt_file=prompt_file,
+            blktrace_config=blktrace_config,
+            io_monitor_device=io_monitor_device
         )
 
         if metrics:
@@ -217,6 +281,8 @@ def main():
         'prefetch_on': Path(paths['bin_prefetch_on']),
         'prefetch_off': Path(paths['bin_prefetch_off']),
     }
+    if 'bin_current' in paths:
+        bin_dirs['current'] = Path(paths['bin_current'])
     mlock_tool_path = Path(paths['mlock_tool'])
 
     # Verify binaries exist
@@ -232,6 +298,23 @@ def main():
     for key, rel_path in settings['models'].items():
         full_path = models_dir / rel_path
         model_paths[key] = full_path
+
+    # Resolve blktrace config (optional)
+    blktrace_config = None
+    bt_settings = settings.get('blktrace')
+    if bt_settings and bt_settings.get('enabled', False):
+        blktrace_config = {
+            'block_device': bt_settings['block_device'],
+            'output_base_dir': bt_settings['output_dir'],
+        }
+        log(f"blktrace enabled: tracing {blktrace_config['block_device']}, output to {blktrace_config['output_base_dir']}")
+
+    # Resolve I/O monitor config (optional)
+    io_monitor_device = None
+    io_settings = settings.get('io_monitor')
+    if io_settings and io_settings.get('enabled', False):
+        io_monitor_device = io_settings['device']
+        log(f"I/O monitor enabled: polling /proc/diskstats for {io_monitor_device} every 25ms")
 
     # Run experiments from settings
     experiments = settings.get('experiments', [])
@@ -272,11 +355,18 @@ def main():
                 log(f"Model not found for '{model_key}': {model_path}", "ERROR")
                 sys.exit(1)
 
+            exp_defaults = dict(settings['defaults'])
+            if 'tokens_to_generate' in exp:
+                exp_defaults['tokens_to_generate'] = exp['tokens_to_generate']
+            if 'num_iterations' in exp:
+                exp_defaults['num_iterations'] = exp['num_iterations']
             results[name] = run_experiment_set(
                 name, binary_path, bin_dir, model_path,
-                settings['defaults'], settings['cleanup'],
+                exp_defaults, settings['cleanup'],
                 result_dir, extra_args=extra_args,
-                prompt_file=prompt_file
+                prompt_file=prompt_file,
+                blktrace_config=blktrace_config,
+                io_monitor_device=io_monitor_device
             )
 
         # Phase 2: Pressure experiments (grouped by pressure level)
@@ -314,11 +404,18 @@ def main():
                         log(f"Model not found for '{model_key}': {model_path}", "ERROR")
                         continue
 
+                    exp_defaults = dict(settings['defaults'])
+                    if 'tokens_to_generate' in exp:
+                        exp_defaults['tokens_to_generate'] = exp['tokens_to_generate']
+                    if 'num_iterations' in exp:
+                        exp_defaults['num_iterations'] = exp['num_iterations']
                     results[name] = run_experiment_set(
                         name, binary_path, bin_dir, model_path,
-                        settings['defaults'], settings['cleanup'],
+                        exp_defaults, settings['cleanup'],
                         result_dir, extra_args=extra_args,
-                        prompt_file=prompt_file
+                        prompt_file=prompt_file,
+                        blktrace_config=blktrace_config,
+                        io_monitor_device=io_monitor_device
                     )
 
                 stop_memory_pressure(mlock_proc)
@@ -329,6 +426,25 @@ def main():
     finally:
         if mlock_proc is not None:
             stop_memory_pressure(mlock_proc)
+
+    # Post-process blktrace data (deferred — needs RAM that was locked during experiments)
+    if blktrace_config:
+        log(f"\n{'#'*70}")
+        log("POST-PROCESSING: Converting blktrace data to CSV")
+        log(f"{'#'*70}\n")
+        from blktrace_utils import BlktraceCapture
+        bt_base = Path(blktrace_config['output_base_dir'])
+        for run_dir in sorted(bt_base.glob("run_*")):
+            trace_files = list(run_dir.glob("trace.blktrace.*"))
+            if trace_files and not (run_dir / "trace.csv").exists():
+                log(f"Converting {run_dir.name}...")
+                bt = BlktraceCapture(blktrace_config['block_device'], run_dir)
+                try:
+                    bt.to_csv()
+                except Exception as e:
+                    log(f"Failed to convert {run_dir.name}: {e}", "ERROR")
+            elif (run_dir / "trace.csv").exists():
+                log(f"{run_dir.name}: trace.csv already exists, skipping")
 
     # Summary
     log(f"\n{'='*70}")
