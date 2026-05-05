@@ -8,7 +8,7 @@
 
 ## H1: MoE Models Show Different Access Patterns Than Standard Transformers
 
-Standard transformers process all layers identically per token — highly sequential. MoE models activate only K of N experts per token, creating sparse, input-dependent access patterns.
+Standard transformers process all layers identically per token, which is highly sequential. MoE models activate only K of N experts per token, creating sparse, input-dependent access patterns.
 
 **What to measure:** Sequential read % for standard transformer vs MoE model under memory pressure.
 

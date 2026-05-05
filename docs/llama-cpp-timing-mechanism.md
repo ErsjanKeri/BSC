@@ -1,4 +1,4 @@
-# llama.cpp Timing Mechanism — Complete Reference
+# llama.cpp Timing Mechanism: Complete Reference
 
 This document describes exactly how llama.cpp measures and reports performance timing: which variables are involved, where they are set/reset/overwritten, and what the final printed metrics actually mean.
 
@@ -15,28 +15,28 @@ Before understanding timing, it is critical to understand the main loop in `tool
 - Prompt: 12 tokens (well under `n_batch = 2048`, so always processed in one `llama_decode()` call)
 - Generation: 200 tokens (`n_predict = 200`)
 - Context window: 131,072 (`n_ctx`), but we only use ~212 positions
-- KV cache: pre-allocated for full context window (3090 MiB for small model, 4635 MiB for large). 12 layers use full attention (131k positions), 12 layers use sliding window attention (768 positions only — saves ~50% KV memory)
+- KV cache: pre-allocated for full context window (3090 MiB for small model, 4635 MiB for large). 12 layers use full attention (131k positions), 12 layers use sliding window attention (768 positions only, saves ~50% KV memory)
 - Single instance, CPU-only, no parallel inference
 
 ### Key Concepts
 
-**`embd`** — a list of token IDs (integer indices into the vocabulary). During prompt processing: `embd = [1042, 305, 7821, ...]` (12 indices). During generation: `embd = [15232]` (1 index).
+**`embd`**: a list of token IDs (integer indices into the vocabulary). During prompt processing: `embd = [1042, 305, 7821, ...]` (12 indices). During generation: `embd = [15232]` (1 index).
 
-**`n_batch`** (default 2048) — max tokens per single `llama_decode()` call. A "batch" just means feeding N tokens into one forward pass (one matrix multiplication of N×d instead of N separate 1×d multiplications). Only useful for prompt processing — during generation, we always decode 1 token at a time because each depends on the previous one. Irrelevant for our 12-token prompt.
+**`n_batch`** (default 2048), max tokens per single `llama_decode()` call. A "batch" just means feeding N tokens into one forward pass (one matrix multiplication of N×d instead of N separate 1×d multiplications). Only useful for prompt processing, during generation, we always decode 1 token at a time because each depends on the previous one. Irrelevant for our 12-token prompt.
 
-**`n_remain`** — countdown of tokens left to generate. Starts at `n_predict` (200), decremented after each sampled token.
+**`n_remain`**: countdown of tokens left to generate. Starts at `n_predict` (200), decremented after each sampled token.
 
-**`n_p_eval`** — total **prompt** tokens processed (the `p` stands for prompt). For us: always 12.
+**`n_p_eval`**: total **prompt** tokens processed (the `p` stands for prompt). For us: always 12.
 
-**`n_eval`** — total **generation** decode calls. For us: 199.
+**`n_eval`**: total **generation** decode calls. For us: 199.
 
-These two counters exist separately so llama.cpp can report prompt throughput and generation throughput independently. The distinction is purely for reporting — the same `llama_decode()` function runs both times.
+These two counters exist separately so llama.cpp can report prompt throughput and generation throughput independently. The distinction is purely for reporting, the same `llama_decode()` function runs both times.
 
 ### What `llama_decode()` Does
 
 Every call to `llama_decode()` does the same thing:
 
-1. **Embedding lookup**: `ggml_get_rows(tok_embd, token_ids)` — takes each token ID in `embd`, pulls its row from the embedding table (201,088 × 2880 matrix), producing a 2880-dimensional vector per token
+1. **Embedding lookup**: `ggml_get_rows(tok_embd, token_ids)`: takes each token ID in `embd`, pulls its row from the embedding table (201,088 × 2880 matrix), producing a 2880-dimensional vector per token
 2. **Forward pass through all layers**: attention (using KV cache) + expert MLPs + normalization
 3. **Stores new K/V vectors** in the KV cache at the next available positions
 4. **Outputs logits**: a float array of 201,088 values (one score per vocabulary word)
@@ -61,15 +61,15 @@ while (n_remain != 0) {
 
 **Iteration 1:** `embd` is empty. Prompt token IDs get pushed into `embd`. Display echoes the prompt text.
 
-**Iteration 2:** `embd` has 12 token IDs. `llama_decode()` runs — looks up 12 embeddings, processes through all layers, stores 12 new K/V entries in KV cache, outputs logits. This is **prompt eval**. `embd` is cleared. Sampler picks index for **token_1** from logits → pushed into `embd`. Display prints token_1. **First generated token appears here.**
+**Iteration 2:** `embd` has 12 token IDs. `llama_decode()` runs, looks up 12 embeddings, processes through all layers, stores 12 new K/V entries in KV cache, outputs logits. This is **prompt eval**. `embd` is cleared. Sampler picks index for **token_1** from logits → pushed into `embd`. Display prints token_1. **First generated token appears here.**
 
-**Iteration 3:** `embd` has 1 token ID (token_1). `llama_decode()` runs — looks up 1 embedding, processes through layers (attention reads KV cache from all 13 previous positions), stores 1 new K/V entry, outputs logits. This is **generation**. Sampler picks token_2 → displayed.
+**Iteration 3:** `embd` has 1 token ID (token_1). `llama_decode()` runs, looks up 1 embedding, processes through layers (attention reads KV cache from all 13 previous positions), stores 1 new K/V entry, outputs logits. This is **generation**. Sampler picks token_2 → displayed.
 
 **Repeat** 197 more times until `n_remain` hits 0.
 
 ### The Prompt Eval / Generation Distinction in Timing
 
-The distinction is purely for reporting — `synchronize()` checks how many tokens were in the last decode call and adds the elapsed time to the appropriate counter (`src/llama-context.cpp:489-498`):
+The distinction is purely for reporting, `synchronize()` checks how many tokens were in the last decode call and adds the elapsed time to the appropriate counter (`src/llama-context.cpp:489-498`):
 
 ```cpp
 if (n_queued_tokens == 1) {
@@ -81,7 +81,7 @@ if (n_queued_tokens == 1) {
 }
 ```
 
-`synchronize()` is called after every `llama_decode()`. Despite its name, it is not about thread synchronization — it updates timing counters and waits for backend compute to finish.
+`synchronize()` is called after every `llama_decode()`. Despite its name, it is not about thread synchronization, it updates timing counters and waits for backend compute to finish.
 
 ### What Goes Into Each Timing Counter
 
@@ -90,7 +90,7 @@ if (n_queued_tokens == 1) {
 | Prompt decode | 12 | `t_p_eval_us` | `n_p_eval` += 12 |
 | Each generated token decode | 1 | `t_eval_us` | `n_eval`++ |
 
-`t_eval_us` includes the decode of the **first** generated token — there is no separate "first token" counter.
+`t_eval_us` includes the decode of the **first** generated token, there is no separate "first token" counter.
 
 ### MoE Expert Computation
 
@@ -114,7 +114,7 @@ With 128 experts and 4 used per token: prompt eval (12 tokens) triggers 4×12 = 
 | Variable | Type | Purpose |
 |----------|------|---------|
 | `t_start_us` | `int64_t` | Baseline timestamp for timing. Initialized from `model.t_start_us`, then **overwritten** by `perf_reset()` |
-| `t_load_us` | `int64_t` | "Load time" — meaning depends on whether warmup is on/off (see Section 5) |
+| `t_load_us` | `int64_t` | "Load time", meaning depends on whether warmup is on/off (see Section 5) |
 | `t_p_eval_us` | `int64_t` | Accumulated prompt evaluation time (microseconds) |
 | `t_eval_us` | `int64_t` | Accumulated token generation time (microseconds) |
 | `t_compute_start_us` | `int64_t` | Timestamp marking start of current encode/decode call |
@@ -140,7 +140,7 @@ Used in `llama_model_load()` to measure model loading time. Captures start time 
 
 ---
 
-## 3. The Timeline — Step by Step
+## 3. The Timeline: Step by Step
 
 ### Phase A: Model Loading
 
@@ -158,10 +158,10 @@ static int llama_model_load(...) {
 
 Inside model loading, the following sub-steps happen (in `src/llama-model.cpp`):
 
-1. **Metadata + vocab parsing** — reads GGUF header, architecture, hyperparameters, vocabulary
-2. **`init_mappings()`** (line 6797) — creates mmap. With MAP_POPULATE: kernel reads entire file. Without: instant (just sets up virtual address space)
-3. **`load_all_data()`** (line 6858) — assigns tensor data pointers into the mmap'd region. No disk I/O
-4. **`pin_compute_weights()`** (lines 6955-6968) — if `--pin-compute-weights`: iterates tensors, calls `mlock()` on attention/projection weights, skipping expert and embedding tensors
+1. **Metadata + vocab parsing**: reads GGUF header, architecture, hyperparameters, vocabulary
+2. **`init_mappings()`** (line 6797), creates mmap. With MAP_POPULATE: kernel reads entire file. Without: instant (just sets up virtual address space)
+3. **`load_all_data()`** (line 6858), assigns tensor data pointers into the mmap'd region. No disk I/O
+4. **`pin_compute_weights()`** (lines 6955-6968), if `--pin-compute-weights`: iterates tensors, calls `mlock()` on attention/projection weights, skipping expert and embedding tensors
 
 ### Phase B: Context Construction
 
@@ -185,7 +185,7 @@ Then KV cache allocation (malloc), compute buffer allocation, graph reservation.
 if (params.warmup) {
     llama_set_warmup(lctx, true);               // C1: sets cparams.warmup = true
     // decode BOS+EOS tokens                     // C2: triggers synchronize()
-    llama_perf_context_reset(lctx);              // C3: RESET — zeros timing counters
+    llama_perf_context_reset(lctx);              // C3: RESET, zeros timing counters
     llama_set_warmup(lctx, false);               // C4: clears warmup flag
 }
 ```
@@ -247,14 +247,14 @@ After computation, `synchronize()` is called (`src/llama-context.cpp:481-509`):
 t_p_eval_us += ggml_time_us() - t_compute_start_us;   // E3: accumulate prompt eval time
 n_p_eval += n_queued_tokens;                            // E4: count tokens
 
-// first eval — load time overwrite:
+// first eval, load time overwrite:
 if (n_queued_tokens > 0 && !has_evaluated_once) {       // E5
     t_load_us = ggml_time_us() - t_start_us;            // E6: OVERWRITE
     has_evaluated_once = true;                           // E7: set forever
 }
 ```
 
-**Critical:** At step E6, `t_start_us` is the value set by Phase D's `perf_reset()` (not the original model start). So `t_load_us` becomes "time from reset to end of first eval" — which includes prompt eval time but NOT model loading, NOT mlock, NOT warmup.
+**Critical:** At step E6, `t_start_us` is the value set by Phase D's `perf_reset()` (not the original model start). So `t_load_us` becomes "time from reset to end of first eval", which includes prompt eval time but NOT model loading, NOT mlock, NOT warmup.
 
 **Exception:** If warmup was ON, `has_evaluated_once` was already set to `true` in Phase C. So steps E5-E7 are skipped, and `t_load_us` retains its value from Phase C (time from model start to warmup completion).
 
@@ -355,7 +355,7 @@ This is the most confusing metric. Its meaning depends on the execution path:
 - **Warmup ON:** captures model loading + warmup (seconds to minutes)
 - **Warmup OFF:** captures just prompt eval, hiding all loading costs
 
-This is why we added `[timing] true_model_load` instrumentation — to always have a reliable measurement of the pre-inference overhead.
+This is why we added `[timing] true_model_load` instrumentation, to always have a reliable measurement of the pre-inference overhead.
 
 ---
 
@@ -397,14 +397,14 @@ This captures the time from model load start to the reset point, which includes 
 | Metric | What it measures | Includes loading costs? |
 |--------|-----------------|------------------------|
 | `load time` (warmup ON) | Model start → end of warmup | YES (but mixed with warmup) |
-| `load time` (warmup OFF) | Reset → end of first prompt eval | NO — hidden by reset |
+| `load time` (warmup OFF) | Reset → end of first prompt eval | NO, hidden by reset |
 | `prompt eval time` | Time inside `llama_decode()` for multi-token batches | No loading costs, but includes page fault I/O within decode |
 | `eval time` | Time inside `llama_decode()` for single-token batches | No loading costs, but includes page fault I/O within decode |
-| `total time` | Reset → end of last token | NO — excludes pre-reset costs |
+| `total time` | Reset → end of last token | NO, excludes pre-reset costs |
 | `unaccounted time` | total - sampling - prompt_eval - eval | Should be tiny (<1%) |
-| `[timing] true_model_load` | Model start → reset point | YES — our instrumentation |
-| `[timing] init_mappings_done` | Model start → after mmap | YES — our instrumentation |
-| `[timing] pin_compute_weights_done` | Model start → after mlock | YES — our instrumentation |
+| `[timing] true_model_load` | Model start → reset point | YES, our instrumentation |
+| `[timing] init_mappings_done` | Model start → after mmap | YES, our instrumentation |
+| `[timing] pin_compute_weights_done` | Model start → after mlock | YES, our instrumentation |
 
 ---
 
@@ -414,19 +414,19 @@ This captures the time from model load start to the reset point, which includes 
 
 The current timing mechanism conflates multiple phases and hides costs behind a `perf_reset()`. For our thesis, we need **granular, per-phase timing** that clearly separates:
 
-1. **Model loading** — metadata parsing, GGUF header, vocab
-2. **Memory mapping** — mmap setup (and MAP_POPULATE if enabled)
-3. **Memory pinning** — `mlock()` of compute weights (if `--pin-compute-weights`)
-4. **Context construction** — KV cache allocation, compute buffer allocation, graph reservation
-5. **Warmup** — warmup forward pass (if enabled)
-6. **Prompt eval** — forward pass for prompt tokens (includes page fault I/O on first access)
-7. **Token generation** — per-token decode steps (includes page fault I/O)
+1. **Model loading**: metadata parsing, GGUF header, vocab
+2. **Memory mapping**: mmap setup (and MAP_POPULATE if enabled)
+3. **Memory pinning**: `mlock()` of compute weights (if `--pin-compute-weights`)
+4. **Context construction**: KV cache allocation, compute buffer allocation, graph reservation
+5. **Warmup**: warmup forward pass (if enabled)
+6. **Prompt eval**: forward pass for prompt tokens (includes page fault I/O on first access)
+7. **Token generation**: per-token decode steps (includes page fault I/O)
 
 ### What needs to happen
 
 - **Remove or bypass the perf_reset()** for our measurements, OR add separate counters that are not affected by the reset
 - **Add per-phase timestamps** that are printed regardless of warmup/reset state
-- **Separate page fault I/O from compute** within prompt eval and eval — this is the hardest part, as page faults happen inside `llama_decode()` and are invisible to the timing code. Options:
+- **Separate page fault I/O from compute** within prompt eval and eval, this is the hardest part, as page faults happen inside `llama_decode()` and are invisible to the timing code. Options:
   - Read `/proc/self/stat` major fault counter before and after each `llama_decode()` call
   - Use `perf stat` externally
   - Use blktrace for disk-level tracing
@@ -434,4 +434,4 @@ The current timing mechanism conflates multiple phases and hides costs behind a 
 
 ### Open question
 
-Should we modify llama.cpp's timing infrastructure directly (risk: diverging from upstream, harder to maintain), or wrap our measurements externally in the Python runner (risk: less precise, can't measure internal phases)? A hybrid approach — minimal instrumentation inside llama.cpp for per-phase timing, external measurement for page faults — may be the most practical path.
+Should we modify llama.cpp's timing infrastructure directly (risk: diverging from upstream, harder to maintain), or wrap our measurements externally in the Python runner (risk: less precise, can't measure internal phases)? A hybrid approach, minimal instrumentation inside llama.cpp for per-phase timing, external measurement for page faults, may be the most practical path.

@@ -19,4 +19,4 @@ Deterministic generation outputs from the canonical thesis sweep, captured as ev
 
 The 1999 token count comes from the model emitting an end-of-generation token at index 1999 (the 2000th tokens-to-generate request is preempted). Both models produce the full essay; neither early-stops with a refusal under this prompt.
 
-The MD5 of the generation region (post-prompt-echo, pre-perf-summary) matches across `--uring-projection-overlap`, `--uring-async-projection-overlap`, and `--uring-async-experts` runs at the same seed for each model — this is the byte-level pipeline correctness guarantee asserted in `thesis/chapters/05_implementation.tex`.
+The MD5 of the generation region (post-prompt-echo, pre-perf-summary) matches across `--uring-projection-overlap`, `--uring-async-projection-overlap`, and `--uring-async-experts` runs at the same seed for each model. This is the byte-level pipeline correctness guarantee asserted in `thesis/chapters/05_implementation.tex`.

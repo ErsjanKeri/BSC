@@ -1,6 +1,6 @@
 # Tensor traces (canonical, multi-topic prompt, 20B)
 
-Captures from `llama-completion` running GPT-OSS-20B with the multi-topic essay prompt and `seed=42` — the same prompt and seed as the wall-clock canonical sweep in `time-tracking/results/`. Three outputs covering the two distinct uses of the tracing infrastructure.
+Captures from `llama-completion` running GPT-OSS-20B with the multi-topic essay prompt and `seed=42`, the same prompt and seed as the wall-clock canonical sweep in `time-tracking/results/`. Three outputs covering the two distinct uses of the tracing infrastructure.
 
 ## Outputs
 
@@ -12,7 +12,7 @@ Captures from `llama-completion` running GPT-OSS-20B with the multi-topic essay 
 
 ## Run flags
 
-The visualization runs (1 and 2) use plain mmap so that `MUL_MAT_ID` dispatches go through the regular ggml dispatcher (the trace hook lives there). The MoE pipeline custom op (`--uring-async-projection-overlap`) collapses each layer's per-expert MUL_MAT_IDs into a single fused custom op, which `--trace-mode experts` filters out — for visualization we want the per-expert dispatches visible.
+The visualization runs (1 and 2) use plain mmap so that `MUL_MAT_ID` dispatches go through the regular ggml dispatcher (the trace hook lives there). The MoE pipeline custom op (`--uring-async-projection-overlap`) collapses each layer's per-expert MUL_MAT_IDs into a single fused custom op, which `--trace-mode experts` filters out. For visualization we want the per-expert dispatches visible.
 
 ```
 # Run 1 (WebUI):    -n 2   --trace-mode all
@@ -32,7 +32,7 @@ The simulator-dump run (Run 3) uses the full canonical configuration including t
 
 The cache dump comes from `load_projections()` (single-threaded loader path) regardless of trace mode, so Run 3 sets `--trace-mode off` to avoid the tracer's open-file overhead while still capturing every expert access.
 
-Reproduction scripts: `/tmp/run_canon_traces_plain.sh` (Run 1+2), `/tmp/run_canon_traces.sh` (Run 3, since superseded — the cache dump in `20b-2000tok-cache-dump/` is the surviving output).
+Reproduction scripts: `/tmp/run_canon_traces_plain.sh` (Run 1+2), `/tmp/run_canon_traces.sh` (Run 3, since superseded). The cache dump in `20b-2000tok-cache-dump/` is the surviving output.
 
 ## Tracer fix history
 

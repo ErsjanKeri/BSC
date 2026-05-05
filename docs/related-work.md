@@ -2,7 +2,7 @@
 
 This document provides a comprehensive survey of the current state-of-the-art in performance profiling, trace analysis, and visualization for Large Language Model (LLM) inference runtimes. It specifically focuses on the llama.cpp and ggml ecosystem to contextualize the Dual-Path Tensor Correlation System developed in this repository.
 
-The survey categorizes existing tools into high-level benchmarking, static analysis, system-level profiling, and academic research, highlighting the specific observability gaps—most notably the **"Semantic Gap"**—that necessitate our custom instrumentation approach.
+The survey categorizes existing tools into high-level benchmarking, static analysis, system-level profiling, and academic research, highlighting the specific observability gaps (most notably the **"Semantic Gap"**) that necessitate our custom instrumentation approach.
 
 ---
 
