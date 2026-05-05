@@ -1,0 +1,4 @@
+run,load_time_ms,prompt_eval_time_ms,eval_time_ms,eval_tokens,total_time_ms,major_page_faults,mlock_mib,phase_metadata_ms,phase_mmap_ms,phase_tensors_ms,phase_pinning_ms,phase_context_ms,phase_warmup_ms,phase_prompt_eval_ms,phase_generation_ms,phase_total_wall_ms,phase_metadata_faults,phase_mmap_faults,phase_tensors_faults,phase_pinning_faults,phase_context_faults,phase_warmup_faults,phase_prompt_eval_faults,phase_generation_faults,phase_total_faults,phase_t0_abs_us
+1,4174.86,4173.98,229657.53,1999,234253.43,32874,2329.3,225.2,1.36,0.78,930.66,974.39,0.01,4303.75,230078.68,236514.85,0,0,0,0,0,0,30661,2022,32683,7589718410072
+2,4195.05,4194.15,229751.62,1999,234363.88,32571,2329.3,223.38,1.34,0.9,929.33,979.84,0.01,4325.58,230168.93,236629.31,0,0,0,0,0,0,30517,1911,32428,7589970413716
+3,4204.56,4203.62,229638.54,1999,234261.23,33264,2329.3,224.02,1.35,0.91,938.46,978.85,0.01,4334.92,230056.72,236535.24,0,0,0,0,0,0,31103,1969,33072,7590222502396

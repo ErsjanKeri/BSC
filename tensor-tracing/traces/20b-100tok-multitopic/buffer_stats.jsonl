@@ -1,0 +1,5 @@
+{"timestamp_ms":1.887,"event":"alloc","buffer_id":110323215079664,"buffer_ptr":0,"size":0,"name":"KVCache_CPU","backend":"CPU","usage":2,"layer":65535}
+{"timestamp_ms":1.927,"event":"alloc","buffer_id":110323215055760,"buffer_ptr":0,"size":0,"name":"KVCache_CPU","backend":"CPU","usage":2,"layer":65535}
+{"timestamp_ms":280.117,"event":"alloc","buffer_id":110323321986240,"buffer_ptr":127135371395008,"size":13779630336,"name":"ModelWeights_file0","backend":"CPU_Mapped","usage":1,"layer":65535}
+{"timestamp_ms":1129.979,"event":"alloc","buffer_id":110323301415616,"buffer_ptr":127132150161472,"size":3221225472,"name":"KVCache_CPU","backend":"CPU","usage":2,"layer":65535}
+{"timestamp_ms":1134.927,"event":"alloc","buffer_id":110323301398464,"buffer_ptr":127151405789248,"size":18874368,"name":"KVCache_CPU","backend":"CPU","usage":2,"layer":65535}

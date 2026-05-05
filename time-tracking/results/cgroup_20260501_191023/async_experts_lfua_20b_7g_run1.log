@@ -1,0 +1,410 @@
+Write a long detailed essay covering these five topics in sequence: (1) the history of computer science, (2) the history of mathematics, (3) the history of physics, (4) the history of astronomy, (5) the history of biology. For each topic, cover ancient origins, medieval developments, 19th century advances, 20th century breakthroughs, and modern applications. Include specific dates, scientist names, and their contributions. Provide a thorough, well‑structured analysis. The user wants an essay covering 5 topics: computer science, mathematics, physics, astronomy, biology. For each topic, covering ancient origins, medieval developments, 19th century advances, 20th century breakthroughs, and modern applications. Provide specific dates, names, contributions. So the essay should have sections for each topic, each with subsections: ancient origins, medieval developments, 19th century advances, 20th century breakthroughs, modern applications. Provide dates and names. It's a long essay. Ensure it's well-structured, with headings. Provide thorough analysis. Should be long. Let's produce. Use maybe 1200-2000 words? The user says "long detailed essay covering these five topics in sequence". So it's large. We'll produce a structured essay with headings and bullet points for clarity. We'll mention key names: e.g., for computer science: ancient abacus, medieval arithmetic, 19th century mechanical calculators (Babbage), 20th century Turing, modern applications. For mathematics: ancient Greek, medieval Islamic mathematicians, 19th century calculus, 20th century abstract algebra, modern applications. Physics: ancient Greek mechanics, medieval alchemy, 19th century classical physics, 20th century quantum, modern applications. Astronomy: ancient Babylonian, medieval Islamic astronomers, 19th century telescopes, 20th century space age. Biology: ancient natural history, medieval classification, 19th century Darwin, 20th century genetics, modern biotech. Provide specific dates and contributions. Use citations. We'll produce. Let's do.assistantfinal## 1. Computer Science
+
+| Epoch | Key Figures & Milestones | Contributions |
+|-------|---------------------------|---------------|
+| **Ancient** | *Alcuin of York* (8th‑c.) – *Counting boards* | Early mechanical aids for arithmetic, a precursor to the “machine” concept. |
+| | *Abacus* (c. 2400 BCE) | Portable counting device, demonstrating abstraction of numbers. |
+| | *Antikythera Mechanism* (c. 100 BCE) | Gear‑based analog computer to predict celestial events. |
+| **Medieval** | *Al-Khwarizmi* (c. 800) – *Algebra* | Introduced systematic algorithmic solving of equations, laying groundwork for algorithmic thinking. |
+| | *Leonardo Fibonacci* (1202) – *Liber Abaci* (1202) | Introduced Hindu–Arabic numerals to Europe, facilitating algorithmic computation. |
+| **19th century** | *Charles Babbage* (1837–1871) – *Difference Engine*, *Analytical Engine* | Designed the first mechanical “programmable” computer; introduced the concept of an input tape and stored instructions. |
+| | *Ada Lovelace* (1843) – *First algorithm* for Babbage’s machine | Recognized the machine’s potential for more than number crunching; coined “computer” (computers as people). |
+| | *Herman Hollerith* (1890) – *Tabulating Machine* | Electrically coded punch cards for census data; foundation for early data processing. |
+| **20th century** | *Alan Turing* (1936) – *Turing Machine* | Formalized the notion of a universal computing device; laid the theoretical basis for modern computing. |
+| | *John von Neumann* (1945) – *Stored‑program architecture* | Introduced the von Neumann architecture that dominates modern computers. |
+| | *Claude Shannon* (1948) – *Information Theory* | Quantified information, enabling digital communication and data compression. |
+| | *Grace Hopper* (1952) – *COBOL compiler* | Created the first compiler, turning high‑level code into machine instructions. |
+| | *Dennis Ritchie* & *Ken Thompson* (1970) – *UNIX*, *C* | Built a portable, flexible operating system and a powerful programming language. |
+| | *Tim Berners‑Lee* (1989) – *World Wide Web* | Invented HTTP and HTML; created the modern internet. |
+| **Modern Applications** | *Artificial Intelligence* (1990s‑present) | Machine learning, neural networks, autonomous systems. |
+| | *Quantum Computing* (2000s‑present) | Shor’s algorithm, quantum annealing, quantum cryptography. |
+| | *Internet of Things* (2010s‑present) | Embedded computing in everyday objects for real‑time data analytics. |
+
+### Analysis
+
+Computer science’s roots are surprisingly ancient. The abacus and the Antikythera mechanism illustrate early attempts to mechanize calculation and simulate natural processes. Medieval scholars such as Al‑Khwarizmi and Fibonacci formalized numerical operations, providing a language for later algorithmic development. The 19th‑century vision of Babbage and Lovelace turned these ideas into tangible machines, establishing the core concepts of programmability and automation.
+
+The 20th century forged the discipline into a rigorous science. Turing’s abstraction of computation introduced a universal model; von Neumann’s architecture provided a practical blueprint. Shannon’s theory of information enabled efficient data transmission, while Hopper’s compiler and Ritchie/Thompson’s UNIX/C system made programming accessible. Berners‑Lee’s invention of the Web transformed computation from a laboratory curiosity into a ubiquitous societal infrastructure.
+
+Today, computer science permeates every domain: AI models predict disease progression, quantum processors promise exponential speedups, and the IoT connects sensors to cloud analytics, reshaping manufacturing, healthcare, and urban planning.
+
+---
+
+## 2. Mathematics
+
+| Epoch | Key Figures & Milestones | Contributions |
+|-------|---------------------------|---------------|
+| **Ancient** | *Thales* (c. 600 BCE) – *Geometry* | First to prove theorems about circles and triangles. |
+| | *Euclid* (c. 300 BCE) – *Elements* | Systematic axiomatic geometry; formalized deduction. |
+| | *Archimedes* (c. 250 BCE) – *Method of Exhaustion* | Precursory calculus; approximation of π. |
+| | *Aryabhata* (476‑550) – *Astronomical calculations* | Early trigonometry, approximation of π. |
+| **Medieval** | *Al‑Qāḍī ʿĪsā* (c. 950) – *Algebraic notation* | Introduced symbols for unknowns and operations. |
+| | *Al‑Būri* (c. 1150) – *Algebraic solving techniques* | Developed systematic solutions to quadratic equations. |
+| | *Omar Khayyám* (1048‑1131) – *Algebraic geometry* | Extended algebraic solutions to higher degrees. |
+| **19th century** | *Carl Friedrich Gauss* (1801‑1855) – *Number theory*, *Gaussian distribution* | Unified diverse areas; proved the fundamental theorem of algebra. |
+| | *G. S. Bernard Bolzano* (1817) – *Real analysis* | Formalized limits and continuity. |
+| | *Richard Dedekind* (1871) – *Dedekind cuts* | Constructed the real number system rigorously. |
+| | *Henri Poincaré* (1904) – *Topological methods* | Introduced the concept of a manifold; foundational for topology. |
+| **20th century** | *Alan Turing* (1936) – *Computability* | Defined algorithmic solvability; introduced the concept of a universal machine. |
+| | *John von Neumann* (1935) – *Von Neumann algebras* | Developed operator theory used in quantum mechanics. |
+| | *Emil Artin* (1924) – *Algebraic number theory* | Introduced Galois theory, connecting field extensions to symmetry. |
+| | *André Weil* (1940s) – *Algebraic geometry* | Recast geometry in terms of commutative algebra. |
+| | *Paul Cohen* (1963) – *Forcing* | Proved independence of the Continuum Hypothesis. |
+| **Modern Applications** | *Cryptography* (1970s‑present) | RSA, elliptic‑curve cryptography based on number theory. |
+| | *Computer Science* (1980s‑present) | Algorithms, complexity theory, computational geometry. |
+| | *Physics* (1990s‑present) | Quantum field theory, string theory use advanced algebra and geometry. |
+| | *Data Science* (2000s‑present) | Statistical learning, manifold learning, tensor methods. |
+
+### Analysis
+
+Mathematics began as a practical science—geometry to measure land, astronomy to predict tides—then evolved into an abstract, axiomatic discipline with Euclid’s *Elements*. Medieval scholars in the Islamic Golden Age formalized algebraic notation and systematic solution methods, bridging ancient Greek logic with practical calculation.
+
+The 19th century saw the emergence of rigorous analysis and the abstraction of algebraic structures. Gauss’s synthesis of number theory and statistics, along with Dedekind’s rigorous construction of real numbers, established the modern framework for pure mathematics.
+
+The 20th century introduced a paradigm shift: mathematics became the language of computation and the underlying structure
+
+BSC_CGROUP_PEAK=7516192768
+BSC_CGROUP_CURRENT=2603393024
+BSC_CGROUP_SWAP_PEAK=0
+BSC_CGROUP_EVENTS=low 0 high 0 max 19371 oom 0 oom_kill 0 oom_group_kill 0 
+BSC_CGROUP_PATH=/bscexp.slice/run-r74282d4063534fea860622202257a536.scope
+Scope command line contains environment variable, which is not expanded by default for now, but will be expanded by default in the future. Use --expand-environment=yes/no to explicitly control it as needed.
+Running as unit: run-r74282d4063534fea860622202257a536.scope; invocation ID: 662543191cbe4bca858d622a1b05facd
+warning: no usable GPU found, --gpu-layers option will be ignored
+warning: one possible reason is that llama.cpp was compiled without GPU support
+warning: consult docs/build.md for compilation instructions
+build: 7635 (d7e480f4) with GNU 13.3.0 for Linux x86_64
+main: llama backend init
+main: load the model and apply lora adapter, if any
+common_init_result: fitting params to device memory, for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on
+
+[BSC_MEM] === after KV cache creation (memory.reset, includes memset(0)) ===
+[BSC_MEM]   VmSize:	  199868 kB
+[BSC_MEM]   VmLck:	       0 kB
+[BSC_MEM]   VmPin:	       0 kB
+[BSC_MEM]   VmRSS:	  106568 kB
+[BSC_MEM]   RssAnon:	   93256 kB
+[BSC_MEM]   RssFile:	   13312 kB
+[BSC_MEM]   cgroup memory.current: 122.4 MiB
+
+[BSC_MEM] === after graph_reserve (compute buffer allocated) ===
+[BSC_MEM]   VmSize:	  279228 kB
+[BSC_MEM]   VmLck:	       0 kB
+[BSC_MEM]   VmPin:	       0 kB
+[BSC_MEM]   VmRSS:	  110664 kB
+[BSC_MEM]   RssAnon:	   97224 kB
+[BSC_MEM]   RssFile:	   13440 kB
+[BSC_MEM]   cgroup memory.current: 126.4 MiB
+
+[BSC_MEM] === after eager compute (compute buffer pages committed) ===
+[BSC_MEM]   VmSize:	  279228 kB
+[BSC_MEM]   VmLck:	       0 kB
+[BSC_MEM]   VmPin:	       0 kB
+[BSC_MEM]   VmRSS:	  110664 kB
+[BSC_MEM]   RssAnon:	   97224 kB
+[BSC_MEM]   RssFile:	   13440 kB
+[BSC_MEM]   cgroup memory.current: 126.4 MiB
+llama_params_fit_impl: no devices with dedicated memory found
+llama_params_fit: successfully fit params to free device memory
+llama_params_fit: fitting params to free memory took 0.34 seconds
+llama_model_loader: loaded meta data with 37 key-value pairs and 459 tensors from /home/keri/llama.cpp/models/gpt-oss-20b-F16.gguf (version GGUF V3 (latest))
+llama_model_loader: Dumping metadata keys/values. Note: KV overrides do not apply in this output.
+llama_model_loader: - kv   0:                       general.architecture str              = gpt-oss
+llama_model_loader: - kv   1:                               general.type str              = model
+llama_model_loader: - kv   2:                               general.name str              = Gpt-Oss-20B
+llama_model_loader: - kv   3:                           general.basename str              = Gpt-Oss-20B
+llama_model_loader: - kv   4:                       general.quantized_by str              = Unsloth
+llama_model_loader: - kv   5:                         general.size_label str              = 20B
+llama_model_loader: - kv   6:                            general.license str              = apache-2.0
+llama_model_loader: - kv   7:                           general.repo_url str              = https://huggingface.co/unsloth
+llama_model_loader: - kv   8:                               general.tags arr[str,2]       = ["vllm", "text-generation"]
+llama_model_loader: - kv   9:                        gpt-oss.block_count u32              = 24
+llama_model_loader: - kv  10:                     gpt-oss.context_length u32              = 131072
+llama_model_loader: - kv  11:                   gpt-oss.embedding_length u32              = 2880
+llama_model_loader: - kv  12:                gpt-oss.feed_forward_length u32              = 2880
+llama_model_loader: - kv  13:               gpt-oss.attention.head_count u32              = 64
+llama_model_loader: - kv  14:            gpt-oss.attention.head_count_kv u32              = 8
+llama_model_loader: - kv  15:                     gpt-oss.rope.freq_base f32              = 150000.000000
+llama_model_loader: - kv  16:   gpt-oss.attention.layer_norm_rms_epsilon f32              = 0.000010
+llama_model_loader: - kv  17:                       gpt-oss.expert_count u32              = 32
+llama_model_loader: - kv  18:                  gpt-oss.expert_used_count u32              = 4
+llama_model_loader: - kv  19:               gpt-oss.attention.key_length u32              = 64
+llama_model_loader: - kv  20:             gpt-oss.attention.value_length u32              = 64
+llama_model_loader: - kv  21:                          general.file_type u32              = 1
+llama_model_loader: - kv  22:           gpt-oss.attention.sliding_window u32              = 128
+llama_model_loader: - kv  23:         gpt-oss.expert_feed_forward_length u32              = 2880
+llama_model_loader: - kv  24:                  gpt-oss.rope.scaling.type str              = yarn
+llama_model_loader: - kv  25:                gpt-oss.rope.scaling.factor f32              = 32.000000
+llama_model_loader: - kv  26: gpt-oss.rope.scaling.original_context_length u32              = 4096
+llama_model_loader: - kv  27:               general.quantization_version u32              = 2
+llama_model_loader: - kv  28:                       tokenizer.ggml.model str              = gpt2
+llama_model_loader: - kv  29:                         tokenizer.ggml.pre str              = gpt-4o
+llama_model_loader: - kv  30:                      tokenizer.ggml.tokens arr[str,201088]  = ["!", "\"", "#", "$", "%", "&", "'", ...
+llama_model_loader: - kv  31:                  tokenizer.ggml.token_type arr[i32,201088]  = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ...
+llama_model_loader: - kv  32:                      tokenizer.ggml.merges arr[str,446189]  = ["Ġ Ġ", "Ġ ĠĠĠ", "ĠĠ ĠĠ", "...
+llama_model_loader: - kv  33:                tokenizer.ggml.bos_token_id u32              = 199998
+llama_model_loader: - kv  34:                tokenizer.ggml.eos_token_id u32              = 200002
+llama_model_loader: - kv  35:            tokenizer.ggml.padding_token_id u32              = 200017
+llama_model_loader: - kv  36:                    tokenizer.chat_template str              = {# Chat template fixes by Unsloth #}\n...
+llama_model_loader: - type  f32:  289 tensors
+llama_model_loader: - type  f16:   98 tensors
+llama_model_loader: - type mxfp4:   72 tensors
+print_info: file format = GGUF V3 (latest)
+print_info: file type   = F16
+print_info: file size   = 12.83 GiB (5.27 BPW) 
+load: 0 unused tokens
+load: printing all EOG tokens:
+load:   - 199999 ('<|endoftext|>')
+load:   - 200002 ('<|return|>')
+load:   - 200007 ('<|end|>')
+load:   - 200012 ('<|call|>')
+load: special_eog_ids contains both '<|return|>' and '<|call|>', or '<|calls|>' and '<|flush|>' tokens, removing '<|end|>' token from EOG list
+load: special tokens cache size = 21
+load: token to piece cache size = 1.3332 MB
+print_info: arch             = gpt-oss
+print_info: vocab_only       = 0
+print_info: no_alloc         = 0
+print_info: n_ctx_train      = 131072
+print_info: n_embd           = 2880
+print_info: n_embd_inp       = 2880
+print_info: n_layer          = 24
+print_info: n_head           = 64
+print_info: n_head_kv        = 8
+print_info: n_rot            = 64
+print_info: n_swa            = 128
+print_info: is_swa_any       = 1
+print_info: n_embd_head_k    = 64
+print_info: n_embd_head_v    = 64
+print_info: n_gqa            = 8
+print_info: n_embd_k_gqa     = 512
+print_info: n_embd_v_gqa     = 512
+print_info: f_norm_eps       = 0.0e+00
+print_info: f_norm_rms_eps   = 1.0e-05
+print_info: f_clamp_kqv      = 0.0e+00
+print_info: f_max_alibi_bias = 0.0e+00
+print_info: f_logit_scale    = 0.0e+00
+print_info: f_attn_scale     = 0.0e+00
+print_info: n_ff             = 2880
+print_info: n_expert         = 32
+print_info: n_expert_used    = 4
+print_info: n_expert_groups  = 0
+print_info: n_group_used     = 0
+print_info: causal attn      = 1
+print_info: pooling type     = 0
+print_info: rope type        = 2
+print_info: rope scaling     = yarn
+print_info: freq_base_train  = 150000.0
+print_info: freq_scale_train = 0.03125
+print_info: n_ctx_orig_yarn  = 4096
+print_info: rope_yarn_log_mul= 0.0000
+print_info: rope_finetuned   = unknown
+print_info: model type       = 20B
+print_info: model params     = 20.91 B
+print_info: general.name     = Gpt-Oss-20B
+print_info: n_ff_exp         = 2880
+print_info: vocab type       = BPE
+print_info: n_vocab          = 201088
+print_info: n_merges         = 446189
+print_info: BOS token        = 199998 '<|startoftext|>'
+print_info: EOS token        = 200002 '<|return|>'
+print_info: EOT token        = 199999 '<|endoftext|>'
+print_info: PAD token        = 200017 '<|reserved_200017|>'
+print_info: LF token         = 198 'Ċ'
+print_info: EOG token        = 199999 '<|endoftext|>'
+print_info: EOG token        = 200002 '<|return|>'
+print_info: EOG token        = 200012 '<|call|>'
+print_info: max token length = 256
+load_tensors: loading model tensors, this can take a while... (mmap = true)
+load_tensors:   CPU_Mapped model buffer size = 13141.28 MiB
+....................................................................................
+
+[BSC_MEM] === after load_tensors (model mmap'd, before pin) ===
+[BSC_MEM]   VmSize:	13672648 kB
+[BSC_MEM]   VmLck:	       0 kB
+[BSC_MEM]   VmPin:	       0 kB
+[BSC_MEM]   VmRSS:	  122824 kB
+[BSC_MEM]   RssAnon:	  109384 kB
+[BSC_MEM]   RssFile:	   13440 kB
+[BSC_MEM]   cgroup memory.current: 138.4 MiB
+
+[BSC_MEM] === after pin_compute_weights (mlock done) ===
+[BSC_MEM]   VmSize:	13672648 kB
+[BSC_MEM]   VmLck:	 2385364 kB
+[BSC_MEM]   VmPin:	       0 kB
+[BSC_MEM]   VmRSS:	 2508232 kB
+[BSC_MEM]   RssAnon:	  109384 kB
+[BSC_MEM]   RssFile:	 2398848 kB
+[BSC_MEM]   cgroup memory.current: 2488.4 MiB
+load_tensors: pin_compute_weights: attempted 314 tensors, locked 2329.3 MiB, failed 0 tensors, took 940.13 ms
+load_tensors: uring_experts: opening pack file /home/keri/llama.cpp/models/gpt-oss-20b-F16.gguf.bscexp
+llama_uring_expert_buf_init: 3 proj, 4 experts_used, expert_bytes=4406400, slot_bytes=4406784, cache_slots=250 (1050.7 MiB), policy=LFU-aging, freq_table=2304 entries (9216 bytes)
+
+[BSC_MEM] === after uring_expert_buf_init (cache buffer allocated via posix_memalign) ===
+load_tensors: uring_experts: ready — 24 layers, 32 experts (4 used), 3 projections, slot_bytes=4406784 (pad 384), cache_slots=250
+[BSC_MEM]   VmSize:	14748532 kB
+[BSC_MEM]   VmLck:	 2385364 kB
+[BSC_MEM]   VmPin:	       0 kB
+[BSC_MEM]   VmRSS:	 2508232 kB
+[BSC_MEM]   RssAnon:	  109384 kB
+[BSC_MEM]   RssFile:	 2398848 kB
+[BSC_MEM]   cgroup memory.current: 2488.4 MiB
+load_tensors: storing GGUF offsets for tensor tracing...
+load_tensors: stored 459 tensor offsets
+llama_model_load_from_file_impl: tensor tracing disabled
+common_init_result: added <|endoftext|> logit bias = -inf
+common_init_result: added <|return|> logit bias = -inf
+common_init_result: added <|call|> logit bias = -inf
+llama_context: constructing llama_context
+llama_context: n_seq_max     = 1
+llama_context: n_ctx         = 131072
+llama_context: n_ctx_seq     = 131072
+llama_context: n_batch       = 2048
+llama_context: n_ubatch      = 512
+llama_context: causal_attn   = 1
+llama_context: flash_attn    = auto
+llama_context: kv_unified    = false
+llama_context: freq_base     = 150000.0
+llama_context: freq_scale    = 0.03125
+llama_context:        CPU  output buffer size =     0.77 MiB
+llama_kv_cache_iswa: creating non-SWA KV cache, size = 131072 cells
+llama_kv_cache:        CPU KV buffer size =  3072.00 MiB
+llama_kv_cache: size = 3072.00 MiB (131072 cells,  12 layers,  1/1 seqs), K (f16): 1536.00 MiB, V (f16): 1536.00 MiB
+llama_kv_cache_iswa: creating     SWA KV cache, size = 768 cells
+llama_kv_cache:        CPU KV buffer size =    18.00 MiB
+
+[BSC_MEM] === after KV cache creation (memory.reset, includes memset(0)) ===
+llama_kv_cache: size =   18.00 MiB (   768 cells,  12 layers,  1/1 seqs), K (f16):    9.00 MiB, V (f16):    9.00 MiB
+[BSC_MEM]   VmSize:	17912832 kB
+[BSC_MEM]   VmLck:	 2385364 kB
+[BSC_MEM]   VmPin:	       0 kB
+[BSC_MEM]   VmRSS:	 5672520 kB
+[BSC_MEM]   RssAnon:	 3273672 kB
+[BSC_MEM]   RssFile:	 2398848 kB
+[BSC_MEM]   cgroup memory.current: 5584.4 MiB
+llama_context: Flash Attention was auto, set to enabled
+
+[BSC_MEM] === after graph_reserve (compute buffer allocated) ===
+[BSC_MEM]   VmSize:	18408728 kB
+[BSC_MEM]   VmLck:	 2385364 kB
+[BSC_MEM]   VmPin:	       0 kB
+[BSC_MEM]   VmRSS:	 5672520 kB
+[BSC_MEM]   RssAnon:	 3273672 kB
+[BSC_MEM]   RssFile:	 2398848 kB
+llama_context:        CPU compute buffer size =   413.52 MiB
+[BSC_MEM]   cgroup memory.current: 5584.4 MiB
+
+[BSC_MEM] === after eager compute (compute buffer pages committed) ===
+[BSC_MEM]   VmSize:	18408728 kB
+[BSC_MEM]   VmLck:	 2385364 kB
+[BSC_MEM]   VmPin:	       0 kB
+[BSC_MEM]   VmRSS:	 6095944 kB
+[BSC_MEM]   RssAnon:	 3697096 kB
+[BSC_MEM]   RssFile:	 2398848 kB
+llama_context: eager compute: cleared compute buffers to force page allocation
+[BSC_MEM]   cgroup memory.current: 5998.5 MiB
+llama_context: graph nodes  = 1352 (with bs=512), 1040 (with bs=1)
+llama_context: graph splits = 1
+[timing] true_model_load: 1171.86 ms (before perf reset)
+main: llama threadpool init, n_threads = 8
+
+system_info: n_threads = 8 (n_threads_batch = 8) / 16 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | AVX512 = 1 | AVX512_VBMI = 1 | AVX512_VNNI = 1 | AVX512_BF16 = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 | 
+
+sampler seed: 42
+sampler params: 
+	repeat_last_n = 64, repeat_penalty = 1.000, frequency_penalty = 0.000, presence_penalty = 0.000
+	dry_multiplier = 0.000, dry_base = 1.750, dry_allowed_length = 2, dry_penalty_last_n = -1
+	top_k = 40, top_p = 0.950, min_p = 0.050, xtc_probability = 0.000, xtc_threshold = 0.100, typical_p = 1.000, top_n_sigma = -1.000, temp = 0.800
+	mirostat = 0, mirostat_lr = 0.100, mirostat_ent = 5.000
+sampler chain: logits -> penalties -> dry -> top-n-sigma -> top-k -> typical -> top-p -> min-p -> xtc -> temp-ext -> dist 
+generate: n_ctx = 131072, n_batch = 2048, n_predict = 2000, n_keep = 0
+
+ggml_graph_dump_dot: dot -Tpng /tmp/graphs/token_00000.dot -o /tmp/graphs/token_00000.dot.png && open /tmp/graphs/token_00000.dot.png
+
+[BSC_MEM] === after decode iter 1 ===
+[BSC_MEM]   VmSize:	18466100 kB
+[BSC_MEM]   VmLck:	 2385364 kB
+[BSC_MEM]   VmPin:	       0 kB
+[BSC_MEM]   VmRSS:	 7260104 kB
+[BSC_MEM]   RssAnon:	 3752392 kB
+[BSC_MEM]   RssFile:	 3507712 kB
+[BSC_MEM]   cgroup memory.current: 7167.8 MiB
+ggml_graph_dump_dot: dot -Tpng /tmp/graphs/token_00001.dot -o /tmp/graphs/token_00001.dot.png && open /tmp/graphs/token_00001.dot.png
+
+[BSC_MEM] === after decode iter 2 ===
+[BSC_MEM]   VmSize:	18466100 kB
+[BSC_MEM]   VmLck:	 2385364 kB
+[BSC_MEM]   VmPin:	       0 kB
+[BSC_MEM]   VmRSS:	 7281736 kB
+[BSC_MEM]   RssAnon:	 4776264 kB
+[BSC_MEM]   RssFile:	 2505472 kB
+[BSC_MEM]   cgroup memory.current: 7167.8 MiB
+
+[BSC_MEM] === after decode iter 5 ===
+[BSC_MEM]   VmSize:	18466100 kB
+[BSC_MEM]   VmLck:	 2385364 kB
+[BSC_MEM]   VmPin:	       0 kB
+[BSC_MEM]   VmRSS:	 7282376 kB
+[BSC_MEM]   RssAnon:	 4776264 kB
+[BSC_MEM]   RssFile:	 2506112 kB
+[BSC_MEM]   cgroup memory.current: 7168.0 MiB
+
+[BSC_MEM] === after decode iter 50 ===
+[BSC_MEM]   VmSize:	18466100 kB
+[BSC_MEM]   VmLck:	 2385364 kB
+[BSC_MEM]   VmPin:	       0 kB
+[BSC_MEM]   VmRSS:	 7280456 kB
+[BSC_MEM]   RssAnon:	 4776264 kB
+[BSC_MEM]   RssFile:	 2504192 kB
+[BSC_MEM]   cgroup memory.current: 7168.0 MiB
+
+[BSC_MEM] === after decode iter 150 ===
+[BSC_MEM]   VmSize:	18466100 kB
+[BSC_MEM]   VmLck:	 2385364 kB
+[BSC_MEM]   VmPin:	       0 kB
+[BSC_MEM]   VmRSS:	 7276744 kB
+[BSC_MEM]   RssAnon:	 4776264 kB
+[BSC_MEM]   RssFile:	 2500480 kB
+[BSC_MEM]   cgroup memory.current: 7167.9 MiB
+ggml_graph_dump_dot: dot -Tpng /tmp/graphs/token_00002.dot -o /tmp/graphs/token_00002.dot.png && open /tmp/graphs/token_00002.dot.png
+ggml_graph_dump_dot: dot -Tpng /tmp/graphs/token_00003.dot -o /tmp/graphs/token_00003.dot.png && open /tmp/graphs/token_00003.dot.png
+ggml_graph_dump_dot: dot -Tpng /tmp/graphs/token_00004.dot -o /tmp/graphs/token_00004.dot.png && open /tmp/graphs/token_00004.dot.png
+ggml_graph_dump_dot: dot -Tpng /tmp/graphs/token_00005.dot -o /tmp/graphs/token_00005.dot.png && open /tmp/graphs/token_00005.dot.png
+ggml_graph_dump_dot: dot -Tpng /tmp/graphs/token_00006.dot -o /tmp/graphs/token_00006.dot.png && open /tmp/graphs/token_00006.dot.png
+ggml_graph_dump_dot: dot -Tpng /tmp/graphs/token_00007.dot -o /tmp/graphs/token_00007.dot.png && open /tmp/graphs/token_00007.dot.png
+ggml_graph_dump_dot: dot -Tpng /tmp/graphs/token_00008.dot -o /tmp/graphs/token_00008.dot.png && open /tmp/graphs/token_00008.dot.png
+ggml_graph_dump_dot: dot -Tpng /tmp/graphs/token_00009.dot -o /tmp/graphs/token_00009.dot.png && open /tmp/graphs/token_00009.dot.png
+common_perf_print:    sampling time =     408.53 ms
+common_perf_print:    samplers time =     193.78 ms /  2091 tokens
+common_perf_print:        load time =    4418.50 ms
+common_perf_print: prompt eval time =    4417.63 ms /    91 tokens (   48.55 ms per token,    20.60 tokens per second)
+common_perf_print:        eval time =  396017.62 ms /  1999 runs   (  198.11 ms per token,     5.05 tokens per second)
+common_perf_print:       total time =  400885.05 ms /  2090 tokens
+common_perf_print: unaccounted time =      41.27 ms /   0.0 %      (total - sampling - prompt eval - eval) / (total)
+common_perf_print:    graphs reused =       1990
+llama_memory_breakdown_print: | memory breakdown [MiB] | total   free     self   model   context   compute    unaccounted |
+llama_memory_breakdown_print: |   - Host               |                 16644 = 13141 +    3090 +     413                |
+
+[bsc_phases_json] {"t0_abs_us": 7575720584922, "metadata_ms": 227.32, "metadata_faults": 0, "mmap_ms": 1.34, "mmap_faults": 0, "tensors_ms": 0.77, "tensors_faults": 0, "pinning_ms": 940.58, "pinning_faults": 0, "context_ms": 973.43, "context_faults": 0, "warmup_ms": 0.01, "warmup_faults": 0, "prompt_eval_ms": 4554.80, "prompt_eval_faults": 35434, "generation_ms": 396466.77, "generation_faults": 1799, "total_wall_ms": 403165.02, "total_faults": 37233, "uring_cache_slots": 250, "uring_cache_policy": 2, "uring_loads": 47977, "uring_reads": 381140, "uring_bytes_disk": 1679601653760, "uring_load_ms": 247669.38, "uring_phase2_wait_ms": 199813.75, "uring_cache_hits": 194584, "uring_cache_misses": 381140, "uring_cache_evictions": 380890, "moe_barrier_count": 863586, "moe_barrier_wait_ms": 1812917.72, "ae_t0_pick_compute_ms": 97.30, "ae_t0_pick_io_wait_ms": 199861.05}
+	Command being timed: "/home/keri/llama.cpp/build/bin/llama-completion -m /home/keri/llama.cpp/models/gpt-oss-20b-F16.gguf -p Write a long detailed essay covering these five topics in sequence: (1) the history of computer science, (2) the history of mathematics, (3) the history of physics, (4) the history of astronomy, (5) the history of biology. For each topic, cover ancient origins, medieval developments, 19th century advances, 20th century breakthroughs, and modern applications. Include specific dates, scientist names, and their contributions. -n 2000 -ngl 0 -no-cnv --no-warmup --eager-compute --pin-compute-weights --uring-experts --uring-async-experts --uring-cache-slots 250 --uring-cache-policy lfu-aging --uring-aging-mult 3 --trace-mode off --seed 42"
+	User time (seconds): 2938.91
+	System time (seconds): 55.62
+	Percent of CPU this job got: 741%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 6:43.96
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 7304520
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 37423
+	Minor (reclaiming a frame) page faults: 1542263
+	Voluntary context switches: 572722
+	Involuntary context switches: 13196
+	Swaps: 0
+	File system inputs: 3300905788
+	File system outputs: 6952
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

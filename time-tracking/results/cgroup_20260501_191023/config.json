@@ -1,0 +1,1057 @@
+{
+  "_comment": "FINAL THESIS CANONICAL \u2014 May 1 2026. 56 cells x 3 iters = 168 runs. Both models (GPT-OSS-20B and GPT-OSS-120B-F16) under cgroup memory.max with --eager-compute on every uring/pin config. Multi-topic essay prompt (no '5000 words' sentence \u2014 gives 1999 eval_tokens on both models). All budgets and cache_slots derived per the April 12 eager-compute ceiling formula: max_slots = floor((budget - fixed_footprint) / slot_bytes_MiB) - 4 safety margin. Fixed footprint 20B = 6098 MiB (2385 pin + 3164 KV + 413 compute + 108 misc + 28 mmap). Fixed footprint 120B = 8164 MiB (2980 pin + 4635 KV + 413 compute + 108 misc + 28 mmap), all measured directly from /tmp/smoke_120b_20260501_185202/ logs. slot_bytes = 4.203 MiB on both models (n_embd=n_ff=2880 in both). Per-token working set: 20B = 4 experts x 3 proj x 24 layers = 288 slices. 120B = 4 x 3 x 36 = 432 slices. Policy regime per April 9 finding: cache < WS -> sweep LRU/LFU/LFU-aging; cache > WS -> LRU only. Only the 20B 7G cells fall below WS, so they get the 3-policy sweep on the 4 uring variants. All other uring cells use LRU. 120B at every budget here has cache > WS (12G c977 = 2.26x WS at smallest), so LRU throughout. Renamed flags: --uring-projection-overlap (was --uring-overlap), --uring-async-projection-overlap (was --uring-pipeline-v3), --uring-async-experts (was --uring-pipeline-v4). New code includes spin_check stack-local fix, parity-slot dispatch, parallel block-aligned quantize. Tracing disabled (--trace-mode off) so output disk I/O does not contend with model weight reads.",
+  "models": {
+    "small": "gpt-oss-20b-F16.gguf",
+    "large": "gpt-oss-120b/gpt-oss-120b-F16.gguf"
+  },
+  "defaults": {
+    "tokens_to_generate": 2000,
+    "prompt": "Write a long detailed essay covering these five topics in sequence: (1) the history of computer science, (2) the history of mathematics, (3) the history of physics, (4) the history of astronomy, (5) the history of biology. For each topic, cover ancient origins, medieval developments, 19th century advances, 20th century breakthroughs, and modern applications. Include specific dates, scientist names, and their contributions.",
+    "num_iterations": 3,
+    "cooldown_seconds": 5
+  },
+  "paths": {
+    "bin_current": "/home/keri/llama.cpp/build/bin",
+    "bin_prefetch_on": "/home/keri/llama.cpp/bin_prefetch_on",
+    "bin_prefetch_off": "/home/keri/llama.cpp/bin_prefetch_off",
+    "models_dir": "/home/keri/llama.cpp/models",
+    "results_dir": "results"
+  },
+  "io_monitor": {
+    "enabled": false,
+    "device": "nvme1n1"
+  },
+  "cpu_monitor": {
+    "enabled": false,
+    "interval_ms": 25
+  },
+  "blktrace": {
+    "enabled": false,
+    "block_device": "/dev/nvme1n1",
+    "output_dir": "/tmp/bsc_blktrace"
+  },
+  "experiments": [
+    {
+      "_group": "20B 7G \u2014 tight (cache < WS, policy sweep on uring variants)",
+      "name": "lazy_20b_7g",
+      "model": "small",
+      "cgroup_budget_gib": 7,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "mmap_pin_20b_7g",
+      "model": "small",
+      "cgroup_budget_gib": 7,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "uring_lru_20b_7g",
+      "model": "small",
+      "cgroup_budget_gib": 7,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-cache-slots",
+        "250",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "uring_lfu_20b_7g",
+      "model": "small",
+      "cgroup_budget_gib": 7,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-cache-slots",
+        "250",
+        "--uring-cache-policy",
+        "lfu",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "uring_lfua_20b_7g",
+      "model": "small",
+      "cgroup_budget_gib": 7,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-cache-slots",
+        "250",
+        "--uring-cache-policy",
+        "lfu-aging",
+        "--uring-aging-mult",
+        "3",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "projection_overlap_lru_20b_7g",
+      "model": "small",
+      "cgroup_budget_gib": 7,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-projection-overlap",
+        "--uring-cache-slots",
+        "250",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "projection_overlap_lfu_20b_7g",
+      "model": "small",
+      "cgroup_budget_gib": 7,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-projection-overlap",
+        "--uring-cache-slots",
+        "250",
+        "--uring-cache-policy",
+        "lfu",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "projection_overlap_lfua_20b_7g",
+      "model": "small",
+      "cgroup_budget_gib": 7,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-projection-overlap",
+        "--uring-cache-slots",
+        "250",
+        "--uring-cache-policy",
+        "lfu-aging",
+        "--uring-aging-mult",
+        "3",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "async_projection_overlap_lru_20b_7g",
+      "model": "small",
+      "cgroup_budget_gib": 7,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-async-projection-overlap",
+        "--uring-cache-slots",
+        "250",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "async_projection_overlap_lfu_20b_7g",
+      "model": "small",
+      "cgroup_budget_gib": 7,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-async-projection-overlap",
+        "--uring-cache-slots",
+        "250",
+        "--uring-cache-policy",
+        "lfu",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "async_projection_overlap_lfua_20b_7g",
+      "model": "small",
+      "cgroup_budget_gib": 7,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-async-projection-overlap",
+        "--uring-cache-slots",
+        "250",
+        "--uring-cache-policy",
+        "lfu-aging",
+        "--uring-aging-mult",
+        "3",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "async_experts_lru_20b_7g",
+      "model": "small",
+      "cgroup_budget_gib": 7,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-async-experts",
+        "--uring-cache-slots",
+        "250",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "async_experts_lfu_20b_7g",
+      "model": "small",
+      "cgroup_budget_gib": 7,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-async-experts",
+        "--uring-cache-slots",
+        "250",
+        "--uring-cache-policy",
+        "lfu",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "async_experts_lfua_20b_7g",
+      "model": "small",
+      "cgroup_budget_gib": 7,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-async-experts",
+        "--uring-cache-slots",
+        "250",
+        "--uring-cache-policy",
+        "lfu-aging",
+        "--uring-aging-mult",
+        "3",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "_group": "20B 8G \u2014 comfortable (LRU only)",
+      "name": "lazy_20b_8g",
+      "model": "small",
+      "cgroup_budget_gib": 8,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "mmap_pin_20b_8g",
+      "model": "small",
+      "cgroup_budget_gib": 8,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "uring_lru_20b_8g",
+      "model": "small",
+      "cgroup_budget_gib": 8,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-cache-slots",
+        "498",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "projection_overlap_lru_20b_8g",
+      "model": "small",
+      "cgroup_budget_gib": 8,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-projection-overlap",
+        "--uring-cache-slots",
+        "498",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "async_projection_overlap_lru_20b_8g",
+      "model": "small",
+      "cgroup_budget_gib": 8,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-async-projection-overlap",
+        "--uring-cache-slots",
+        "498",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "async_experts_lru_20b_8g",
+      "model": "small",
+      "cgroup_budget_gib": 8,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-async-experts",
+        "--uring-cache-slots",
+        "498",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "_group": "20B 9G \u2014 comfortable (LRU only)",
+      "name": "lazy_20b_9g",
+      "model": "small",
+      "cgroup_budget_gib": 9,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "mmap_pin_20b_9g",
+      "model": "small",
+      "cgroup_budget_gib": 9,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "uring_lru_20b_9g",
+      "model": "small",
+      "cgroup_budget_gib": 9,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-cache-slots",
+        "740",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "projection_overlap_lru_20b_9g",
+      "model": "small",
+      "cgroup_budget_gib": 9,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-projection-overlap",
+        "--uring-cache-slots",
+        "740",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "async_projection_overlap_lru_20b_9g",
+      "model": "small",
+      "cgroup_budget_gib": 9,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-async-projection-overlap",
+        "--uring-cache-slots",
+        "740",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "async_experts_lru_20b_9g",
+      "model": "small",
+      "cgroup_budget_gib": 9,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-async-experts",
+        "--uring-cache-slots",
+        "740",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "_group": "20B 22G \u2014 no pressure (LRU only, cache holds full population)",
+      "name": "lazy_20b_22g",
+      "model": "small",
+      "cgroup_budget_gib": 22,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "mmap_pin_20b_22g",
+      "model": "small",
+      "cgroup_budget_gib": 22,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "uring_lru_20b_22g",
+      "model": "small",
+      "cgroup_budget_gib": 22,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-cache-slots",
+        "2304",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "projection_overlap_lru_20b_22g",
+      "model": "small",
+      "cgroup_budget_gib": 22,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-projection-overlap",
+        "--uring-cache-slots",
+        "2304",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "async_projection_overlap_lru_20b_22g",
+      "model": "small",
+      "cgroup_budget_gib": 22,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-async-projection-overlap",
+        "--uring-cache-slots",
+        "2304",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "async_experts_lru_20b_22g",
+      "model": "small",
+      "cgroup_budget_gib": 22,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-async-experts",
+        "--uring-cache-slots",
+        "2304",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "_group": "120B 12G \u2014 moderate (cache=977, 2.26x per-token WS, LRU only)",
+      "name": "lazy_120b_12g",
+      "model": "large",
+      "cgroup_budget_gib": 12,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "mmap_pin_120b_12g",
+      "model": "large",
+      "cgroup_budget_gib": 12,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "uring_lru_120b_12g",
+      "model": "large",
+      "cgroup_budget_gib": 12,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-cache-slots",
+        "977",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "projection_overlap_lru_120b_12g",
+      "model": "large",
+      "cgroup_budget_gib": 12,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-projection-overlap",
+        "--uring-cache-slots",
+        "977",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "async_projection_overlap_lru_120b_12g",
+      "model": "large",
+      "cgroup_budget_gib": 12,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-async-projection-overlap",
+        "--uring-cache-slots",
+        "977",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "async_experts_lru_120b_12g",
+      "model": "large",
+      "cgroup_budget_gib": 12,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-async-experts",
+        "--uring-cache-slots",
+        "977",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "_group": "120B 16G \u2014 comfortable (cache=1951, 4.52x WS, LRU only)",
+      "name": "lazy_120b_16g",
+      "model": "large",
+      "cgroup_budget_gib": 16,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "mmap_pin_120b_16g",
+      "model": "large",
+      "cgroup_budget_gib": 16,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "uring_lru_120b_16g",
+      "model": "large",
+      "cgroup_budget_gib": 16,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-cache-slots",
+        "1951",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "projection_overlap_lru_120b_16g",
+      "model": "large",
+      "cgroup_budget_gib": 16,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-projection-overlap",
+        "--uring-cache-slots",
+        "1951",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "async_projection_overlap_lru_120b_16g",
+      "model": "large",
+      "cgroup_budget_gib": 16,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-async-projection-overlap",
+        "--uring-cache-slots",
+        "1951",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "async_experts_lru_120b_16g",
+      "model": "large",
+      "cgroup_budget_gib": 16,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-async-experts",
+        "--uring-cache-slots",
+        "1951",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "_group": "120B 22G \u2014 easy (cache=3413, 7.90x WS, LRU only)",
+      "name": "lazy_120b_22g",
+      "model": "large",
+      "cgroup_budget_gib": 22,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "mmap_pin_120b_22g",
+      "model": "large",
+      "cgroup_budget_gib": 22,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "uring_lru_120b_22g",
+      "model": "large",
+      "cgroup_budget_gib": 22,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-cache-slots",
+        "3413",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "projection_overlap_lru_120b_22g",
+      "model": "large",
+      "cgroup_budget_gib": 22,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-projection-overlap",
+        "--uring-cache-slots",
+        "3413",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "async_projection_overlap_lru_120b_22g",
+      "model": "large",
+      "cgroup_budget_gib": 22,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-async-projection-overlap",
+        "--uring-cache-slots",
+        "3413",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "async_experts_lru_120b_22g",
+      "model": "large",
+      "cgroup_budget_gib": 22,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-async-experts",
+        "--uring-cache-slots",
+        "3413",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "_group": "120B 28G \u2014 loosest possible on this 30G-RAM box (cache=4875, 11.28x WS, LRU only)",
+      "name": "lazy_120b_28g",
+      "model": "large",
+      "cgroup_budget_gib": 28,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "mmap_pin_120b_28g",
+      "model": "large",
+      "cgroup_budget_gib": 28,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "uring_lru_120b_28g",
+      "model": "large",
+      "cgroup_budget_gib": 28,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-cache-slots",
+        "4875",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "projection_overlap_lru_120b_28g",
+      "model": "large",
+      "cgroup_budget_gib": 28,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-projection-overlap",
+        "--uring-cache-slots",
+        "4875",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "async_projection_overlap_lru_120b_28g",
+      "model": "large",
+      "cgroup_budget_gib": 28,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-async-projection-overlap",
+        "--uring-cache-slots",
+        "4875",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    },
+    {
+      "name": "async_experts_lru_120b_28g",
+      "model": "large",
+      "cgroup_budget_gib": 28,
+      "args": [
+        "--no-warmup",
+        "--eager-compute",
+        "--pin-compute-weights",
+        "--uring-experts",
+        "--uring-async-experts",
+        "--uring-cache-slots",
+        "4875",
+        "--uring-cache-policy",
+        "lru",
+        "--trace-mode",
+        "off",
+        "--seed",
+        "42"
+      ]
+    }
+  ]
+}
