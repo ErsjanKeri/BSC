@@ -5,7 +5,7 @@
 
 \section{Forked llama.cpp}\label{sec:art-llamacpp}
 
-Repository: \texttt{github.com/ErsjanKeri/llama.cpp}, branch \texttt{expert-pipeline-fused}, head \texttt{d7e480f4}. The fork carries twenty-four commits on top of upstream llama.cpp \cite{ggerganov2023llamacpp} plus a working-tree diff covering the async-projection-overlap and async-experts pipelines (sixteen tracked source files in the \texttt{llama-io-uring}, \texttt{llama-moe-pipeline}, and \texttt{llama-graph} translation units, the \texttt{arg} and \texttt{common} units in \texttt{common/}, and a small change in \texttt{include/llama.h}). The thesis state is HEAD \texttt{d7e480f4} plus that working-tree diff; line numbers cited below describe the working tree.
+Repository: \texttt{github.com/ErsjanKeri/llama.cpp}, default branch \texttt{master}, tag \texttt{bsc-thesis-v1} (commit \texttt{5aec1115}). The fork carries twenty-six commits on top of upstream llama.cpp \cite{ggerganov2023llamacpp} covering the tensor tracer, the io\_uring + O\_DIRECT expert loader, the fused MoE custom op, and the three pipeline modes (projection-group overlap, async-projection-overlap, async-experts). Line-number citations below refer to the tagged commit.
 
 \begin{table}[htbp]
 \caption{Runtime flags introduced by the fork.}
@@ -102,14 +102,12 @@ The thesis cites four classes of primary artifact. All paths are absolute under 
 
 The canonical sweep at \texttt{cgroup\_20260501\_191023/} (GPT-OSS-20B) and \texttt{cgroup\_20260502\_140144/} (GPT-OSS-120B) produced the headline numbers cited in \autoref{chapter:evaluation}. Reproducing them takes five steps on the same hardware, with the same kernel and the same NVMe.
 
-Step 1 clones the fork and checks out the canonical commit. The thesis state is HEAD \texttt{d7e480f4} plus the working-tree diff documented in \autoref{sec:art-llamacpp}; if a tagged thesis commit has been produced by the time of reproduction, check out that tag instead.
+Step 1 clones the fork and checks out the canonical commit. The thesis state is the tag \texttt{bsc-thesis-v1} (commit \texttt{5aec1115}).
 
 \begin{lstlisting}[basicstyle=\ttfamily\small,breaklines=true]
-# 1. Clone the fork and check out the canonical commit.
+# 1. Clone the fork and check out the canonical tag.
 git clone https://github.com/ErsjanKeri/llama.cpp ~/llama.cpp
-cd ~/llama.cpp && git checkout d7e480f4
-# Apply the working-tree diff if reproducing the dirty state:
-#   git apply path/to/working-tree.diff
+cd ~/llama.cpp && git checkout bsc-thesis-v1
 
 # 2. Build llama-completion and bsc-pack-experts.
 cmake -B build -DCMAKE_BUILD_TYPE=Release
@@ -132,4 +130,4 @@ sudo python3 run_cgroup_experiments.py \
 
 The harness drops the page cache between iterations, wraps each \texttt{llama-completion} invocation in a fresh \texttt{bscexp.slice} cgroup with \texttt{MemorySwapMax=0}, runs three iterations per configuration, and writes one CSV per configuration into \texttt{results/cgroup\_<timestamp>/}.
 
-The CSVs should match the canonical numbers within the cited CV bounds: mean CV across the 168-run sweep is 0.23\%, with the noisiest cell at 2.29\% (20B 8~GiB async-experts). If they do not, the most likely cause is a working-tree drift in the fork: re-check the commit hash and the working-tree diff against \autoref{sec:art-llamacpp}. The next most likely cause is page-cache contamination between iterations on a host where the harness was not run with \texttt{sudo}; \texttt{drop\_caches} requires root.
+The CSVs should match the canonical numbers within the cited CV bounds: mean CV across the 168-run sweep is 0.23\%, with the noisiest cell at 2.29\% (20B 8~GiB async-experts). If they do not, the most likely cause is a checkout other than tag \texttt{bsc-thesis-v1}; verify the tag matches the appendix. The next most likely cause is page-cache contamination between iterations on a host where the harness was not run with \texttt{sudo}; \texttt{drop\_caches} requires root.
