@@ -400,3 +400,100 @@ class IOMonitor:
                 f.write(f"{s['timestamp_s']:.4f},{dt*1000:.1f},{s['read_bytes']},"
                         f"{s['write_bytes']},{read_mib_s:.1f},{write_mib_s:.1f}\n")
         return len(self.samples)
+
+
+class CPUMonitor:
+    """Polls /proc/stat every 25ms on a background thread.
+
+    Records aggregate CPU-time deltas: user, nice, system, idle, iowait,
+    irq, softirq. Computes percentages relative to total ticks per sample
+    interval. Aggregate (all CPUs summed) — fine because the test machine
+    is dedicated during cgroup runs.
+
+    Used to plot kernel-vs-userspace CPU breakdown over time, supporting
+    the Ch. 6 §6.2 claim that userspace I/O reduces kernel CPU.
+
+    Zero memory overhead; reads /proc/stat (~few KB per sample).
+    """
+
+    def __init__(self, interval_ms=25):
+        self.interval = interval_ms / 1000.0
+        self.samples = []
+        self._running = False
+        self._thread = None
+
+    def _read_stats(self):
+        """Read aggregate CPU stats (first 'cpu' line of /proc/stat)."""
+        with open('/proc/stat') as f:
+            line = f.readline()
+        parts = line.split()
+        if not parts or parts[0] != 'cpu':
+            return None
+        # Pad to ensure indices exist on older kernels
+        vals = [int(x) for x in parts[1:]] + [0] * 10
+        return {
+            'user':    vals[0],
+            'nice':    vals[1],
+            'system':  vals[2],
+            'idle':    vals[3],
+            'iowait':  vals[4],
+            'irq':     vals[5],
+            'softirq': vals[6],
+        }
+
+    def _poll(self):
+        prev = self._read_stats()
+        if prev is None:
+            return
+        t0 = time.monotonic()
+        prev_t = t0
+
+        while self._running:
+            time.sleep(self.interval)
+            curr = self._read_stats()
+            if curr is None:
+                continue
+            now = time.monotonic()
+            dt = now - prev_t
+
+            deltas = {k: curr[k] - prev[k] for k in curr}
+            total = sum(deltas.values())
+            if total > 0:
+                pcts = {k: 100.0 * deltas[k] / total for k in deltas}
+            else:
+                pcts = {k: 0.0 for k in deltas}
+
+            self.samples.append({
+                'timestamp_s': now - t0,
+                'dt_s': dt,
+                **{f'{k}_pct': pcts[k] for k in pcts},
+            })
+
+            prev = curr
+            prev_t = now
+
+    def start(self):
+        self.samples = []
+        self._running = True
+        self._thread = threading.Thread(target=self._poll, daemon=True)
+        self._thread.start()
+
+    def stop(self):
+        self._running = False
+        if self._thread:
+            self._thread.join(timeout=2)
+            self._thread = None
+
+    def to_csv(self, path):
+        path = Path(path)
+        with open(path, 'w') as f:
+            f.write("timestamp_s,dt_ms,user_pct,nice_pct,system_pct,"
+                    "idle_pct,iowait_pct,irq_pct,softirq_pct\n")
+            for s in self.samples:
+                f.write(
+                    f"{s['timestamp_s']:.4f},{s['dt_s']*1000:.1f},"
+                    f"{s['user_pct']:.2f},{s['nice_pct']:.2f},{s['system_pct']:.2f},"
+                    f"{s['idle_pct']:.2f},{s['iowait_pct']:.2f},"
+                    f"{s['irq_pct']:.2f},{s['softirq_pct']:.2f}\n"
+                )
+        return len(self.samples)

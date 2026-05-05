@@ -8,3 +8,14 @@ node_modules
 expert-analysis-*
 
 venv
+# Build outputs
+tensor-tracing/desktopui/build/
+
+# Large raw tensor traces (2 GiB each, regenerable from llama.cpp run)
+tensor-tracing/traces/*/tensor_trace.bin
+
+# BSC sidecar pack files (large, derivable from the GGUF)
+*.bscexp
+
+# Model files (must never be tracked)
+*.gguf
