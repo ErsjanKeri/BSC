@@ -1,0 +1,120 @@
+\chapter{Implementation}\label{chapter:implementation}
+
+\section{Pinning the dense weights}\label{sec:pinning}
+
+The non-expert weights of the model file stay in the kernel-managed mmap region, and we mlock that region so the kernel cannot evict any of them.
+The mlock excludes the experts (managed by the buffer of \autoref{sec:expert-buffer}) and the input embedding (each generated token reads only one of its rows).
+Attention, the output projection, the layer norms, and the per-layer routers are therefore guaranteed resident throughout decode.
+
+
+\section{The expert buffer}\label{sec:expert-buffer}
+
+We replace the kernel's page-fault path for expert weights with \texttt{io\_uring}~\cite{axboe2019iouring} reads against an \texttt{O\_DIRECT}~\cite{open_man} file descriptor (\autoref{sec:bg-iouring}).
+The application writes read requests into a shared submission ring, the kernel performs them in the background, and \texttt{O\_DIRECT} keeps the data out of the page cache so it transfers directly from the device into application buffers.
+Together they let us submit many disk reads at once and pick up completions when convenient, with no intermediate copy in the page cache.
+
+\texttt{O\_DIRECT} requires every read offset, length, and destination buffer address to be a multiple of 512 bytes.
+The expert weight tensors in a GGUF file do not satisfy this.
+We address the alignment with a one-time tool that reads every expert weight slice out of the GGUF and writes it into a sidecar file (\texttt{.bscexp}) at a 512-byte-aligned offset.
+The sidecar is opened once per process with \texttt{O\_DIRECT}, and every \texttt{io\_uring} read targets a sidecar offset that is aligned by construction.
+
+The buffer is a single 512-aligned anonymous region holding $N$ slots of 4.20~MiB each, where $N$ is configurable.
+A hash map keyed by $(\mathit{layer}, \mathit{projection}, \mathit{expert\_id})$ returns the slot index of any resident slice.
+On a hit, the buffer returns the slot's address.
+On a miss, it picks a victim slot under the active replacement policy, issues a single \texttt{io\_uring} read into that slot, and returns the slot's address once the completion arrives.
+
+Three replacement policies are implemented: LRU, LFU, and LFU-aging (the policies the simulator selected in \autoref{sec:tracer-sim}).
+LRU keeps a doubly-linked list and promotes the slot on every access.
+On a miss, the list's tail is evicted.
+LFU and LFU-aging keep per-slot frequency counters and evict the slot with the smallest counter, with LFU-aging additionally halving every counter once per $3 \times \mathit{cache\_slots}$ accesses to discount stale popularity.
+A per-load epoch prevents two misses in the same load from picking the same victim slot.
+
+
+\section{Connecting the buffer to compute}\label{sec:buffer-integration}
+
+The buffer's slices live in our own region of memory, separate from the mmap'd region of the model file that GGML's matrix-multiplication code normally reads from.
+To make the slices visible to compute without copying, we use an existing GGML field: every tensor carries an opaque \texttt{extra} pointer that any computation in GGML can read freely.
+Before each MoE layer runs, we fill \texttt{extra} with our array of slot pointers (one per active expert), and we patch the MoE matrix-multiplication function so that when \texttt{extra} is set, each active expert's address is taken from the array instead of from the tensor's base.
+When \texttt{extra} is unset, the original code runs and no other operation in the model is affected.
+
+
+\section{Pipelining I/O with compute}\label{sec:pipelining}
+
+The simplest mode of the buffer is fully synchronous: a pre-compute callback before each layer submits all 12 reads as one \texttt{io\_uring} batch and waits for every completion before compute begins.
+The three modes below progressively overlap I/O with compute, and each produces the same output as the synchronous path at fixed seed.
+
+
+\subsection{Projection-group overlap}\label{sec:pipelining-po}
+
+The down matmul takes the SwiGLU output as input, which means the down weights are not needed until SwiGLU has finished.
+They can be loaded in the background while up, gate, and SwiGLU run.
+
+We split the buffer's load into two phases inside a single callback before the up matmul.
+Phase 1 submits the 8 up+gate reads as one \texttt{io\_uring} batch and waits for every completion.
+Phase 2 submits the 4 down reads as a separate batch and returns immediately.
+While the worker threads run up, gate, and SwiGLU on the up+gate slices, the 4 down reads complete in the background.
+A second callback attached to the down matmul waits for any remaining down completions before down runs.
+
+The 4 experts are still processed in a fixed order: each MoE matmul iterates them as $0, 1, 2, 3$ in turn (the positions in which the router emitted them).
+Only the I/O is split.
+The two phases share a single load epoch, which guarantees that phase 1's slots cannot be picked as eviction victims by phase 2.
+
+
+\subsection{The fused MoE op}\label{sec:pipelining-fused}
+
+In default llama.cpp, one MoE layer's feed-forward is a chain of separate GGML nodes: matmuls for up, gate, and down, plus SwiGLU and a per-expert accumulation.
+Each matmul iterates the 4 selected experts internally.
+The worker pool synchronizes at every node boundary, so all 4 experts finish their up matmul before any starts gate, and so on.
+The structure is per-operation outside, per-expert inside.
+
+Projection-group overlap fits this layout, because its callbacks attach to the existing nodes.
+What the layout does not allow is starting one expert's down matmul while another expert is still loading from disk.
+That would require inverting the loop nesting to per-expert outside, per-operation inside, and the per-node barriers prevent it.
+
+We replace all of those default nodes with one fused custom GGML op.
+From GGML's perspective, the entire MoE feed-forward is now one node, so GGML imposes no barrier inside it.
+Inside, thread 0 picks the next compute action and issues any \texttt{io\_uring} submissions or waits the action requires.
+All threads cross a barrier and cooperate on the picked action.
+One barrier per dispatch round is enough, and the granularity at which we interleave I/O and compute is now ours to choose.
+
+\begin{figure}[htbp]
+\centering
+\resizebox{0.95\textwidth}{!}{\input{figures/moe_fused_op}}
+\caption[Default GGML graph versus the fused MoE op]{Default GGML graph (left) versus the fused custom op (right). The 5 separate nodes on the left are subject to GGML's per-node barriers, which fix the loop nesting to per-operation outside, per-expert inside. Collapsing them into one node on the right places the dispatch loop inside our control, so the per-expert and per-matmul dispatch in the next two subsections become possible.}
+\label{fig:moe-fused-op}
+\end{figure}
+
+
+\subsection{Async-projection-overlap}\label{sec:pipelining-apo}
+
+Async-projection-overlap differs from projection-group overlap in two ways.
+All 12 reads are submitted at the start of the fused op, not split into two phases.
+The 4 experts are processed in the order their data arrives, not in $0, 1, 2, 3$ position order.
+
+Each expert's up and gate reads share one \texttt{io\_uring} tag and its down read takes a separate tag, for $4 \times 2 = 8$ tags in flight together.
+Thread 0 waits for any one of the 4 up+gate pairs to complete and dispatches that expert.
+The worker threads run up, gate, and SwiGLU on that expert.
+Thread 0 then waits for that expert's down read (in flight since layer entry) before the worker threads run down.
+Thread 0 picks the next first-ready expert from the remaining tags and the loop repeats until all 4 have run.
+
+Each expert's output is written into a slot at its router-assigned position, and the 4 slots are summed in position order at the end of the op, so the final output matches the synchronous and projection-group overlap paths.
+
+
+\subsection{Async-experts}\label{sec:pipelining-ae}
+
+Async-experts pushes the dispatch granularity one step finer.
+Where async-projection-overlap dispatches per expert (each expert runs up + gate + SwiGLU + down end-to-end before the next expert starts), async-experts dispatches per individual matmul: an expert's up matmul can run as soon as its up tag completes, even before its gate read has arrived.
+
+Each projection of each expert gets its own \texttt{io\_uring} tag, for $4 \times 3 = 12$ tags in flight together.
+Thread 0 maintains a per-expert state machine and at each dispatch round walks the 4 active experts in order, picking the first eligible action (\autoref{fig:async-experts-state}).
+When the second of an expert's two pre-SwiGLU matmuls completes, SwiGLU and the down-input quantization fold into the same dispatch round, so SwiGLU is never a standalone action.
+
+\begin{figure}[htbp]
+\centering
+\resizebox{0.85\textwidth}{!}{\input{figures/async_experts_state}}
+\caption[Per-expert state machine for async-experts]{Per-expert state machine inside the async-experts dispatch loop. $S_0$ is the initial state. The diamond $S_0 \to \{S_1, S_2\} \to S_3$ captures the difference from async-projection-overlap: an expert's first matmul runs as soon as one of its up or gate reads completes, without waiting for the other. The second-arrival matmul folds SwiGLU and the down-input quantization into the same dispatch round (the \emph{and finish} variants), so $S_3$ is the post-SwiGLU state ready for the down matmul.}
+\label{fig:async-experts-state}
+\end{figure}
+
+The same position-order summation at the end makes the output identical to async-projection-overlap.
+In our wall-clock measurements (\autoref{chapter:evaluation}), async-experts lands within roughly one percent of async-projection-overlap, so we keep async-projection-overlap as the deployed configuration.

@@ -1,0 +1,54 @@
+% Figure: anatomy of a major page fault on a file-backed mmap region.
+% Goes in Chapter 2, Section 2.4 (Background / Linux memory hierarchy).
+%
+% Conventions:
+%   * Worker thread lane (top):    green tick = active CPU work; gray hatched = stalled
+%   * Kernel lane (middle):        blue = page-fault handler activity; gap = blocked-on-I/O
+%   * NVMe device lane (bottom):   orange = active device-side read
+%
+% The horizontal extent of each bar is proportional to its time cost: the NVMe
+% read dominates at "tens of microseconds" while the kernel-side handler steps
+% and the user-space dereference itself are sub-microsecond ticks. The eight-
+% thread aggregation under mmap and the strategies that hide it are visualized
+% in Chapter 5's per-layer overlap timeline.
+
+\begin{tikzpicture}[
+    font=\sffamily\small,
+    >={Latex[length=2.5mm]},
+    bar/.style={draw, minimum height=10mm, rounded corners=1pt, anchor=south west},
+    active/.style={bar, draw=TUMAccentGreen!70!black, fill=TUMAccentGreen!25},
+    kernel/.style={bar, draw=TUMSecondaryBlue, fill=TUMAccentLightBlue!40, font=\scriptsize\sffamily, text=TUMSecondaryBlue2},
+    io/.style={bar, draw=TUMAccentOrange!80!black, fill=TUMAccentOrange!25, font=\small\sffamily, text=TUMDarkGray},
+    stall/.style={bar, pattern=north east lines, pattern color=TUMGray!60, draw=TUMGray, font=\small\sffamily, text=TUMDarkGray},
+    laneL/.style={anchor=east, font=\sffamily\small},
+    annot/.style={font=\scriptsize\sffamily, align=center, anchor=south},
+]
+  % --- lane labels ---
+  \node[laneL] at (-0.1, 4.5) {Worker thread};
+  \node[laneL] at (-0.1, 2.7) {Kernel};
+  \node[laneL] at (-0.1, 0.9) {NVMe device};
+
+  % --- worker thread bars ---
+  \node[active, minimum width=3mm] at (0, 4.0) {};
+  \node[stall, minimum width=134mm] at (0.3, 4.0) {thread suspended};
+  \node[active, minimum width=3mm] at (13.7, 4.0) {};
+
+  % --- kernel bars ---
+  \node[kernel, minimum width=12mm] at (0.3, 2.2) {entry};
+  \node[kernel, minimum width=5mm] at (1.5, 2.2) {};
+  \node[kernel, minimum width=5mm] at (12.0, 2.2) {};
+  \node[kernel, minimum width=12mm] at (12.5, 2.2) {install};
+
+  % --- NVMe bar ---
+  \node[io, minimum width=100mm] at (2.0, 0.4) {NVMe read $\approx$ tens of \textmu{}s};
+
+  % --- top annotations ---
+  \node[annot, above=1pt] at (0.15, 5.0) {deref};
+  \node[annot, above=1pt] at (13.85, 5.0) {resume};
+  \node[annot, above=1pt] at (1.75, 3.2) {submit};
+  \node[annot, above=1pt] at (12.25, 3.2) {wake};
+
+  % --- time axis ---
+  \draw[->] (0, -0.2) -- (14.3, -0.2) node[right, font=\small] {time};
+
+\end{tikzpicture}

@@ -1,0 +1,229 @@
+% Figure: MoE-FFN dataflow for one decode token, GPT-OSS-MoE / llama.cpp.
+% Goes in Chapter 2 (background).
+%
+% Architecture-only view: what is computed, with what shapes, in what order,
+% for one decode token at one MoE layer. Independent of weight residency.
+%
+% Conventions (also used by the timing variants in Chapter 7):
+%   * activations  : light blue tiles
+%   * expert weights (live on SSD, must be loaded): red tiles
+%   * compute ops  : green rounded boxes
+%   * routing      : violet rounded box
+%
+% Anchored facts (verified empirically against
+% tensor-tracing/desktopui/data/memory-map.json):
+%   d := n_embd = ffn_dim = 2880    (GPT-OSS-20B and -120B)
+%   k := n_expert_used = 4 (top-k routing)
+%   n_e := n_expert = 32 (20B), 128 (120B)
+%   per-expert per-projection slice = 2880 * 2880 weights, MXFP4 = 4.20 MiB on disk
+%   SwiGLU-OAI: alpha = 1.702, limit = 7.0    (llama-graph.cpp:1764-1765)
+
+\begin{tikzpicture}[
+  x=1mm, y=1mm,
+  font=\footnotesize,
+  every node/.style={inner sep=1pt, outer sep=0pt},
+  act/.style    ={draw=blue!55!black,   fill=blue!10,    line width=0.4pt, rounded corners=0.6pt, align=center, font=\scriptsize},
+  weight/.style ={draw=red!55!black,    fill=red!12,     line width=0.4pt, rounded corners=0.6pt, align=center, font=\scriptsize},
+  op/.style     ={draw=green!55!black,  fill=green!12,   line width=0.5pt, rounded corners=1.2pt, align=center, font=\scriptsize},
+  router/.style ={draw=violet!55!black, fill=violet!12,  line width=0.5pt, rounded corners=1.2pt, align=center, font=\scriptsize},
+  flow/.style       ={->, >={Stealth[length=1.5mm]}, line width=0.4pt, draw=black!75},
+  smallflow/.style  ={->, >={Stealth[length=1.0mm]}, line width=0.3pt, draw=black!60},
+  panel/.style      ={draw=black!35, dashed, line width=0.35pt, rounded corners=1.2pt},
+  expicon/.style    ={draw=black!50, fill=gray!8, line width=0.3pt, rounded corners=0.6pt, align=center, font=\scriptsize},
+]
+
+  % ============================================================
+  % FIGURE TITLE: name the operation
+  % Centred on image center x=60 (where y[1,d] also lives, at the bottom).
+  % ============================================================
+  \node[anchor=south, font=\small\bfseries] at (60, 136)
+        {Mixture-of-Experts FFN block};
+  \node[anchor=south, font=\scriptsize\itshape, text=black!65] at (60, 132)
+        {one decode token, one layer; $k\!=\!4$ of $n_e\!=\!32$ experts activated};
+
+  % ============================================================
+  % HEADER ROW: input vector x (centred on x=60 so it sits directly above y)
+  % ============================================================
+  \node[act, minimum width=22mm, minimum height=4mm] (x) at (60, 124)
+        {$\mathbf{x}\,[1,d]$};
+
+  % ============================================================
+  % ROUTER block (centred on x=60)
+  % ============================================================
+  \node[router, minimum width=46mm, minimum height=10mm] (router) at (60, 114)
+        {\textbf{Router}\\[0.2ex]\scriptsize linear\,$\mathbf{x}\!\cdot\!\mathbf{W}_{r}$
+         $\to$\,softmax $\to$ top-$k$};
+  \draw[flow] (x) -- (router);
+
+  \node[weight, minimum width=18mm, minimum height=4mm, font=\tiny] (Wr) at (95, 114)
+        {$\mathbf{W}_{r}\,[d,n_e]$};
+  \draw[smallflow] (Wr) -- (router);
+
+  % Router outputs: placed symmetrically around x=60 (centres at 38 and 82
+  % so the section is balanced on the figure's vertical centerline).
+  \node[act, minimum width=34mm, minimum height=6mm] (sel) at (38, 102)
+        {selected\_experts\,$[k]$\\[-0.4ex]\scriptsize\texttt{[5,\,12,\,23,\,31]}};
+  \node[act, minimum width=40mm, minimum height=6mm] (rw) at (82, 102)
+        {router\_weights\,$[k]$\\[-0.4ex]\scriptsize\texttt{[0.31,\,0.27,\,0.24,\,0.18]}};
+
+  \draw[flow] (router.south) -| (sel.north);
+  \draw[flow] (router.south) -| (rw.north);
+
+  % ============================================================
+  % CALLOUT: expert e = 0 in detail.
+  % Layout intent (mirrors what each operation actually consumes):
+  %   y=82  Wg | x | Wu          three inputs to the gate/up step
+  %   y=70  gate matmul | up matmul        parallel matmuls
+  %   y=62  gate_0 | up_0                 their two outputs
+  %   y=52  swiglu(gate_0, up_0)          combiner
+  %   y=42  act_0 | Wd                    two inputs to the down step
+  %   y=30  down matmul                   single matmul
+  %   y=22  down_0                        per-expert contribution
+  % ============================================================
+  \draw[panel] (-2, 16) rectangle (60, 88);
+  % Title placed ABOVE the panel so it labels the box rather than living inside it.
+  \node[anchor=south west, font=\scriptsize\itshape, text=black!65]
+        at (-2, 89) {Detail of one expert (representative; \,$e\!=\!0$)};
+
+  % --- top row: parallel inputs to gate/up ---
+  \node[weight, minimum width=18mm, minimum height=4mm] (Wg0) at (14, 82)
+        {$\mathbf{W}_{g}^{[0]}\,[d,d]$};
+  \node[act,    minimum width=10mm, minimum height=4mm] (x0)  at (29, 82)
+        {$\mathbf{x}\,[1,d]$};
+  \node[weight, minimum width=18mm, minimum height=4mm] (Wu0) at (44, 82)
+        {$\mathbf{W}_{u}^{[0]}\,[d,d]$};
+
+  % --- gate / up matmul nodes (green box = "compute op", no need to label "matmul") ---
+  \node[op, minimum width=18mm, minimum height=7mm, font=\footnotesize] (gate0) at (14, 70)
+        {$\mathbf{x}\!\cdot\!\mathbf{W}_{g}^{[0]\!\top}$};
+  \node[op, minimum width=18mm, minimum height=7mm, font=\footnotesize] (up0)   at (44, 70)
+        {$\mathbf{x}\!\cdot\!\mathbf{W}_{u}^{[0]\!\top}$};
+
+  % straight feeders Wg -> gate, Wu -> up
+  \draw[smallflow] (Wg0) -- (gate0);
+  \draw[smallflow] (Wu0) -- (up0);
+  % x feeds BOTH gate and up (this is the parallelism the figure makes visible)
+  \draw[smallflow] (x0.south) to[out=-90, in=60]  (gate0.north east);
+  \draw[smallflow] (x0.south) to[out=-90, in=120] (up0.north west);
+
+  % --- gate / up output activations ---
+  \node[act, minimum width=18mm, minimum height=4mm] (g0) at (14, 62) {gate$_{0}\,[1,d]$};
+  \node[act, minimum width=18mm, minimum height=4mm] (u0) at (44, 62) {up$_{0}\,[1,d]$};
+  \draw[smallflow] (gate0) -- (g0);
+  \draw[smallflow] (up0)   -- (u0);
+
+  % --- swiglu combiner (consumes both) ---
+  \node[op, minimum width=54mm, minimum height=8mm, font=\footnotesize] (sw0) at (29, 52)
+        {$\mathrm{swiglu}(\,\mathrm{gate}_{0}[1,d],\;\mathrm{up}_{0}[1,d]\,)$};
+  \draw[smallflow] (g0) -- ([xshift=-7mm]sw0.north);
+  \draw[smallflow] (u0) -- ([xshift= 7mm]sw0.north);
+
+  % --- act_0 (left) and Wd (right) on the SAME row, both feeding the down matmul ---
+  \node[act,    minimum width=18mm, minimum height=4mm] (a0)  at (15, 42)
+        {act$_{0}\,[1,d]$};
+  \node[weight, minimum width=18mm, minimum height=4mm] (Wd0) at (43, 42)
+        {$\mathbf{W}_{d}^{[0]}\,[d,d]$};
+  % swiglu output funnels into act_0 (curving left so it ends pointing into a0)
+  \draw[smallflow] (sw0.south) to[out=-90, in=80] (a0.north);
+
+  % --- down matmul (single, takes act_0 and Wd as inputs) ---
+  \node[op, minimum width=22mm, minimum height=7mm, font=\footnotesize] (down0) at (29, 30)
+        {$\mathrm{act}_{0}\!\cdot\!\mathbf{W}_{d}^{[0]\!\top}$};
+  \draw[smallflow] (a0.south)  to[out=-90, in=120] (down0.north west);
+  \draw[smallflow] (Wd0.south) to[out=-90, in=60]  (down0.north east);
+
+  % --- down output tile (the per-expert contribution from e=0) ---
+  \node[act, minimum width=22mm, minimum height=4mm] (do0) at (29, 22)
+        {down$_{0}\,[1,d]$};
+  \draw[smallflow] (down0) -- (do0);
+
+  % ============================================================
+  % EXPERT ICONS for e = 1, 2, 3 to the right of the callout.
+  % Each icon has the SAME outer height as the dashed callout (y in [16, 88])
+  % and is wide enough that "down_i [1,d]" fits without clipping.
+  % Element ordering inside an icon mirrors the detail panel exactly.
+  % ============================================================
+  \begin{scope}[shift={(72, 0)}]
+    % Single header above the whole 3-icon row (placed once, not per-box)
+    \node[anchor=south west, font=\scriptsize\itshape, text=black!65] at (-10, 89)
+          {Other experts (same structure, same compute):};
+
+    \foreach \i/\eid in {1/12, 2/23, 3/31} {
+      \pgfmathsetmacro{\xi}{(\i-1)*22}
+      % Outer icon box: height matches callout (72 mm), width 20 mm
+      \node[expicon, minimum width=20mm, minimum height=72mm, anchor=north]
+            (e\i) at (\xi, 88) {};
+      % Header on a SINGLE row: "e=i (eid=N)"
+      \node[anchor=north, font=\scriptsize, text=black!85]
+            at (\xi, 86) {$e\!=\!\i$\;\textit{(eid=\eid)}};
+      % Vertical stack mirroring the callout: Wg, Wu, gate, up, swiglu,
+      % Wd, down, then the down_i output tile separated at the bottom.
+      \node[weight, minimum width=15mm, minimum height=4mm, font=\scriptsize] at (\xi, 78) {$\mathbf{W}_{g}^{[\i]}$};
+      \node[weight, minimum width=15mm, minimum height=4mm, font=\scriptsize] at (\xi, 72) {$\mathbf{W}_{u}^{[\i]}$};
+      \node[op,     minimum width=15mm, minimum height=4mm, font=\scriptsize] at (\xi, 66) {gate};
+      \node[op,     minimum width=15mm, minimum height=4mm, font=\scriptsize] at (\xi, 60) {up};
+      \node[op,     minimum width=15mm, minimum height=4mm, font=\scriptsize] at (\xi, 54) {swiglu};
+      \node[weight, minimum width=15mm, minimum height=4mm, font=\scriptsize] at (\xi, 46) {$\mathbf{W}_{d}^{[\i]}$};
+      \node[op,     minimum width=15mm, minimum height=4mm, font=\scriptsize] at (\xi, 40) {down};
+      \node[act,    minimum width=17mm, minimum height=4mm, font=\scriptsize, inner sep=0.7pt]
+            (di\i_local) at (\xi, 28) {down$_{\i}\,[1,d]$};
+    }
+  \end{scope}
+
+  % (Routing dashed arrows removed: selected_experts feeding the four expert
+  % blocks and router_weights feeding the weighted sum are obvious from the
+  % spatial layout; the arrows added clutter without information.)
+
+  % ============================================================
+  % WEIGHTED SUM BAND
+  % ============================================================
+  % Down output tiles in a row above the weighted-sum op
+  % (down_0 already drawn inside the callout at (20, 22). The icons drew
+  % down_1..down_3 inside their boxes at local x=70..100, y=41.5.)
+
+  \node[op, minimum width=120mm, minimum height=10mm, font=\footnotesize] (sum) at (60, 9)
+        {\textbf{Weighted sum:}\;\;
+         $\mathbf{y} \;=\; \sum_{e=0}^{k-1}\;\mathrm{router\_weights}[e]\,\cdot\,\mathrm{down}_{e}
+         \quad\to\quad [1,d]$};
+
+  % connectors from each down_i into the sum (vertical drops onto sum.north)
+  \draw[smallflow] (do0.south) -- ([xshift=-31mm]sum.north);
+  \draw[smallflow] (72,  26) -- ([xshift=12mm]sum.north);
+  \draw[smallflow] (94,  26) -- ([xshift=34mm]sum.north);
+  \draw[smallflow] (116, 26) -- ([xshift=56mm]sum.north);
+
+  % (router_weights -> Weighted sum dashed arrow removed; the formula inside
+  % the sum block already states the dependence explicitly.)
+
+  % ============================================================
+  % FINAL OUTPUT (lowered slightly so the sum -> y arrow has the same visible
+  % length as the x -> Router arrow at the top of the figure)
+  % ============================================================
+  \node[act, minimum width=22mm, minimum height=4mm] (y) at (60, -1)
+        {$\mathbf{y}\,[1,d]$};
+  \draw[flow] (sum) -- (y);
+  \node[anchor=west, font=\scriptsize\itshape, text=black!65] at (75, -1)
+        {to residual\,+\,RMSNorm\,+\,next layer};
+
+  % ============================================================
+  % LEGEND (right column, well separated)
+  % ============================================================
+  \begin{scope}[shift={(132, 110)}, font=\scriptsize]
+    \node[anchor=west, font=\scriptsize\bfseries] at (0, 6) {Legend};
+    \node[act,    minimum width=8mm, minimum height=3mm] at (4, 0)   {};
+      \node[anchor=west] at (8.5, 0)   {activation tile};
+    \node[weight, minimum width=8mm, minimum height=3mm] at (4, -5)  {};
+      \node[anchor=west] at (8.5, -5)  {expert weight (on SSD)};
+    \node[op,     minimum width=8mm, minimum height=3mm] at (4, -10) {};
+      \node[anchor=west] at (8.5, -10) {compute op};
+    \node[router, minimum width=8mm, minimum height=3mm] at (4, -15) {};
+      \node[anchor=west] at (8.5, -15) {routing};
+
+    % Footnote, well below the swatches so no overlap
+    \node[anchor=north west, font=\tiny\itshape, text=black!65,
+          align=left, text width=42mm] at (0, -22)
+         {Red tiles live on SSD; how and when each is loaded is the subject
+          of \autoref{chapter:implementation}.};
+  \end{scope}
+
+\end{tikzpicture}

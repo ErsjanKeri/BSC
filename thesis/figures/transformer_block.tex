@@ -1,0 +1,86 @@
+% Figure: high-level decoder-only transformer architecture, focused on one block.
+% Goes in Chapter 2, Section 2.1 (Background / Transformer LLM Inference).
+%
+% Conventions:
+%   * Pre-norm decoder block (RMSNorm before attention/FFN), as used by GPT-OSS
+%   * Self-attention sub-block: black-boxed; refers to Eq. (attention)
+%   * MoE FFN sub-block: highlighted in orange (matches the SSD-storage color
+%     used for expert weights elsewhere); refers to Fig. (moe-ffn-dataflow)
+%   * Residual connections drawn as green right-side loops
+%   * x L badge indicates block stacking (L = 24 for GPT-OSS-20B, 36 for 120B)
+
+\begin{tikzpicture}[
+    font=\sffamily\small,
+    >={Latex[length=2.5mm]},
+    block/.style={
+        draw, rectangle, rounded corners=1pt,
+        minimum width=30mm, minimum height=8mm,
+        align=center, font=\sffamily\small,
+        fill=TUMAccentLightBlue!25,
+    },
+    norm/.style={block, fill=TUMLightGray!30, minimum width=24mm},
+    moeblock/.style={
+        block, fill=TUMAccentOrange!25, draw=TUMAccentOrange!75!black,
+        font=\sffamily\bfseries\small,
+    },
+    plus/.style={
+        draw, circle, fill=white, inner sep=0pt,
+        minimum size=4mm, font=\small,
+    },
+    iolabel/.style={font=\sffamily\small\itshape, text=TUMDarkGray},
+    arrow/.style={->, thick},
+    residualstyle/.style={->, thick, draw=TUMAccentGreen!60!black},
+    lbadge/.style={
+        draw=TUMSecondaryBlue, fill=TUMAccentLightBlue!15,
+        rounded corners=2pt, font=\sffamily\bfseries\small,
+        text=TUMSecondaryBlue, inner sep=4pt,
+    },
+    xref/.style={font=\scriptsize\sffamily, anchor=west, inner sep=2pt},
+]
+
+  % --- Compressed input ---
+  \node[iolabel, anchor=south] (inp) at (0, -1.0) {Embedding(tokens)};
+
+  % --- One transformer block, bottom-up ---
+  \node[norm]      (norm1) at (0, 0.5) {RMSNorm};
+  \node[block]     (attn)  at (0, 1.9) {Self-Attention};
+  \node[plus]      (plus1) at (0, 3.3) {$+$};
+  \node[norm]      (norm2) at (0, 4.7) {RMSNorm};
+  \node[moeblock]  (ffn)   at (0, 6.1) {MoE FFN};
+  \node[plus]      (plus2) at (0, 7.5) {$+$};
+
+  % --- Compressed output ---
+  \node[iolabel, anchor=north] (out) at (0, 9.2) {RMSNorm $\to$ LM head $\to$ logits};
+
+  % --- Vertical flow ---
+  \draw[arrow] (inp)   -- (norm1);
+  \draw[arrow] (norm1) -- (attn);
+  \draw[arrow] (attn)  -- (plus1);
+  \draw[arrow] (plus1) -- (norm2);
+  \draw[arrow] (norm2) -- (ffn);
+  \draw[arrow] (ffn)   -- (plus2);
+  \draw[arrow] (plus2) -- (out);
+
+  % --- Residual loops (right side) ---
+  \draw[residualstyle] (0, -0.3) -- (2.4, -0.3) -- (2.4, 3.3) -- (plus1);
+  \draw[residualstyle] (0,  3.9) -- (2.4,  3.9) -- (2.4, 7.5) -- (plus2);
+
+  % --- Block boundary ---
+  \begin{scope}[on background layer]
+    \node[
+      draw=TUMGray, dashed, rounded corners=2pt,
+      fit=(norm1) (plus2),
+      inner xsep=8mm, inner ysep=4mm,
+    ] (blockbox) {};
+  \end{scope}
+
+  % --- x L badge (left of block boundary) ---
+  \node[lbadge, anchor=east] at ($(blockbox.west) + (-0.2, 0)$) {$\times\, L$};
+
+  % --- Cross-references on the right ---
+  \node[xref, text=TUMAccentOrange!85!black] at (3.0, 6.1) {See Fig.~\ref{fig:moe-ffn-dataflow}};
+
+  % --- Residual color key ---
+  \node[xref, text=TUMAccentGreen!60!black, anchor=west] at (3.0, 4.7) {residual};
+
+\end{tikzpicture}

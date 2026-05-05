@@ -1,0 +1,20 @@
+\addcontentsline{toc}{chapter}{Acknowledgments}
+\thispagestyle{empty}
+
+\vspace*{20mm}
+
+\begin{center}
+    {\usekomafont{sectioning}\usekomafont{section} Acknowledgments}
+\end{center}
+
+\vspace{10mm}
+
+I am deeply grateful to my advisor, Gabriel Haas, whose guidance shaped this thesis from start to finish. He suggested the io\_uring direction during an early discussion about the page-fault path, and that single pointer defined the entire optimization chapter: the application-managed \texttt{O\_DIRECT} loader, the per-expert cache, the projection-group overlap, and the per-expert async dispatcher all descend from it. Beyond ideas, his careful reading and steady feedback across many iterations kept the work honest and the writing focused.
+
+I thank my supervisor, Prof.\ Dr.\ Viktor Leis, for taking on the thesis.
+
+I am grateful to the chair of Prof.\ Leis for providing the \texttt{cli-hiwi-02} server, arranged through Gabriel Haas, which hosted every cgroup sweep and every overnight run reported here; the AMD Ryzen~7 7700X and its two NVMe SSDs are the silent co-authors of every wall-clock number in the tables.
+
+Finally, I thank my family for their patience through a project whose interesting moments were mostly invisible from the outside.
+
+\cleardoublepage{}

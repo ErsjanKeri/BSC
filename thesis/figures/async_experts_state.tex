@@ -1,0 +1,63 @@
+% Figure: per-expert state machine for the async-experts dispatcher.
+% Matches the actual implementation in llama-moe-pipeline.cpp:
+%   AE_UP_MATMUL        : up only (gate not yet computed)
+%   AE_UP_AND_FINISH    : up + swiglu + quantize (gate already computed)
+%   AE_GATE_MATMUL      : gate only (up not yet computed)
+%   AE_GATE_AND_FINISH  : gate + swiglu + quantize (up already computed)
+%   AE_DOWN_MATMUL      : down only
+%
+% The fold-in optimization (AND_FINISH variants) collapses SwiGLU and the
+% down-input quantize into the second-arrival matmul, so there is no
+% standalone "both matmuls done, no swiglu" intermediate state.
+%
+% Conventions:
+%   * S_0 (green)  : initial, nothing computed
+%   * S_1          : up matmul done first
+%   * S_2          : gate matmul done first
+%   * S_3          : SwiGLU + quantize done; ready for down
+%   * S_4 (orange) : down matmul done; expert complete
+%   * Edge labels  : action above (blue), io_uring completion guard below
+%                    (italic orange)
+
+\begin{tikzpicture}[
+    font=\sffamily\small,
+    >={Latex[length=2.5mm]},
+    state/.style={
+        draw, rounded corners=2pt, fill=TUMLightGray!20,
+        minimum width=18mm, minimum height=11mm, align=center,
+        inner sep=2pt,
+        font=\sffamily\small,
+    },
+    initstate/.style={state, fill=TUMAccentGreen!20, draw=TUMAccentGreen!60!black},
+    finalstate/.style={state, fill=TUMAccentOrange!25, draw=TUMAccentOrange!70!black},
+    actlabel/.style={font=\scriptsize\sffamily, text=TUMSecondaryBlue, inner sep=1.5pt},
+    guardlabel/.style={font=\scriptsize\sffamily\itshape, text=TUMAccentOrange!85!black, inner sep=1.5pt},
+]
+  % --- States ---
+  \node[initstate]  (s0) at (0,    0)    {$S_0$\\[1pt]\scriptsize init};
+  \node[state]      (s1) at (4.5,  1.6)  {$S_1$\\[1pt]\scriptsize up done};
+  \node[state]      (s2) at (4.5, -1.6)  {$S_2$\\[1pt]\scriptsize gate done};
+  \node[state]      (s3) at (9.0,  0)    {$S_3$\\[1pt]\scriptsize SwiGLU done};
+  \node[finalstate] (s4) at (13.5, 0)    {$S_4$\\[1pt]\scriptsize complete};
+
+  % --- S_0 to first-arrival branches (diamond top + bottom) ---
+  \draw[->, thick] (s0) -- (s1)
+      node[actlabel,   sloped, above, pos=0.5] {up matmul}
+      node[guardlabel, sloped, below, pos=0.5] {loaded\_up};
+  \draw[->, thick] (s0) -- (s2)
+      node[actlabel,   sloped, above, pos=0.5] {gate matmul}
+      node[guardlabel, sloped, below, pos=0.5] {loaded\_gate};
+
+  % --- Second-arrival fold-in: AND_FINISH variants merge to S_3 ---
+  \draw[->, thick] (s1) -- (s3)
+      node[actlabel,   sloped, above, pos=0.5, align=center] {gate matmul\\+ SwiGLU + quant}
+      node[guardlabel, sloped, below, pos=0.5] {loaded\_gate};
+  \draw[->, thick] (s2) -- (s3)
+      node[actlabel,   sloped, above, pos=0.5, align=center] {up matmul\\+ SwiGLU + quant}
+      node[guardlabel, sloped, below, pos=0.5] {loaded\_up};
+
+  % --- Final transition to S_4 ---
+  \draw[->, thick] (s3) -- (s4)
+      node[actlabel,   above, pos=0.5] {down matmul}
+      node[guardlabel, below, pos=0.5] {loaded\_down};
+\end{tikzpicture}

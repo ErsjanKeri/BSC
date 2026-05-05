@@ -1,0 +1,98 @@
+
+\chapter{Evaluation}\label{chapter:evaluation}
+
+This chapter measures our backend against the default llama.cpp loader on the same hardware under a kernel-enforced RAM limit.
+
+
+\section{Setup}\label{sec:eval-setup}\label{sec:eval-hardware}
+
+The test machine runs Linux on an AMD Ryzen 7 7700X (8 cores) with 30~GiB of DDR5 main memory and two NVMe SSDs~\cite{amd_ryzen7700x,jedec_ddr5}.
+The operating system lives on the first SSD.
+The second is a 1~TB Samsung 980~PRO over PCIe~4.0~\cite{pcisig_pcie4} dedicated to the model files and their sidecar pack files (\autoref{sec:expert-buffer}); all reported numbers come from this drive, so model I/O is not mixed with operating-system activity during measurement.
+
+We control RAM by launching the inference process inside a transient systemd scope under cgroup~v2 with \texttt{memory.max} set to the limit we want and \texttt{MemorySwapMax=0}, with system swap also disabled~\cite{cgroupv2}.
+An allocation that would push the process over the cgroup limit fails immediately rather than spilling to disk.
+Each measurement runs 2000 tokens of decode at seed 42 from a multi-topic prompt, kernel page caches are dropped before every run, and the reported throughput is decode token count divided by decode time.
+All measurements use the \texttt{--eager-compute} flag, which forces the compute buffer resident at graph reservation so the cgroup count is deterministic.
+
+The cgroup limit covers everything the inference process holds.
+A fixed footprint goes to the pinned dense weights (\autoref{sec:pinning}), the KV cache, the compute buffer, and a small amount of miscellaneous anonymous memory.
+The remainder, less a safety margin, holds our expert buffer (\autoref{sec:expert-buffer}) at 4.20~MiB per slot.
+\autoref{tab:eval-fixed-footprint} lists the breakdown for both models.
+
+\begin{table}[htbp]
+\centering
+\caption[Fixed memory footprint per model]{Fixed memory footprint of the inference process under the cgroup limit. The remainder of the limit, less a safety margin, holds the expert buffer at 4.20~MiB per slot.}
+\label{tab:eval-fixed-footprint}
+\begin{tabular}{lrr}
+\toprule
+Component & GPT-OSS-20B & GPT-OSS-120B \\
+\midrule
+Pinned dense weights         & 2.27~GiB & 2.98~GiB \\
+KV cache (\texttt{ctx=131072}) & 3.02~GiB & 4.53~GiB \\
+Compute buffer (eager)       & 0.40~GiB & 0.40~GiB \\
+Misc anonymous               & 0.18~GiB & 0.23~GiB \\
+\midrule
+Fixed footprint (sum)        & 5.87~GiB & 8.14~GiB \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For each cgroup limit, the cache slot count is sized to fill the remaining space: 250 / 498 / 740 slots at 7 / 8 / 9~GiB on GPT-OSS-20B, and 693 / 1668 / 3130 / 4592 slots at 12 / 16 / 22 / 28~GiB on GPT-OSS-120B.
+Across the 168 runs of the canonical sweep (56 cells $\times$ 3 iterations across both models), the mean coefficient of variation in decode time is 0.23\%.
+
+
+\section{GPT-OSS-20B}\label{sec:eval-20b}
+
+\autoref{tab:eval-20b-headline} reports decode throughput on GPT-OSS-20B (12.85~GiB on disk) at four cgroup limits.
+At the smallest three cells (7, 8, 9~GiB), the working set exceeds the available RAM once the pinned weights, KV cache, and compute buffer are accounted for, so the model file's pages have to turn over every layer.
+The 22~GiB cell leaves enough RAM for the model to stay fully resident.
+
+\input{_meta/canon_tables.tex}
+
+The configuration order is monotonic at the three smaller cells.
+Pinning the dense weights (\autoref{sec:pinning}) helps in proportion to what the kernel would otherwise evict: $1.55\times$ over lazy mmap at 7~GiB, $1.21\times$ at 9~GiB.
+Replacing the synchronous fault path with our buffer plus projection-group overlap (\autoref{sec:pipelining-po}) adds the largest single jump, roughly a further factor of two over pin.
+Async-projection-overlap (\autoref{sec:pipelining-apo}) reaches 5.36 / 6.52 / 8.70~tok/s at 7 / 8 / 9~GiB ($3.72\times$, $2.44\times$, and $2.25\times$ over the lazy mmap baseline) and is the fastest configuration at 7 and 9~GiB.
+At 8~GiB async-experts (\autoref{sec:pipelining-ae}) edges it at 6.59~tok/s, by an amount that sits inside the run-to-run noise of that cell (\autoref{sec:eval-overlap}).
+
+The 22~GiB cell is the upper bound on this hardware for this model.
+With the working set entirely resident, the kernel page cache holds every weight, the synchronous fault path stops being a cost we have to remove, and all five configurations converge to within 0.42~tok/s of each other at 13.90--14.32~tok/s.
+Our backend in fact loses about 0.40~tok/s relative to plain mmap at this cell. The cache is sized to 2304 slots, exactly the full expert population ($24$~layers $\times$ $32$~experts $\times$ $3$~projections), so once it warms neither path makes runtime I/O and what remains is overhead in the buffer-managed code path that the I/O savings at smaller cells more than offset.
+Every speedup the rest of this chapter reports is the speedup available when the RAM cap is tight. In its absence the buffer-managed I/O path is a small net cost.
+
+
+\section{GPT-OSS-120B}\label{sec:eval-120b}
+
+\autoref{tab:eval-120b-headline} reports the same sweep on GPT-OSS-120B (60.88~GiB on disk).
+The model exceeds host RAM by a factor of about 2, so every cell forces page-cache turnover regardless of the cgroup limit; even at 28~GiB the page cache cannot hold the full set of expert weights.
+
+The configuration order is the same as on the smaller model.
+Pinning helps less in absolute terms (4--26\% over lazy mmap rather than 21--55\%) because the cgroup budgets here (12--28~GiB) leave the kernel page cache more headroom than the 2.98~GiB of dense weights need: even the 12~GiB cell has roughly 6.8~GiB free for the page cache, so the kernel's own LRU keeps most dense pages resident without help. Pinning's marginal value is what the kernel would otherwise evict, and at these budgets that is a small share of dense reads.
+Async-projection-overlap is the fastest configuration at every cell, reaching 8.06~tok/s at 28~GiB against 4.96~tok/s for lazy mmap, a $1.63\times$ speedup.
+There is no fully-resident cell here in our cgroup range: even at 28~GiB the model is more than twice the available RAM, so I/O dominates every run.
+
+
+\section{Cache eviction policy at undersized cache}\label{sec:eval-policy}
+
+The 7~GiB cell on GPT-OSS-20B fixes the buffer at 250 slots, which is below the 288-slice per-token working set established in \autoref{sec:tracer-sim}.
+The simulator there predicts that LFU-aging dominates LFU dominates LRU when the cache holds fewer slots than the working set.
+\autoref{tab:cache-policy-7g} confirms this at wall-clock time across all four io\_uring code paths.
+
+At the headline async-projection-overlap cell, LFU-aging reaches 5.36~tok/s against LRU's 3.98~tok/s. The simulator's hit-rate prediction in \autoref{tab:tracer-policy-hits} explains the gap: LRU at 250 slots produces a 0.00\% hit rate, so every expert access pays a fresh disk read, while LFU-aging holds 34.13\%. The mechanism behind the zero (described in \autoref{sec:tracer-sim}) is that the cyclic per-token access pattern places LRU's tail on exactly the slice it is about to ask for next, so each new arrival evicts what is needed immediately afterward. Per-slot frequency counters protect the small set of frequently-routed-to experts and avoid that geometry.
+At 8~GiB and 9~GiB the cache (498 / 740 slots) exceeds the working set and we use LRU, because each expert's three slices (up, gate, down) are read in immediate succession within a layer, which LRU's per-access promotion captures cleanly.
+The same regime argument applies to every GPT-OSS-120B cell in our sweep, where the cache always holds more slots than the per-token working set.
+
+
+\section{Comparing the overlap modes}\label{sec:eval-overlap}
+
+The three pipelining modes that overlap I/O with compute (projection-group overlap, async-projection-overlap, async-experts) all produce the same output at fixed seed, so the comparison between them is purely wall-clock.
+
+Across the seven cells where the model does not fit (GPT-OSS-20B at 7, 8, 9~GiB; GPT-OSS-120B at 12, 16, 22, 28~GiB), async-projection-overlap is the fastest at six of seven.
+Projection-group overlap consistently lags it by 4.47 to 6.95\% (on GPT-OSS-20B at 9~GiB it is 8.14 vs 8.70~tok/s, a 6.44\% gap).
+Async-experts lands within 1.49\% of async-projection-overlap at every cell, for example 8.57 vs 8.70~tok/s at GPT-OSS-20B 9~GiB and 7.99 vs 8.06~tok/s at GPT-OSS-120B 28~GiB.
+The 20B 8~GiB cell is the only one where async-experts edges async-projection-overlap (6.59 vs 6.52~tok/s), by an amount inside the cell's run-to-run noise.
+
+Async-projection-overlap is therefore the deployed configuration.
+Async-experts is within noise of it on this hardware.
+Projection-group overlap is a few percent behind because the down reads only have one compute window to hide behind, while the two async modes can overlap each expert's I/O with the compute of every preceding expert in the layer.

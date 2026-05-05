@@ -1,0 +1,75 @@
+\chapter{Related Work}\label{chapter:related-work}
+
+This work sits at the intersection of three lines of research: memory-constrained inference for dense language models, MoE-specific serving systems, and asynchronous storage I/O.
+The systems closest in deployment shape (a single host with the slow tier behind the CPU) target dense models with activation-level sparsity that GPT-OSS does not exhibit.
+The MoE-specific systems all assume either a multi-GPU cluster, a CPU--GPU host, or a GPU host with DRAM as the slow tier; none target single-host CPU-only with NVMe as the primary weight store.
+
+
+\section{Memory-Constrained Single-Host LLM Inference}\label{sec:rw-mem-llm}
+
+LLM in a Flash~\cite{alizadeh2024llmflash} keeps a dense LLM on NAND flash and pages neuron weights into DRAM on demand.
+Two techniques carry the design.
+\emph{Windowing} reuses neurons that fired in recent decode steps.
+\emph{Row-column bundling} packs the weights of co-active neurons into contiguous chunks so each flash transfer is sequential rather than scatter-gather.
+The reported 4--5$\times$ CPU and 20--25$\times$ GPU speedups are against a naive on-demand baseline.
+The mechanism only works because the target models use ReLU FFNs with around 90\% post-activation sparsity~\cite{mirzadeh2023relu,liu2023deja} and a small predictor identifies which neurons will fire next.
+GPT-OSS uses SwiGLU~\cite{shazeer2020glu,openai2025gptoss}, which is gated rather than thresholded, and the sparsity LLM in a Flash exploits does not exist here.
+
+ActiveFlow~\cite{jia2025activeflow} addresses the gap LLM in a Flash leaves: dense LLMs with non-ReLU activations.
+Cross-layer active-weight preloading uses the current layer's activations to predict next-layer weight needs.
+Sparsity-aware self-distillation fine-tunes the model so its post-activation pattern is more predictable.
+A dynamic DRAM--flash swap pipeline orchestrates the transfers at runtime.
+The submit-while-compute idea is the same shape as projection-group overlap (\autoref{sec:pipelining-po}), but ActiveFlow's predictability gain comes from retraining the model.
+For an off-the-shelf MoE such as GPT-OSS, retraining is out of scope, and per-layer routing is independent across layers (\autoref{sec:bg-moe}), so a learned cross-layer predictor would have to predict the router itself rather than read an activation pattern.
+
+PowerInfer~\cite{song2023powerinfer} profiles which neurons are persistently activated across many tokens (``hot'') versus rarely activated (``cold'').
+The hot set is pinned on the GPU; the cold neurons are computed on the CPU rather than transferred to the GPU.
+PowerInfer-2~\cite{xue2024powerinfer2} extends the neuron-cluster decomposition to a smartphone NPU plus CPU.
+The hot/cold distinction is a function of activation-level sparsity in dense ReLU networks.
+In an MoE the equivalent question is which experts are frequently routed-to, but that is a workload-distribution property rather than an architectural one and shifts with prompt domain.
+The tier topology also differs from ours: we run on a CPU-only host with NVMe as the slow tier and no GPU on which to pin a hot set.
+
+FlexGen~\cite{sheng2023flexgen} addresses high-throughput batched offline inference, where weights, KV cache, and activations are spread across GPU memory, CPU memory, and disk.
+An offline linear-program search picks a placement policy per tensor, and large batches amortize the I/O across many concurrent tokens.
+Our setting is the opposite end of the same spectrum: one in-flight request, decode latency as the metric of interest, no other concurrent tokens to amortize a single request's expert reads against.
+FlexGen is the reference point for ``offload everything everywhere'' in the literature, but its scheduling techniques do not transfer to our regime.
+
+
+\section{Mixture-of-Experts Inference Systems}\label{sec:rw-moe-systems}
+
+DeepSpeed-MoE~\cite{rajbhandari2022deepspeedmoe} is the reference system for large-scale MoE inference on GPU clusters.
+The inference path supports expert parallelism (experts of each layer sharded across GPUs, with routed activations carried over the cluster network), tensor parallelism for the dense layers, and a pyramid-residual MoE compression scheme (PR-MoE) that shrinks the served model.
+Its deployment target is many GPUs with the full set of weights resident across aggregate device memory, network-bound rather than storage-bound.
+The expert-parallelism techniques do not apply when there is one host and one storage tier, but DeepSpeed-MoE establishes the baseline for how MoE is served at cluster scale.
+
+Fiddler~\cite{kamahori2024fiddler} is the closest MoE-specific design in spirit: single-host CPU--GPU MoE inference.
+A hot subset of experts stays resident on the GPU and the rest live in CPU RAM.
+For each routed expert, Fiddler dynamically picks between two execution paths: ship the weights from CPU RAM to the GPU and run the expert there, or ship the activations to the CPU and run the expert on the CPU.
+At small batch sizes the second path wins, because CPU compute is faster than the PCIe weight transfer plus GPU compute it would replace.
+The setting differs from ours in two ways that matter: Fiddler assumes a GPU is present, and the slow tier is CPU RAM rather than NVMe through the kernel block layer.
+The bandwidths and latency-hiding mechanics are different by an order of magnitude.
+
+MoE-Infinity~\cite{xue2024moeinfinity} keeps experts in host DRAM (not on storage) and prefetches them into GPU memory based on a request-similarity match.
+Each completed request leaves an Expert Activation Matrix (EAM) recording how often each expert fired at each layer.
+The in-flight request's partial EAM, built up during the first few decode steps, is matched against historical EAMs in an EAM Collection by cosine similarity, and the closest match's expert pattern drives the prefetch.
+GPU-side cache replacement is a dynamic priority scheme keyed on the predicted EAM, with protection of in-flight prefetches.
+Two differences position our work: MoE-Infinity's slow tier is host DRAM at tens of GiB/s rather than NVMe at single-digit GiB/s, and the per-layer compute window on a GPU is short enough that cross-layer prediction is needed to win.
+Our per-layer compute window on a CPU is long enough that within-layer overlap suffices, and we prefetch nothing across layers or requests.
+The EAM construction itself is an interesting direction to extend our system in and appears as future work in \autoref{sec:future-work}.
+
+
+\section{Asynchronous Storage I/O}\label{sec:rw-iouring}
+
+The two mature options for high-throughput storage I/O on Linux are \texttt{io\_uring} with \texttt{O\_DIRECT}~\cite{axboe2019iouring,open_man} (used here, mechanics in \autoref{sec:bg-iouring}) and SPDK~\cite{spdk}, a userspace NVMe driver that bypasses the kernel block layer entirely and polls the device from a dedicated thread.
+SPDK is the reference design for million-IOPS workloads where syscall overhead dominates.
+Our IOPS regime is bounded by per-layer 12-read batches at decode rates of a few tokens per second; total submissions per second sit in the low thousands, which the kernel block layer handles without measurable overhead.
+The deployment cost of SPDK (dedicated cores, hugepages, exclusive device access) would not be repaid by a workload that already saturates the NVMe at moderate queue depth.
+
+
+\section{Positioning}\label{sec:rw-positioning}
+
+This thesis exploits a sparsity source that none of the prior systems above target directly: the architectural top-$k$ routing of Mixture-of-Experts models~\cite{shazeer2017moe,fedus2022switch}.
+Routing is deterministic given the input, and per-layer routing is independent across layers, so no learned predictor and no model modification are required.
+The price for that generality is that cross-layer prefetching, the central trick in ActiveFlow and MoE-Infinity, is fundamentally harder for us, since predicting layer~$N{+}1$'s routing means predicting the router itself rather than reading an activation pattern.
+We flag it as future work in \autoref{chapter:closing}.
+We are not aware of prior work that combines (a) MoE-architectural sparsity, (b) commodity NVMe as the primary weight store on a CPU-only host, (c) bit-exact application-managed I/O with workload-tuned cache policies, and (d) a kernel-enforced cgroup~v2 benchmarking methodology.

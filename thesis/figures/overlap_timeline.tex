@@ -1,0 +1,103 @@
+% Figure: Per-layer overlap timeline comparing the four pipelining modes.
+% Matches the actual implementation in llama-moe-pipeline.cpp and
+% llama-io-uring-buf.cpp.
+%
+% Lanes (top to bottom):
+%   1. Synchronous (our io_uring-sync mode): the buffer's load() submits
+%      all 12 reads as one batch at QD=12 and blocks for completion;
+%      compute runs after I/O finishes. No overlap.
+%   2. Projection-group overlap: phase 1 sync-loads the 8 up+gate slices;
+%      phase 2 issues 4 down reads asynchronously; up+gate+SwiGLU compute
+%      runs while the down reads complete in the background.
+%   3. Async-projection-overlap: 12 reads issued at layer entry with 8 tags
+%      (up+gate-pair tag + down tag per expert); compute dispatches per
+%      expert as upgate pairs land first-ready.
+%   4. Async-experts: 12 reads with 12 tags (one per (expert, projection));
+%      compute dispatches per individual matmul in finer rounds.
+%
+% Conventions:
+%   * I/O bar (red, solid)     : sync I/O (worker pool blocked)
+%   * I/O bar (red, hatched)   : async I/O (in flight, doesn't block compute)
+%   * compute bar (green)      : worker pool running matmul / SwiGLU
+
+\begin{tikzpicture}[
+  x=1mm, y=1mm, font=\footnotesize,
+  every node/.style={inner sep=1pt, outer sep=0pt},
+  io/.style={
+    draw=red!55!black, fill=red!18, line width=0.4pt,
+    rounded corners=0.4pt, minimum height=4mm, font=\tiny, align=center
+  },
+  ioasync/.style={
+    draw=red!55!black, line width=0.4pt,
+    rounded corners=0.4pt, minimum height=4mm, font=\tiny, align=center,
+    pattern=north east lines, pattern color=red!40
+  },
+  comp/.style={
+    draw=green!55!black, fill=green!12, line width=0.4pt,
+    rounded corners=0.4pt, minimum height=4mm, font=\tiny, align=center
+  },
+  laneLabel/.style={
+    anchor=east, font=\scriptsize, text=black!85, align=right
+  },
+  laneSub/.style={
+    anchor=east, font=\scriptsize\itshape, text=black!60, align=right
+  },
+]
+
+  % Lane 1: Synchronous
+  \node[laneLabel] at (-2, 74) {Synchronous};
+  \node[io,   minimum width=22mm, anchor=south west] at (0,  72) {12 reads, QD=12};
+  \node[comp, minimum width=28mm, anchor=south west] at (22, 72) {compute (up, gate, SwiGLU, down)};
+
+  % Lane 2: Projection-group overlap
+  \node[laneLabel] at (-2, 54) {Projection-group};
+  \node[laneSub]   at (-2, 50) {overlap};
+  % Phase 1: 8 up+gate sync, on the compute row
+  \node[io,    minimum width=12mm, anchor=south west] at (0,  52) {8 up+gate};
+  % Compute up+gate+SwiGLU, on the compute row
+  \node[comp,  minimum width=18mm, anchor=south west] at (12, 52) {up + gate + SwiGLU};
+  % Phase 2: 4 down async, on the row above (overlapping with compute)
+  \node[ioasync, minimum width=10mm, anchor=south west] at (12, 57) {4 down (async)};
+  % Down compute
+  \node[comp,  minimum width=8mm, anchor=south west] at (30, 52) {down};
+
+  % Lane 3: Async-projection-overlap
+  \node[laneLabel] at (-2, 34) {Async-projection-};
+  \node[laneSub]   at (-2, 30) {overlap};
+  % Background async I/O bar
+  \node[ioasync, minimum width=22mm, anchor=south west] at (0, 37) {12 reads, async (8 tags)};
+  % 4 expert chunks dispatched as up+gate pairs land
+  \node[comp, minimum width=8mm, anchor=south west] at (2,  32) {expert $a$};
+  \node[comp, minimum width=8mm, anchor=south west] at (10, 32) {expert $b$};
+  \node[comp, minimum width=8mm, anchor=south west] at (18, 32) {expert $c$};
+  \node[comp, minimum width=8mm, anchor=south west] at (26, 32) {expert $d$};
+
+  % Lane 4: Async-experts
+  \node[laneLabel] at (-2, 14) {Async-experts};
+  % Background async I/O bar
+  \node[ioasync, minimum width=22mm, anchor=south west] at (0, 17) {12 reads, async (12 tags)};
+  % 12 finer dispatch chunks (~3 rounds per expert x 4 experts)
+  \foreach \i in {0,...,11} {
+    \pgfmathsetmacro{\xi}{2 + \i*2.67}
+    \node[comp, minimum width=2.67mm, anchor=south west] at (\xi, 12) {};
+  }
+  \node[anchor=west, font=\tiny, text=black!65] at (34, 14) {per-matmul dispatch};
+
+  % Time axis
+  \draw[->, line width=0.4pt, draw=black!75]
+        (0, 4) -- (60, 4) node[anchor=west, font=\scriptsize] {time};
+  \node[anchor=north, font=\tiny, text=black!65] at (30, 3)
+        {one MoE layer of single-token decode};
+
+  % Legend (right of the bars)
+  \begin{scope}[shift={(70, 50)}, font=\scriptsize]
+    \node[anchor=west, font=\scriptsize\bfseries] at (0, 18) {Legend};
+    \node[io,      minimum width=6mm] at (3, 13) {};
+      \node[anchor=west] at (10, 13) {I/O (sync)};
+    \node[ioasync, minimum width=6mm] at (3,  8) {};
+      \node[anchor=west] at (10,  8) {I/O (async, in flight)};
+    \node[comp,    minimum width=6mm] at (3,  3) {};
+      \node[anchor=west] at (10,  3) {compute};
+  \end{scope}
+
+\end{tikzpicture}

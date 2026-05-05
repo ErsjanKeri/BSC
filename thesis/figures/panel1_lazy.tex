@@ -1,0 +1,145 @@
+% Figure: Panel 1, Lazy mmap (default path).
+%
+% Shows the MoE FFN compute graph for one layer, simplified to the nodes
+% that matter for the SSD story. Trivial bias adds, reshapes, and views
+% from the trace are collapsed; what remains is:
+%   input -> router (pinned RAM) -> top-k routing -> gate (SSD)
+%         -> up (SSD) -> SwiGLU -> down (SSD) -> output
+%
+% Source of truth: /home/keri/BSC/tensor-tracing/desktopui/data/graphs/token-00000.json
+% (token 0, layer 0).
+
+\begin{tikzpicture}[
+  x=1mm, y=1mm,
+  font=\footnotesize,
+  every node/.style={inner sep=1pt, outer sep=0pt},
+  % Regular compute nodes
+  cnode/.style    ={draw=black!55, fill=white,         line width=0.4pt,
+                    rounded corners=0.6pt, align=center,
+                    minimum width=62mm, minimum height=8mm,
+                    font=\scriptsize},
+  % Heavy mul_mat_id nodes (expert weights -> SSD reads)
+  hcnode/.style   ={draw=red!65!black, fill=red!10,    line width=0.7pt,
+                    rounded corners=0.6pt, align=center,
+                    minimum width=62mm, minimum height=10mm,
+                    font=\scriptsize},
+  % Weight tensor on SSD (expert weights, mmap'd)
+  wnode/.style    ={draw=red!55!black, fill=red!12,    line width=0.4pt,
+                    rounded corners=0.5pt, align=center, font=\tiny,
+                    minimum width=44mm, minimum height=7mm, inner sep=1pt},
+  % Weight tensor pinned in RAM (router, attention, norms)
+  wpnode/.style   ={draw=blue!55!black, fill=blue!8,   line width=0.4pt,
+                    rounded corners=0.5pt, align=center, font=\tiny,
+                    minimum width=44mm, minimum height=7mm, inner sep=1pt},
+  % Activation tile (input/output of the block)
+  anode/.style    ={draw=blue!55!black, fill=blue!10,  line width=0.4pt,
+                    rounded corners=0.6pt, align=center, font=\scriptsize,
+                    minimum width=62mm, minimum height=7mm},
+  flow/.style     ={->, >={Stealth[length=1.4mm]}, line width=0.45pt, draw=black!75},
+  wflow/.style    ={->, >={Stealth[length=1.0mm]}, line width=0.3pt,
+                    draw=red!55!black, dashed},
+  wpflow/.style   ={->, >={Stealth[length=1.0mm]}, line width=0.3pt,
+                    draw=blue!55!black, dashed},
+  ssdtag/.style   ={anchor=west, font=\tiny\itshape, text=red!65!black},
+  pintag/.style   ={anchor=west, font=\tiny\itshape, text=blue!55!black},
+]
+
+  % =================================================================
+  % Header
+  % =================================================================
+  \node[anchor=south west, font=\small\bfseries] at (0, 122)
+        {Panel 1: Lazy mmap (default path)};
+  \node[anchor=north west, font=\scriptsize\itshape, text=black!70, text width=178mm]
+        at (0, 120)
+        {The MoE FFN compute graph for one layer (token~0, layer~0,
+         from \texttt{token-00000.json}). The default scheduler runs nodes
+         strictly sequentially with an implicit \texttt{ggml\_barrier}
+         between each. Parallelism is \emph{intra-op}: 8 worker threads split
+         the rows inside one node, never across nodes. Trivial reshapes and
+         bias adds are collapsed into their parent block.};
+
+  % =================================================================
+  % Vertical pipeline -- 6 boxes, centred at x=40.
+  % =================================================================
+
+  % --- 1. input
+  \node[anode] (n_inp) at (40, 105)
+       {\textbf{ffn\_inp} \quad\tiny residual input \,/\, $[2880,\,2]$};
+
+  % --- 2. router matmul (pinned RAM, no fault)
+  \node[cnode] (n_router) at (40, 92)
+       {\textbf{router} \quad\tiny\texttt{mul\_mat} (\texttt{X*Y}) \,/\, logits $[32,\,2]$};
+  \draw[flow] (n_inp) -- (n_router);
+  \node[wpnode, anchor=west] (w_router) at (78, 92)
+       {\texttt{ffn\_gate\_inp.weight} \,/\, $[2880,\,32]$\\
+        [-0.2ex]\textbf{pinned in RAM}};
+  \draw[wpflow] (w_router) -- (n_router);
+  \node[pintag] at (130, 92) {no fault};
+
+  % --- 3. top-k routing (collapses argsort + view + get_rows + softmax)
+  \node[cnode] (n_topk) at (40, 80)
+       {\textbf{top-k routing} \quad\tiny\texttt{argsort} $\to$ \texttt{view}
+        $\to$ \texttt{get\_rows} $\to$ \texttt{softmax}\\
+        [-0.2ex]\tiny pick 4 of 32 experts; produce routing weights
+        $w_{1..4}$};
+  \draw[flow] (n_router) -- (n_topk);
+
+  % --- 4. gate matmul (SSD)
+  \node[hcnode] (n_gate) at (40, 67)
+       {\textbf{gate} \quad\tiny\texttt{mul\_mat\_id} (\texttt{X[i]*Y})\\
+        [-0.3ex]\tiny indexes axis-2 with the 4 selected expert IDs
+        \,/\, out $[2880,\,32,\,2]$};
+  \draw[flow] (n_topk) -- (n_gate);
+  \node[wnode, anchor=west] (w_gate) at (78, 67)
+       {\texttt{ffn\_gate\_exps.weight} \,/\, $[2880,\,2880,\,32]$\\
+        [-0.2ex]\textbf{lives on SSD (mmap)}};
+  \draw[wflow] (w_gate) -- (n_gate);
+  \node[ssdtag] at (130, 67) {page fault on first read};
+
+  % --- 5. up matmul (SSD)
+  \node[hcnode] (n_up) at (40, 54)
+       {\textbf{up} \quad\tiny\texttt{mul\_mat\_id} (\texttt{X[i]*Y})\\
+        [-0.3ex]\tiny same 4 expert IDs, different weight tensor
+        \,/\, out $[2880,\,32,\,2]$};
+  \draw[flow] (n_gate) -- (n_up);
+  \node[wnode, anchor=west] (w_up) at (78, 54)
+       {\texttt{ffn\_up\_exps.weight} \,/\, $[2880,\,2880,\,32]$\\
+        [-0.2ex]\textbf{lives on SSD (mmap)}};
+  \draw[wflow] (w_up) -- (n_up);
+  \node[ssdtag] at (130, 54) {page fault on first read};
+
+  % --- 6. SwiGLU (no I/O)
+  \node[cnode] (n_swi) at (40, 42)
+       {\textbf{SwiGLU} \quad\tiny\texttt{glu(gate, up)} (activation)\\
+        [-0.2ex]\tiny pure compute, no I/O \,/\, $[2880,\,32,\,2]$};
+  \draw[flow] (n_up) -- (n_swi);
+
+  % --- 7. down matmul (SSD)
+  \node[hcnode] (n_down) at (40, 29)
+       {\textbf{down} \quad\tiny\texttt{mul\_mat\_id} (\texttt{X[i]*Y})\\
+        [-0.3ex]\tiny same 4 expert IDs, projects back to $d=2880$
+        \,/\, out $[2880,\,32,\,2]$};
+  \draw[flow] (n_swi) -- (n_down);
+  \node[wnode, anchor=west] (w_down) at (78, 29)
+       {\texttt{ffn\_down\_exps.weight} \,/\, $[2880,\,2880,\,32]$\\
+        [-0.2ex]\textbf{lives on SSD (mmap)}};
+  \draw[wflow] (w_down) -- (n_down);
+  \node[ssdtag] at (130, 29) {page fault on first read};
+
+  % --- 8. output (residual + weighted sum)
+  \node[anode] (n_out) at (40, 17)
+       {\textbf{ffn\_out} \quad\tiny residual + $\sum_i w_i \cdot \text{down}_i$
+        \,/\, $[2880,\,2]$};
+  \draw[flow] (n_down) -- (n_out);
+
+  % =================================================================
+  % Side note (right of figure)
+  % =================================================================
+  \node[anchor=north west, font=\scriptsize\itshape, text=black!60, text width=46mm]
+        at (130, 105)
+        {\textbf{What faults:} only the three red weight tensors.
+         Each holds all 32 experts on axis-2; \texttt{mul\_mat\_id} reads
+         the 4 slices selected by top-k, so $4{\times}3=12$ slices
+         per layer touch the SSD on a cold pass.};
+
+\end{tikzpicture}

@@ -1,0 +1,65 @@
+\chapter{Discussion and Conclusion}\label{chapter:closing}
+
+\section{Limitations}\label{sec:limitations}
+
+The headline numbers come from a single host running a multi-topic prompt at a fixed seed across both models.
+Three caveats follow from that.
+
+\begin{itemize}
+\item The hardware is one consumer-class configuration: an 8-core AMD CPU, 30~GiB of DDR5, and a single PCIe~4.0 NVMe SSD as the model store.
+A different CPU would shift the 22~GiB CPU-bound ceiling on GPT-OSS-20B.
+A slower SSD would shrink the absolute speedups of the buffered modes.
+
+\item Wall-clock numbers come from one prompt domain.
+We separately captured tensor-level traces on five additional prompts (code, mathematical reasoning, creative writing, factual explanation, and a mixed code-plus-prose prompt).
+The simulator's hit rate at the headline 250-slot LFU-aging configuration spans 32.6\% (mixed) to 43.0\% (creative), a 10.4 pp spread, and reuse-distance-1 spans 43--50\% across the same six domains.
+Translating the hit-rate spread through our empirical hit-rate-to-tok/s sensitivity points to a few percent of cross-domain wall-clock variation, but we did not run end-to-end wall-clock measurements on the five extra domains.
+
+\item Two replacement policies (ARC and W-TinyLFU) appear only in the simulator, not in the C runtime.
+The simulator's predictions match the deployed policies to within rounding, but a live C implementation would close the loop in the operating regime where LRU and LFU-aging already perform within noise of each other.
+\end{itemize}
+
+
+\section{Future work}\label{sec:future-work}
+
+Four directions extend naturally from where this thesis stops.
+
+\paragraph{Cross-layer expert prefetching.}
+The pipelining work in this thesis stops at the layer boundary, because the router's choice of next-layer experts is independent of the current layer's hidden state in any way we can predict cheaply.
+A small router-prediction head, trained to forecast layer~$N{+}1$'s expert IDs from layer~$N$'s output, would let the loader start the disk reads one layer earlier and hide more of the I/O behind compute.
+This is a separate research direction (expert speculation).
+
+\paragraph{Request-similarity prefetch.}
+The current system carries no state between requests.
+Every request starts with an empty cache and pays the cold-start miss for each first-touch expert.
+MoE-Infinity~\cite{xue2024moeinfinity} records each completed request as a small Expert Activation Matrix (rows are layers, columns are experts, entries are how often each expert was selected) and matches an in-flight request against historical ones by cosine similarity to drive prefetch.
+The construction transfers cleanly to our setting: a few kilobytes per stored matrix, microsecond cosine matching, and a populated cache before the first decode token.
+It targets a phase the per-token working-set arithmetic in \autoref{chapter:tracer} cannot address, and it is orthogonal to the router-prediction head above (cross-request fingerprint at request start versus cross-layer router prediction during decode).
+
+\paragraph{Faster startup via lazy pinning.}
+The current pinning mlocks the dense weight pages eagerly at model-load time.
+Linux's \texttt{mlock2} with the \texttt{MLOCK\_ONFAULT} flag~\cite{mlock2_man} marks pages non-reclaimable but defers the actual residency until first fault.
+For a generation-time workload this would shift the load-time cost into the first forward pass without changing steady-state behaviour.
+
+\paragraph{GPU integration.}
+The work in this thesis is entirely CPU-side.
+The I/O architecture (the buffer manager, the sidecar pack file, the per-expert tagged completions) is orthogonal to the compute backend.
+A GPU compute path would still need expert weights resident in some buffer before launch and the same routing-driven cache.
+The integration question is the boundary: \texttt{O\_DIRECT} reads can target GPU-resident memory through GPUDirect Storage~\cite{nvidia_gds} or analogous facilities, pushing the buffer onto the device and keeping the CPU out of the data path.
+
+\section{Conclusion}\label{sec:thesis-conclusion}
+
+Modern open-source language models hold large amounts of weight data on disk.
+The two studied here, GPT-OSS-20B and GPT-OSS-120B, weigh 12.85~GiB and 60.88~GiB respectively, against the 30~GiB of RAM on our test machine.
+RAM is expensive, NVMe SSDs are not, and a Mixture-of-Experts model reads only a small fraction of its weights per generated token.
+
+We built a tensor-level tracer to see what the model actually reads, and the trace showed a non-uniform access pattern: the dense per-layer weights are read on every token, while only a few experts per layer per token are selected by the router.
+We pinned the dense weights in RAM so the kernel could not evict them, and we managed the experts ourselves in a buffer that reads from the SSD asynchronously, with three loading strategies of increasing aggressiveness.
+The most aggressive submits all of a layer's expert reads at the start of the layer and dispatches each expert's compute as its data arrives.
+
+With 7~GiB of RAM available, our backend lifts GPT-OSS-20B from 1.44~tok/s under the default loader to 5.36~tok/s, almost four times faster.
+GPT-OSS-120B does not fit in our 30~GiB of RAM at all.
+The default loader runs it at 4.96~tok/s and our backend at 8.06~tok/s.
+A simulator built on the same trace lays a foundation for choosing the cache replacement policy and confirms the wall-clock observation that LFU-aging dominates when the cache is below the per-token working set, while LRU wins above it.
+
+The tracer, the buffer-managed loader, the simulator, and the patched llama.cpp fork are released as artifacts (\autoref{chapter:artifacts}) so the path from question to answer can be walked again on different hardware, a different model, or a different storage stack.

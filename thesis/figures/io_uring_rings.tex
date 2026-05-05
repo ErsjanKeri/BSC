@@ -1,0 +1,96 @@
+% Figure 2.3: read flow under io_uring + O_DIRECT.
+% Goes in Chapter 2, Section 2.4. Companion figure (eviction) lives in
+% figures/io_uring_evict.tex with the same column layout.
+%
+% Three columns, identical placement to the eviction figure:
+%   Application (left, dashed): SQ ring, CQ ring, buffer of N=5 slots
+%   Kernel       (mid, solid) : single rounded box
+%   NVMe SSD    (right, solid): single rounded box
+%
+% Three arrows distinguished by what they actually carry:
+%   (orange, syscall)       app -> kernel: io_uring_enter notifies the kernel
+%                           that new SQEs are queued. SQEs themselves stay in
+%                           the SQ ring, which the kernel reads in place.
+%   (green, metadata)       kernel -> CQ: the kernel writes one CQE per read.
+%                           A CQE is a (tag, status) record, not data.
+%   (blue, data)            NVMe -> free buffer slot: O_DIRECT DMA. This is
+%                           the only arrow on this figure that moves bytes
+%                           of file content.
+%
+% Dashed gray "buffer ptr" link from SQE to the destination buffer slot
+% answers "how does io_uring know where to write": each SQE carries a
+% pointer to the target buffer slot.
+%
+% A small italic note under the CQ row reinforces that CQEs carry only
+% tag + status (no data flows through the CQ).
+
+\begin{tikzpicture}[
+    font=\sffamily\small,
+    >={Latex[length=2.5mm]},
+    sqe/.style={draw=TUMBlue, fill=TUMBlue!15, minimum width=8mm, minimum height=6mm, font=\footnotesize, inner sep=1pt},
+    cqe/.style={draw=TUMAccentGreen!80!black, fill=TUMAccentGreen!25, minimum width=8mm, minimum height=6mm, font=\footnotesize, inner sep=1pt},
+    bufslot/.style={draw=TUMSecondaryBlue, fill=TUMAccentLightBlue!40, minimum width=10mm, minimum height=6mm, font=\footnotesize, inner sep=1pt},
+    bigbox/.style={draw=TUMGray, rounded corners=2pt, minimum width=2.0cm, font=\small\bfseries},
+    arrow/.style={->, thick},
+    arrowlbl/.style={font=\scriptsize, sloped=false},
+    annot/.style={font=\scriptsize\itshape, text=TUMDarkGray},
+]
+
+  % --- Application column ---
+  \node[font=\small\bfseries, anchor=west] (applabel) at (0.2, 5.0) {Application};
+
+  \node[anchor=east, font=\footnotesize] (sqlabel) at (0.7, 4.1) {SQ};
+  \node[sqe, anchor=west] (s0) at (0.8, 4.1) {S\textsubscript{0}};
+  \node[sqe, anchor=west] (s1) at (s0.east) {S\textsubscript{1}};
+  \node[sqe, anchor=west] (s2) at (s1.east) {S\textsubscript{2}};
+  \node[sqe, anchor=west] (s3) at (s2.east) {S\textsubscript{3}};
+  \node[sqe, anchor=west, draw=TUMBlue!50, fill=white] (s4) at (s3.east) {};
+
+  \node[anchor=east, font=\footnotesize] (cqlabel) at (0.7, 3.0) {CQ};
+  \node[cqe, anchor=west] (c0) at (0.8, 3.0) {C\textsubscript{0}};
+  \node[cqe, anchor=west] (c1) at (c0.east) {C\textsubscript{1}};
+  \node[cqe, anchor=west] (c2) at (c1.east) {C\textsubscript{2}};
+  \node[cqe, anchor=west] (c3) at (c2.east) {C\textsubscript{3}};
+  \node[cqe, anchor=west, draw=TUMAccentGreen!50, fill=white] (c4) at (c3.east) {};
+
+  % CQ contents annotation
+  \node[annot, anchor=north west] (cqannot)
+      at ($(c0.south west)+(0,-0.5mm)$) {each CQE: (tag, bytes read), no data};
+
+  \node[anchor=east, font=\footnotesize] (buflabel) at (0.7, 1.5) {buffer};
+  \node[bufslot, anchor=west] (b0) at (0.8, 1.5) {slice\textsubscript{0}};
+  \node[bufslot, anchor=west] (b1) at (b0.east) {slice\textsubscript{1}};
+  \node[bufslot, anchor=west] (b2) at (b1.east) {slice\textsubscript{2}};
+  \node[bufslot, anchor=west] (b3) at (b2.east) {slice\textsubscript{3}};
+  \node[bufslot, anchor=west, draw=TUMSecondaryBlue!60, fill=TUMAccentLightBlue!10] (bfree) at (b3.east) {free};
+
+  \begin{scope}[on background layer]
+    \node[draw=TUMGray, dashed, rounded corners=2pt, fit=(applabel) (sqlabel) (s4) (cqlabel) (c4) (cqannot) (buflabel) (bfree), inner sep=4mm] (appbox) {};
+  \end{scope}
+
+  % --- Kernel column ---
+  \node[bigbox, fill=TUMLightGray!25, minimum height=3.4cm, anchor=center] (kernel) at (9.6, 3.0) {Kernel};
+
+  % --- NVMe column ---
+  \node[bigbox, fill=TUMLightGray!50, minimum height=1.4cm, draw=TUMBlack, anchor=center] (nvme) at (12.6, 1.5) {NVMe};
+
+  % --- Active arrows ---
+  % (orange) io_uring_enter is a syscall notifying the kernel.
+  % SQEs stay in shared memory; the kernel reads them in place.
+  \draw[arrow, TUMAccentOrange]
+      (s4.east) -- node[arrowlbl, above] {\texttt{io\_uring\_enter} (syscall)}
+      (kernel.west |- s2);
+
+  % (green) kernel writes a CQE into shared memory: tag + status only.
+  \draw[arrow, TUMAccentGreen!60!black]
+      (kernel.west |- c2) -- node[arrowlbl, above] {write CQE}
+      (c4.east);
+
+  % (blue, thicker) DMA: NVMe writes file bytes directly into the free
+  % buffer slot, bypassing the kernel column. This is the only arrow on
+  % this figure that carries data.
+  \draw[arrow, TUMSecondaryBlue, line width=1pt]
+      (nvme.west) -- node[arrowlbl, above] {data (DMA, \texttt{O\_DIRECT})}
+      (bfree.east);
+
+\end{tikzpicture}

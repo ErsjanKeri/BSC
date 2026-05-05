@@ -1,0 +1,75 @@
+% Figure: GGML graph transformation for the fused MoE op.
+% Compares the default graph (5 separate nodes) with our fused op (one node).
+%
+% Default (left): each MoE FFN layer is a chain of 5 GGML nodes. Each matmul
+% node internally iterates over the 4 selected experts, and the worker pool
+% synchronizes at every node boundary, so every expert finishes the current
+% operation before any starts the next.
+%
+% Fused (right): the same compute is collapsed into one custom GGML node.
+% Inside the node, our own dispatch loop runs the io_uring submissions, picks
+% the next compute action under a state machine, and synchronizes the worker
+% pool with an atomic barrier of our own.
+
+\begin{tikzpicture}[
+  font=\footnotesize,
+  default_node/.style={
+    draw=TUMSecondaryBlue!70!black, fill=TUMSecondaryBlue!12,
+    rounded corners=2pt,
+    minimum width=28mm, minimum height=7mm,
+    align=center
+  },
+  fused_outer/.style={
+    draw=TUMAccentGreen!75!black, fill=TUMAccentGreen!5,
+    line width=0.8pt, rounded corners=4pt,
+    minimum width=44mm, minimum height=46mm
+  },
+  fused_inner/.style={
+    draw=TUMAccentGreen!60!black, fill=TUMAccentGreen!18,
+    rounded corners=2pt,
+    minimum width=36mm, minimum height=7mm,
+    align=center, font=\scriptsize
+  },
+  arr/.style={->, line width=0.45pt, draw=black!75},
+  hdr/.style={font=\sffamily\bfseries\small, align=center},
+  foot/.style={font=\scriptsize, text=black!65, align=center},
+]
+
+  % --- LEFT column: default graph ---
+  \node[hdr] at (0, 7.0) {Default GGML graph};
+
+  \node[default_node] (up_d)     at (0, 5.5) {matmul (up)};
+  \node[default_node] (gate_d)   at (0, 4.4) {matmul (gate)};
+  \node[default_node] (swiglu_d) at (0, 3.3) {SwiGLU};
+  \node[default_node] (down_d)   at (0, 2.2) {matmul (down)};
+  \node[default_node] (acc_d)    at (0, 1.1) {accumulate};
+
+  \draw[arr] (up_d)     -- (gate_d);
+  \draw[arr] (gate_d)   -- (swiglu_d);
+  \draw[arr] (swiglu_d) -- (down_d);
+  \draw[arr] (down_d)   -- (acc_d);
+
+  \node[foot] at (0, 0.0)
+    {each matmul iterates 4 experts internally.\\Worker pool synchronizes at every node boundary.};
+
+  % --- middle: replacement arrow ---
+  \node[font=\Large] at (5.6, 3.3) {$\Rightarrow$};
+
+  % --- RIGHT column: fused op ---
+  \node[hdr] at (9.0, 7.0) {Fused custom GGML op};
+
+  \node[fused_outer] (fused) at (9.0, 3.3) {};
+
+  \node[fused_inner] (sm)      at (9.0, 5.0) {state-machine picker};
+  \node[fused_inner] (iouring) at (9.0, 4.0) {\texttt{io\_uring} submit / wait};
+  \node[fused_inner] (compute) at (9.0, 3.0) {up, gate, SwiGLU, down};
+  \node[fused_inner] (acc_f)   at (9.0, 2.0) {accumulate};
+
+  \draw[arr] (sm)      -- (iouring);
+  \draw[arr] (iouring) -- (compute);
+  \draw[arr] (compute) -- (acc_f);
+
+  \node[foot] at (9.0, 0.0)
+    {one node from GGML's view.\\Internal dispatch under our control.};
+
+\end{tikzpicture}

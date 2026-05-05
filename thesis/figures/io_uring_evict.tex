@@ -1,0 +1,81 @@
+% Figure 2.4: eviction step under io_uring + O_DIRECT.
+% Same column placement and same building blocks as figure 2.3
+% (figures/io_uring_rings.tex) so the two figures contrast cleanly.
+%
+% On a cache miss with the buffer already full, the application picks a
+% victim slot under its replacement policy (LRU, LFU, or LFU-aging in our
+% backend). The miss is then served by the same SQ -> io_uring_enter ->
+% DMA -> CQ flow shown in figure 2.3, with the freshly freed slot as the
+% DMA target. Eviction itself is purely application-internal: no syscall,
+% no device traffic.
+%
+% Active arrow on this figure:
+%   (red)    application policy marks slice_3 as the victim slot
+% Inactive arrows:
+%   (gray, dashed) the io_uring rings and DMA path drawn in light gray to
+%                  show the same building blocks are still in place.
+
+\begin{tikzpicture}[
+    font=\sffamily\small,
+    >={Latex[length=2.5mm]},
+    sqe/.style={draw=TUMBlue!40, fill=TUMBlue!8, minimum width=8mm, minimum height=6mm, font=\footnotesize, inner sep=1pt, text=TUMDarkGray},
+    cqe/.style={draw=TUMAccentGreen!40, fill=TUMAccentGreen!10, minimum width=8mm, minimum height=6mm, font=\footnotesize, inner sep=1pt, text=TUMDarkGray},
+    bufslot/.style={draw=TUMSecondaryBlue, fill=TUMAccentLightBlue!40, minimum width=10mm, minimum height=6mm, font=\footnotesize, inner sep=1pt},
+    bigbox/.style={draw=TUMGray, rounded corners=2pt, minimum width=2.0cm, font=\small\bfseries},
+    arrow/.style={->, thick},
+    arrowlbl/.style={font=\scriptsize, sloped=false},
+    inactive/.style={draw=TUMGray!50, dashed, ->, thick},
+]
+
+  % --- Application column (dashed border) ---
+  \node[font=\small\bfseries, anchor=west] (applabel) at (0.2, 5.0) {Application};
+
+  \node[anchor=east, font=\footnotesize] (sqlabel) at (0.7, 4.1) {SQ};
+  \node[sqe, anchor=west] (s0) at (0.8, 4.1) {};
+  \node[sqe, anchor=west] (s1) at (s0.east) {};
+  \node[sqe, anchor=west] (s2) at (s1.east) {};
+  \node[sqe, anchor=west] (s3) at (s2.east) {};
+  \node[sqe, anchor=west] (s4) at (s3.east) {};
+
+  \node[anchor=east, font=\footnotesize] (cqlabel) at (0.7, 3.0) {CQ};
+  \node[cqe, anchor=west] (c0) at (0.8, 3.0) {};
+  \node[cqe, anchor=west] (c1) at (c0.east) {};
+  \node[cqe, anchor=west] (c2) at (c1.east) {};
+  \node[cqe, anchor=west] (c3) at (c2.east) {};
+  \node[cqe, anchor=west] (c4) at (c3.east) {};
+
+  \node[anchor=east, font=\footnotesize] (buflabel) at (0.7, 1.5) {buffer};
+  \node[bufslot, anchor=west] (b0) at (0.8, 1.5) {slice\textsubscript{0}};
+  \node[bufslot, anchor=west] (b1) at (b0.east) {slice\textsubscript{1}};
+  \node[bufslot, anchor=west] (b2) at (b1.east) {slice\textsubscript{2}};
+  \node[bufslot, anchor=west,
+        draw=red!70!black, fill=red!20, line width=1pt] (bvictim) at (b2.east) {slice\textsubscript{3}};
+  \node[bufslot, anchor=west] (b4) at (bvictim.east) {slice\textsubscript{4}};
+
+  \begin{scope}[on background layer]
+    \node[draw=TUMGray, dashed, rounded corners=2pt, fit=(applabel) (sqlabel) (s4) (cqlabel) (c4) (buflabel) (b4), inner sep=4mm] (appbox) {};
+  \end{scope}
+
+  % --- Kernel column (drawn in light gray to indicate it is not active) ---
+  \node[bigbox, fill=TUMLightGray!15, minimum height=3.4cm, draw=TUMGray!50, text=TUMDarkGray, anchor=center] (kernel) at (9.6, 3.0) {Kernel};
+
+  % --- NVMe column (also light gray, not active) ---
+  \node[bigbox, fill=TUMLightGray!25, minimum height=1.4cm, draw=TUMGray!50, text=TUMDarkGray, anchor=center] (nvme) at (12.6, 1.5) {NVMe};
+
+  % --- Inactive arrows (dashed, gray) just to show the same diagram skeleton ---
+  \draw[inactive] (s4.east) -- (kernel.west |- s2);
+  \draw[inactive] (kernel.west |- c2) -- (c4.east);
+  \draw[inactive] (nvme.west) -- (b4.east);
+
+  % --- The eviction action (red, intra-application) ---
+  % Policy node above the buffer
+  \node[draw=red!70!black, rounded corners=2pt, fill=red!8,
+        font=\footnotesize, align=center, inner sep=2pt]
+        (policy) at (3.6, 0.3) {policy picks victim};
+  \draw[arrow, red!70!black] (policy.north) -- (bvictim.south);
+
+  % Annotate that no kernel/device traffic occurs
+  \node[font=\scriptsize\itshape, text=TUMDarkGray, align=center]
+        at (10.6, 0.3) {(no syscall, no\\device traffic)};
+
+\end{tikzpicture}

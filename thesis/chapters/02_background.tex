@@ -1,0 +1,87 @@
+\chapter{Background}\label{chapter:background}
+
+\section{Transformer Language Models}\label{sec:bg-transformer}
+
+A transformer language model is a stack of layers~\cite{vaswani2017attention}.
+Each layer applies two sub-blocks in sequence: a \emph{self-attention} block, in which each position attends to itself and earlier positions in the sequence, and a \emph{feed-forward network} (FFN), which transforms each token's representation independently.
+GPT-OSS-20B has 24 such layers; GPT-OSS-120B has 36~\cite{openai2025gptoss}.
+
+\begin{figure}[htbp]
+\centering
+\resizebox{0.55\textwidth}{!}{\input{figures/transformer_block}}
+\caption[Decoder-only transformer block]{One transformer layer. Self-attention and the feed-forward network are applied in sequence with residual connections; the model is a stack of $L$ such layers ($L=24$ for GPT-OSS-20B, $L=36$ for GPT-OSS-120B) followed by a final norm and the output projection.}
+\label{fig:transformer-block}
+\end{figure}
+
+Generating text happens in two phases.
+The first, called \emph{prefill}, processes the entire prompt.
+The second, called \emph{decode}, produces one new token at a time, each appended to the input for the next step.
+Our throughput metric counts tokens generated per second during decode.
+
+To avoid recomputing attention over all prior tokens at every decode step, each layer caches its key and value tensors.
+We call this the \emph{KV cache}.
+GPT-OSS interleaves layers using a 128-token sliding window with layers using full attention~\cite{openai2025gptoss}, but the KV cache is allocated up front for the full configured 131072-token context.
+It therefore reserves 3.02~GiB of RAM on GPT-OSS-20B and 4.53~GiB on GPT-OSS-120B regardless of how many tokens are actually generated.
+
+
+\section{Mixture-of-Experts}\label{sec:bg-moe}
+
+In a Mixture-of-Experts layer, the FFN is replaced by many small subnetworks, called \emph{experts}~\cite{shazeer2017moe}.
+For each generated token, a small \emph{router} selects only a few of them, and the rest are not read.
+GPT-OSS-20B has 32 experts per layer and selects 4; GPT-OSS-120B has 128 experts per layer and also selects 4~\cite{openai2025gptoss}.
+
+Each expert is three weight matrices, called the \emph{up}, \emph{gate}, and \emph{down} projections.
+We call each of these matrices a \emph{slice}.
+A slice is 4.20~MiB on disk on both GPT-OSS models (4{,}406{,}400 bytes).
+One MoE layer therefore reads $4 \times 3 = 12$ slices per generated token.
+Across the 24 layers of GPT-OSS-20B that is 288 slices per token, 1.18~GiB of weight data.
+On GPT-OSS-120B it is $4 \times 3 \times 36 = 432$ slices, 1.77~GiB.
+
+\begin{figure}[htbp]
+\centering
+\resizebox{0.95\textwidth}{!}{\input{figures/moe_ffn_dataflow}}
+\caption[Mixture-of-Experts layer for one generated token]{One MoE layer applied to one generated token. The router selects 4 of the 32 experts (highlighted in red); the remaining 28 are not read. Each selected expert applies its three weight matrices (up, gate, down), and the four expert outputs are combined into the layer output.}
+\label{fig:moe-ffn-dataflow}
+\end{figure}
+
+
+\section{How llama.cpp Loads Weights}\label{sec:bg-llamacpp}
+
+llama.cpp~\cite{ggerganov2023llamacpp} stores model files in GGUF, a single-file binary format whose header lists each tensor's name, shape, type, and offset, followed by the tensor data~\cite{gguf_spec}.
+
+The default loader maps the file into the process's virtual address space with \texttt{mmap}~\cite{mmap_man}, so tensor bytes are read by dereferencing pointers.
+A first access to a not-yet-resident page triggers a \emph{page fault}: the kernel suspends the thread, reads the page (and a small readahead window around it, on the order of tens of KiB) from disk into the \emph{page cache}, maps it at the faulting address, and resumes the thread.
+Subsequent accesses to the same page return without entering the kernel.
+The page cache lives in kernel-managed memory, and the kernel chooses which pages to evict when other allocations need the space.
+
+
+\section{Asynchronous Disk I/O on Linux}\label{sec:bg-iouring}
+
+\texttt{io\_uring} is a Linux kernel interface for asynchronous I/O~\cite{axboe2019iouring}.
+The application and the kernel share submission and completion queues in memory: a \emph{submission queue} (SQ), into which the application writes read requests, and a \emph{completion queue} (CQ), into which the kernel writes results.
+A single \texttt{io\_uring\_enter} system call notifies the kernel that new submission entries are pending. The kernel reads them in place from shared memory and dispatches the I/O without blocking the calling thread.
+Each completion entry carries a user-supplied tag that identifies the request it satisfies, so the application can match completions to requests and drain the queue at its own pace.
+
+\texttt{O\_DIRECT} is an \texttt{open(2)} flag that tells the kernel to bypass the page cache for that file~\cite{open_man}.
+On a read, the kernel programs the device to DMA the data directly into the application-supplied buffer with no copy through the page cache.
+The cost is a strict alignment contract: file offset, read length, and destination buffer address must all be multiples of the device's logical block size, which is 512 bytes on the NVMe used here~\cite{nvme_spec}.
+The two features are orthogonal: \texttt{io\_uring} can serve cached or direct I/O, and \texttt{O\_DIRECT} can be used with synchronous \texttt{read(2)} as well.
+
+Combining the two moves both the buffer and the eviction decision into the application.
+The submission and completion queues are mmap'd into the application's address space at \texttt{io\_uring} setup time, so the application writes submissions and reads completions without entering the kernel except for the one \texttt{io\_uring\_enter} call per batch.
+The data buffer is allocated by the application and is the DMA target (\autoref{fig:iouring-read}).
+With no page cache between the device and the buffer, there is no kernel-side cache to evict from; if the application keeps a fixed-size pool of buffer slots, eviction is its responsibility (\autoref{fig:iouring-evict}).
+
+\begin{figure}[htbp]
+\centering
+\resizebox{0.95\textwidth}{!}{\input{figures/io_uring_rings}}
+\caption[Read flow under \texttt{io\_uring} with \texttt{O\_DIRECT}]{Read flow under \texttt{io\_uring} combined with \texttt{O\_DIRECT}. The submission queue, completion queue, and the data buffer all live in the application's address space. Each SQE carries the destination buffer pointer for its read. One \texttt{io\_uring\_enter} system call (orange) notifies the kernel; the kernel reads the SQEs from shared memory, pins the destination pages, and programs the device. The device then DMAs the file bytes into the destination, overwriting whatever was there (blue): this is the only path on the figure that carries data. The kernel writes one CQE per read into the CQ ring (green); a CQE is a (tag, bytes-read) record only, no data. The application reads the CQ in place without another syscall.}
+\label{fig:iouring-read}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\resizebox{0.95\textwidth}{!}{\input{figures/io_uring_evict}}
+\caption[Eviction under \texttt{io\_uring} with \texttt{O\_DIRECT}]{Eviction step on a cache miss when the buffer is already full, drawn with the same building blocks as \autoref{fig:iouring-read}. The application's replacement policy picks a victim slot (here \emph{slice\textsubscript{3}}, in red); no system call and no device traffic occur. The freed slot then serves as the DMA target for the read flow of \autoref{fig:iouring-read}.}
+\label{fig:iouring-evict}
+\end{figure}

@@ -1,0 +1,87 @@
+% Figure 2.3 (Background, Section 2.3, mmap + page cache).
+% Same three-column block layout as figure 2.4 (io_uring path) so the two
+% figures contrast cleanly. This figure shows where the cache lives and
+% who evicts under the default mmap loader.
+%
+% Conventions (shared with figures/io_uring_rings.tex):
+%   * application box  : dashed gray border (userspace)
+%   * kernel box       : solid gray border
+%   * device box       : darker gray
+%   * cache slots      : TUMSecondaryBlue / TUMAccentLightBlue (resident page)
+%   * read-data arrow  : TUMSecondaryBlue, blue
+%   * page-fault arrow : TUMAccentOrange (syscall entry)
+%   * mapped-page arrow: TUMAccentGreen (kernel resolves the fault)
+%   * eviction arrow   : red!70!black, marked "evict"
+%
+% Read flow under mmap:
+%   1. application dereferences a tensor pointer
+%   2. unmapped-page access traps into the kernel (page fault)
+%   3. kernel reads the 4-KiB page from NVMe into a free page-cache slot
+%   4. kernel maps the slot at the faulting virtual address
+% Eviction:
+%   * the kernel chooses which page-cache slot to drop when memory is tight.
+
+\begin{tikzpicture}[
+    font=\sffamily\small,
+    >={Latex[length=2.5mm]},
+    pcslot/.style={draw=TUMSecondaryBlue, fill=TUMAccentLightBlue!40, minimum width=8mm, minimum height=6mm, font=\footnotesize},
+    box/.style={draw, rounded corners=2pt, inner sep=4mm},
+    arrowlbl/.style={font=\scriptsize, fill=white, inner sep=1pt},
+]
+  % --- Application column ---
+  \node[font=\small\bfseries] (applabel) at (1.6, 4.3) {Application};
+  \node[draw=TUMGray, rounded corners=2pt, fill=white,
+        minimum width=3.0cm, minimum height=10mm, font=\small]
+        (appaccess) at (1.6, 3.0) {dereference pointer};
+
+  \begin{scope}[on background layer]
+    \node[box, draw=TUMGray, dashed, fit=(applabel) (appaccess), inner sep=4mm] (appbox) {};
+  \end{scope}
+
+  % --- Kernel column with page cache ---
+  \node[font=\small\bfseries] (kernlabel) at (6.6, 4.3) {Kernel};
+  \node[font=\footnotesize, anchor=south] (pclabel) at (6.6, 3.5) {page cache};
+
+  \node[pcslot] (pc0) at (5.4, 2.7) {p\textsubscript{0}};
+  \node[pcslot, right=0pt of pc0] (pc1) {p\textsubscript{1}};
+  \node[pcslot, right=0pt of pc1] (pc2) {p\textsubscript{2}};
+  \node[pcslot, right=0pt of pc2,
+        draw=red!70!black, fill=red!15] (pcvictim) {p\textsubscript{3}};
+  \node[pcslot, right=0pt of pcvictim,
+        draw=TUMSecondaryBlue!50, fill=white] (pcfree) {free};
+
+  \begin{scope}[on background layer]
+    \node[box, draw=TUMGray, fit=(kernlabel) (pclabel) (pc0) (pcfree), inner sep=4mm] (kernbox) {};
+  \end{scope}
+
+  % --- Device column ---
+  \node[draw=TUMBlack, fill=TUMLightGray!50, rounded corners=2pt,
+        minimum width=2.0cm, minimum height=1.4cm, font=\small\sffamily, align=center]
+        (nvme) at (10.6, 3.0) {NVMe SSD};
+
+  % --- Arrows ---
+  % page fault: app -> kernel
+  \draw[->, very thick, TUMAccentOrange]
+    (appaccess.east) -- (kernbox.west |- appaccess);
+  \node[arrowlbl, TUMAccentOrange]
+    at ($(appaccess.east)!0.5!(kernbox.west |- appaccess)+(0,3mm)$) {page fault};
+
+  % NVMe -> page cache slot (data arrives)
+  \draw[->, very thick, TUMSecondaryBlue]
+    (nvme.west) -- (pcfree.east);
+  \node[arrowlbl, TUMSecondaryBlue]
+    at ($(nvme.west)!0.5!(pcfree.east)+(0,3mm)$) {read 4\,KiB};
+
+  % kernel maps the page back to app
+  \draw[->, thick, TUMAccentGreen!60!black]
+    (kernbox.west |- pc0) -- ($(appaccess.east)+(0,-6mm)$);
+  \node[arrowlbl, TUMAccentGreen!60!black]
+    at ($(kernbox.west |- pc0)!0.5!(appaccess.east)+(0,-9mm)$) {map page};
+
+  % eviction inside the kernel page cache
+  \draw[->, thick, red!70!black]
+    (pcvictim.south) -- ($(pcvictim.south)+(0,-6mm)$);
+  \node[arrowlbl, red!70!black]
+    at ($(pcvictim.south)+(0,-9mm)$) {evict (kernel)};
+
+\end{tikzpicture}

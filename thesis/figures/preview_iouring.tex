@@ -1,0 +1,21 @@
+% Standalone preview of the MoE figures.
+% Compile: cd ~/BSC/thesis && pdflatex -output-directory=build figures/preview_iouring.tex
+
+\documentclass[11pt, a4paper, landscape]{article}
+\usepackage[margin=10mm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,decorations.pathreplacing,calc,patterns,shapes.geometric,fit,backgrounds}
+\usepackage{underscore}
+\usepackage{hyperref}
+
+% Stub \autoref so the standalone preview compiles without the full thesis macros.
+\providecommand{\autoref}[1]{Fig.~\ref{#1}}
+
+\pagestyle{empty}
+
+\begin{document}
+
+\input{figures/moe_ffn_dataflow.tex}
+
+\end{document}

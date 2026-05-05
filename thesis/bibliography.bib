@@ -1,0 +1,549 @@
+% Bibliography for "Analysis and Optimization of LLM Inference on Fast NVMe Storage"
+
+% Removed 2026-05-05 (unused): latex
+
+@inproceedings{alizadeh2024llmflash,
+  title         = {{LLM} in a flash: Efficient Large Language Model Inference with Limited Memory},
+  author        = {Alizadeh, Keivan and Mirzadeh, Iman and Belenko, Dmitry and Khatamifard, Karen and Cho, Minsik and Del Mundo, Carlo C. and Rastegari, Mohammad and Farajtabar, Mehrdad},
+  booktitle     = {Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (ACL)},
+  year          = {2024},
+  eprint        = {2312.11514},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  url           = {https://arxiv.org/abs/2312.11514},
+  note          = {Verified 2026-05-05 against arXiv 2312.11514 (v1: 12 Dec 2023; latest v3: 30 Jul 2024). Authors and ACL 2024 venue confirmed. The abstract directly supports the claims we cite in \S3.1: storing parameters on flash and paging on demand, the ``windowing'' reuse strategy, ``row-column bundling'' for sequential transfers, and the reported 4--5$\times$ CPU and 20--25$\times$ GPU speedups against naive loading. The 90\% ReLU FFN post-activation sparsity figure cited in the same paragraph is in the body of the paper, not its abstract.}
+}
+
+@misc{jia2025activeflow,
+  title         = {Scaling Up On-Device {LLMs} via Active-Weight Swapping Between {DRAM} and Flash},
+  author        = {Jia, Fucheng and Wu, Zewen and Jiang, Shiqi and Jiang, Huiqiang and Zhang, Qianxi and Yang, Yuqing and Liu, Yunxin and Ren, Ju and Zhang, Deyu and Cao, Ting},
+  year          = {2025},
+  month         = apr,
+  day           = {11},
+  eprint        = {2504.08378},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  url           = {https://arxiv.org/abs/2504.08378},
+  note          = {Verified 2026-05-05 against arXiv 2504.08378 (v1: 11 Apr 2025; v2: 23 Sep 2025). All ten authors listed; venue is arXiv preprint, not yet a conference proceeding. The abstract supports the three techniques we cite in \S3.1: predicting next-layer active weights from the current layer's activations, sparsity-aware fine-tuning that aligns the active-weight pattern with the dense-model output, and a dynamic DRAM--flash swap pipeline at runtime.}
+}
+
+@inproceedings{song2023powerinfer,
+  title         = {{PowerInfer}: Fast Large Language Model Serving with a Consumer-grade {GPU}},
+  author        = {Song, Yixin and Mi, Zeyu and Xie, Haotong and Chen, Haibo},
+  booktitle     = {Proceedings of the 30th Symposium on Operating Systems Principles (SOSP)},
+  year          = {2024},
+  eprint        = {2312.12456},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  url           = {https://arxiv.org/abs/2312.12456},
+  note          = {Verified 2026-05-05 against arXiv 2312.12456 (v1: 16 Dec 2023; v2: 12 Dec 2024). Published at SOSP 2024. Authors confirmed. The abstract directly supports the hot-vs-cold neuron classification and the GPU-pin-plus-CPU-compute split that we cite in \S3.1.}
+}
+
+@misc{xue2024powerinfer2,
+  title         = {{PowerInfer-2}: Fast Large Language Model Inference on a Smartphone},
+  author        = {Xue, Zhenliang and Song, Yixin and Mi, Zeyu and Zheng, Xinrui and Xia, Yubin and Chen, Haibo},
+  year          = {2024},
+  month         = jun,
+  day           = {10},
+  eprint        = {2406.06282},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  url           = {https://arxiv.org/abs/2406.06282},
+  note          = {Verified 2026-05-05 against arXiv 2406.06282 (v1: 10 Jun 2024; latest revision 12 Dec 2024). All six authors listed; venue is arXiv preprint, no conference proceedings indexed. The abstract supports our \S3.1 claim that the work extends the neuron-cluster decomposition to a smartphone NPU plus CPU split (dense neuron clusters on the NPU, sparse clusters on the CPU).}
+}
+
+@inproceedings{sheng2023flexgen,
+  title         = {{FlexGen}: High-Throughput Generative Inference of Large Language Models with a Single {GPU}},
+  author        = {Sheng, Ying and Zheng, Lianmin and Yuan, Binhang and Li, Zhuohan and Ryabinin, Max and Fu, Daniel Y. and Xie, Zhiqiang and Chen, Beidi and Barrett, Clark and Gonzalez, Joseph E. and Liang, Percy and R{\'e}, Christopher and Stoica, Ion and Zhang, Ce},
+  booktitle     = {International Conference on Machine Learning (ICML)},
+  year          = {2023},
+  eprint        = {2303.06865},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  url           = {https://arxiv.org/abs/2303.06865},
+  note          = {Verified 2026-05-05 against arXiv 2303.06865 (v1: 13 Mar 2023; v2: 12 Jun 2023). The previous bib entry listed only ten of the fourteen authors and was missing Daniel Y.\ Fu, Zhiqiang Xie, Clark Barrett, and Joseph E.\ Gonzalez. The abstract supports our \S3.1 claims: aggregating memory and compute across GPU, CPU and disk, and using a linear-programming search to pick a per-tensor placement policy. Conference publication at ICML 2023 is widely attested but is not visible on the arXiv abstract page.}
+}
+
+% =============================================================================
+% Mixture-of-Experts inference systems (Ch. 3 §3.2)
+% =============================================================================
+
+@inproceedings{rajbhandari2022deepspeedmoe,
+  title         = {{DeepSpeed-MoE}: Advancing Mixture-of-Experts Inference and Training to Power Next-Generation {AI} Scale},
+  author        = {Rajbhandari, Samyam and Li, Conglong and Yao, Zhewei and Zhang, Minjia and Aminabadi, Reza Yazdani and Awan, Ammar Ahmad and Rasley, Jeff and He, Yuxiong},
+  booktitle     = {International Conference on Machine Learning (ICML)},
+  year          = {2022},
+  eprint        = {2201.05596},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  url           = {https://arxiv.org/abs/2201.05596},
+  note          = {Verified 2026-05-05 against arXiv 2201.05596. Title, authors, and ICML 2022 publication confirmed on the arXiv listing. Cited in \S3.2 for MoE training and inference at GPU-cluster scale, including the PR-MoE compression scheme; specific design details (expert parallelism with cross-GPU routed activations, tensor parallelism for dense layers) are in the body of the paper rather than the abstract.}
+}
+
+@inproceedings{kamahori2024fiddler,
+  title         = {{Fiddler}: {CPU-GPU} Orchestration for Fast Inference of Mixture-of-Experts Models},
+  author        = {Kamahori, Keisuke and Tang, Tian and Gu, Yile and Zhu, Kan and Kasikci, Baris},
+  booktitle     = {International Conference on Learning Representations (ICLR)},
+  year          = {2025},
+  eprint        = {2402.07033},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  url           = {https://arxiv.org/abs/2402.07033},
+  note          = {Verified 2026-05-05 against arXiv 2402.07033 (submitted 10 Feb 2024). The previous bib entry was missing co-author Tian Tang and listed the work as a 2024 arXiv preprint; the paper was accepted to ICLR 2025. Cited in \S3.2 as the closest CPU--GPU MoE design in spirit; the specific weight-transfer-vs-activation-shipping decision rule we summarise is in the body of the paper, not the abstract.}
+}
+
+@misc{xue2024moeinfinity,
+  title         = {{MoE-Infinity}: Efficient {MoE} Inference on Personal Machines with Sparsity-Aware Expert Cache},
+  author        = {Xue, Leyang and Fu, Yao and Lu, Zhan and Mai, Luo and Marina, Mahesh K.},
+  year          = {2024},
+  month         = jan,
+  day           = {25},
+  eprint        = {2401.14361},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  url           = {https://arxiv.org/abs/2401.14361},
+  note          = {Verified 2026-05-05 against arXiv 2401.14361. The paper has been revised three times; the title cited here is the v3 (12 Mar 2025) title. Prior versions used ``Activation-Aware Expert Offloading for Efficient MoE Serving'' (v1, 25 Jan 2024) and ``Offloading-Efficient MoE Model Serving'' (v2). Cited in \S3.2 and \S7.2 (future work) for the Expert Activation Matrix (EAM) construction and the cosine-similarity request-matching prefetch policy; both are described in the body of the paper rather than the abstract, but are well-attested in the literature on this work.}
+}
+
+% =============================================================================
+% Foundational MoE / Transformer architecture (Ch. 2 §2.2)
+% =============================================================================
+
+@inproceedings{shazeer2017moe,
+  title     = {Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer},
+  author    = {Shazeer, Noam and Mirhoseini, Azalia and Maziarz, Krzysztof and Davis, Andy and Le, Quoc and Hinton, Geoffrey and Dean, Jeff},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2017},
+  eprint    = {1701.06538},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  url       = {https://arxiv.org/abs/1701.06538},
+  note      = {Verified 2026-05-05 against the arXiv listing (submitted 23 January 2017). Authors and title confirmed. Original sparsely-gated mixture-of-experts paper, cited in \S2.2 and \S1 for the MoE concept.}
+}
+
+@inproceedings{vaswani2017attention,
+  title     = {Attention Is All You Need},
+  author    = {Vaswani, Ashish and Shazeer, Noam and Parmar, Niki and Uszkoreit, Jakob and Jones, Llion and Gomez, Aidan N. and Kaiser, {\L}ukasz and Polosukhin, Illia},
+  booktitle = {Advances in Neural Information Processing Systems 30 (NIPS 2017)},
+  year      = {2017},
+  url       = {https://papers.nips.cc/paper/7181-attention-is-all-you-need},
+  note      = {Verified 2026-05-05 against the NeurIPS proceedings page. Original transformer paper. Cited in \S2.1 for the layered transformer architecture.}
+}
+
+@misc{shazeer2020glu,
+  title         = {{GLU} Variants Improve Transformer},
+  author        = {Shazeer, Noam},
+  year          = {2020},
+  month         = feb,
+  day           = {12},
+  eprint        = {2002.05202},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  url           = {https://arxiv.org/abs/2002.05202},
+  note          = {Verified 2026-05-05 against arXiv 2002.05202. Single author. Studies several gated-linear-unit variants for the transformer feed-forward block, including SwiGLU (the Swish-GLU combination), which the GPT-OSS model card cites as the activation it uses. Cited in \S3.1 to identify the gated rather than thresholded character of GPT-OSS's FFN, distinguishing it from the ReLU-sparsity assumption that LLM-in-a-Flash relies on.}
+}
+
+% =============================================================================
+% Cache replacement (Ch. 3 §3.4)
+% =============================================================================
+
+@inproceedings{megiddo2003arc,
+  title     = {{ARC}: A Self-Tuning, Low Overhead Replacement Cache},
+  author    = {Megiddo, Nimrod and Modha, Dharmendra S.},
+  booktitle = {Proceedings of the 2nd USENIX Conference on File and Storage Technologies (FAST '03)},
+  year      = {2003},
+  month     = mar,
+  url       = {https://www.usenix.org/conference/fast-03/arc-self-tuning-low-overhead-replacement-cache},
+  note      = {Verified 2026-05-05 against the USENIX FAST '03 conference page. Authors and venue confirmed; previous bib entry used \texttt{@article} with \texttt{journal} = FAST, which is structurally wrong because FAST is a conference. Corrected to \texttt{@inproceedings}. Cited in \S4.4 (tracer simulator chapter) for the Adaptive Replacement Cache algorithm.}
+}
+
+@article{einziger2017tinylfu,
+  title         = {{TinyLFU}: A Highly Efficient Cache Admission Policy},
+  author        = {Einziger, Gil and Friedman, Roy and Manes, Ben},
+  journal       = {ACM Transactions on Storage},
+  volume        = {13},
+  number        = {4},
+  pages         = {35:1--35:31},
+  year          = {2017},
+  eprint        = {1512.00727},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.OS},
+  url           = {https://dl.acm.org/doi/10.1145/3149371},
+  note          = {Verified 2026-05-05 against the ACM Digital Library and the dblp record. Previous bib entry used \texttt{@inproceedings} with \texttt{booktitle} = ACM TOS, which is structurally wrong because ACM TOS is a journal. Corrected to \texttt{@article}. The arXiv version (1512.00727) is from 2015. Cited in \S4.4 (tracer simulator chapter) for the W-TinyLFU policy.}
+}
+
+% belady1966study removed 2026-05-05: no longer cited in main text.
+% (The simulator still computes a Belady oracle as an upper bound, and the
+% appendix mentions the policy name once, but no \cite{} reference uses this
+% key. Re-add if a future revision discusses Belady-optimal results.)
+
+% =============================================================================
+% Userspace I/O (Ch. 3 §3.3)
+% =============================================================================
+
+@misc{axboe2019iouring,
+  title        = {Efficient {IO} with io\_uring},
+  author       = {Axboe, Jens},
+  year         = {2019},
+  month        = oct,
+  howpublished = {Technical article, \url{https://kernel.dk/io_uring.pdf}},
+  url          = {https://kernel.dk/io_uring.pdf},
+  note         = {Verified 2026-05-05. Self-published technical article by io\_uring's primary author and Linux block-layer maintainer, hosted on his personal site kernel.dk; PDF metadata dates the document to October 2019. Covers the design rationale (\S3), the SQ/CQ shared-ring architecture (\S4, ``Enter io\_uring''), and the \texttt{io\_uring\_sqe} / \texttt{io\_uring\_cqe} data structures (\S4.1) that we summarise in \S2.4 of the thesis. Not the Kernel Recipes 2019 talk (which is a separate artefact titled ``Faster IO through io\_uring'').}
+}
+
+% =============================================================================
+% Linux kernel memory subsystem (Ch. 2 §2.4 and §2.6)
+% =============================================================================
+
+@misc{cgroupv2,
+  title        = {Control Group v2},
+  author       = {Heo, Tejun},
+  year         = {2015},
+  howpublished = {The Linux Kernel documentation},
+  url          = {https://docs.kernel.org/admin-guide/cgroup-v2.html},
+  note         = {Verified 2026-05-05. Authoritative documentation by the cgroup v2 author Tejun Heo, hosted at \texttt{docs.kernel.org}. Originally published with the cgroup v2 merge into the Linux kernel in 2015 (release 4.5) and continuously updated since. Cited for the \texttt{memory.max} interface (a hard limit that invokes the OOM killer when reached) and the \texttt{memory.swap.max} control we use together to enforce a reproducible RAM cap.}
+}
+
+% =============================================================================
+% Userspace storage stack (Ch. 3 §3.3) — added during integration pass
+% =============================================================================
+
+@misc{spdk,
+  title  = {{SPDK}: Storage Performance Development Kit},
+  author = {{SPDK Project}},
+  year   = {2026},
+  url    = {https://spdk.io/},
+  note   = {Verified 2026-05-05. Open-source project providing user-mode NVMe drivers with polled, lockless, thread-per-core completions; originally sponsored by Intel, transitioning to the Linux Foundation in 2025. BSD 3-Clause licensed. The most recent release listed on the homepage at verification time was dated 2026-01-28. Cited in \S3.3 as the reference user-space storage stack against which we contrast the kernel-mediated \texttt{io\_uring} + \texttt{O\_DIRECT} path used here.}
+}
+
+% =============================================================================
+% Round 4 additions (sourced from _meta/round4_bib_proposals.bib)
+% Marked [NEEDS-VERIFICATION] until Paper Fetcher round confirms metadata
+% =============================================================================
+
+% Round 4 BibTeX proposals.
+% Every entry below is marked [NEEDS-VERIFICATION]; the Paper Fetcher round
+% will replace the proposed metadata with verified entries from the published
+% sources.
+%
+% Conventions:
+%  - bibkeys are the same as those proposed in _meta/round4_citation_audit.md
+%  - arXiv entries use eprint + archivePrefix
+%  - man-page references use @misc with note="Linux man page"
+%  - kernel docs use @misc with the canonical doc URL
+
+% =============================================================================
+% Foundational LLMs and architecture
+% =============================================================================
+
+% Removed 2026-05-05 (unused): kaplan2020scalinglaws
+
+% Removed 2026-05-05 (unused): hoffmann2022chinchilla
+
+@misc{openai2025gptoss,
+  title         = {{gpt-oss-120b} \& {gpt-oss-20b} Model Card},
+  author        = {{OpenAI}},
+  year          = {2025},
+  month         = aug,
+  day           = {8},
+  eprint        = {2508.10925},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CL},
+  url           = {https://arxiv.org/abs/2508.10925},
+  note          = {Verified 2026-05-05 against the arXiv PDF (v1, document dated August 5, 2025; arXiv submission August 8, 2025). Section 2.2 supports every architectural claim we cite: ``gpt-oss-120b, which consists of 36 layers ... gpt-oss-20b with 24 layers'' (\S2 opening); ``Each MoE block consists of a fixed number of experts (128 for gpt-oss-120b and 32 for gpt-oss-20b) ... we select the top-4 experts for each token'' (\S2.2 Mixture-of-Experts); ``The MoE blocks use the gated SwiGLU activation function''; ``attention blocks alternate between banded window and fully dense patterns ... the bandwidth is 128 tokens'' (\S2.2 Attention). MoE weights are MXFP4 at 4.25 bits per parameter, which yields the 4.20\,MiB per expert weight matrix that we measure in the GGUF file.}
+}
+
+% Removed 2026-05-05 (unused): shoeybi2020megatron
+
+% Removed 2026-05-05 (unused): huang2019gpipe
+
+% Removed 2026-05-05 (unused): zhang2019rmsnorm
+
+% Removed 2026-05-05 (unused): ba2016layernorm
+
+@article{fedus2022switch,
+  title         = {Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity},
+  author        = {Fedus, William and Zoph, Barret and Shazeer, Noam},
+  journal       = {Journal of Machine Learning Research},
+  volume        = {23},
+  number        = {120},
+  pages         = {1--39},
+  year          = {2022},
+  eprint        = {2101.03961},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  url           = {https://arxiv.org/abs/2101.03961},
+  note          = {Verified 2026-05-05 against arXiv 2101.03961 (v1: 11 Jan 2021). Authors confirmed. Published in JMLR vol.\ 23. Switch Transformers simplify MoE routing to top-1 (a special case of top-k); we cite the work in the \S3 positioning paragraph alongside \cite{shazeer2017moe} as the canonical line of MoE-with-top-k routing that GPT-OSS inherits from.}
+}
+
+@inproceedings{mirzadeh2023relu,
+  title         = {{ReLU} Strikes Back: Exploiting Activation Sparsity in Large Language Models},
+  author        = {Mirzadeh, Iman and Alizadeh, Keivan and Mehta, Sachin and Del Mundo, Carlo C. and Tuzel, Oncel and Samei, Golnoosh and Rastegari, Mohammad and Farajtabar, Mehrdad},
+  booktitle     = {International Conference on Learning Representations (ICLR)},
+  year          = {2024},
+  eprint        = {2310.04564},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  url           = {https://arxiv.org/abs/2310.04564},
+  note          = {Verified 2026-05-05 against arXiv 2310.04564 (submitted 6 Oct 2023) and the OpenReview record. Originally a 2023 preprint; published as an ICLR 2024 conference paper (oral). Apple authorship. Cited in \S3.1 for the high post-activation sparsity (\textasciitilde90\%) that ReLU FFNs exhibit; that figure is in the body of the paper rather than the abstract.}
+}
+
+@inproceedings{liu2023deja,
+  title         = {Deja Vu: Contextual Sparsity for Efficient {LLMs} at Inference Time},
+  author        = {Liu, Zichang and Wang, Jue and Dao, Tri and Zhou, Tianyi and Yuan, Binhang and Song, Zhao and Shrivastava, Anshumali and Zhang, Ce and Tian, Yuandong and R{\'e}, Christopher and Chen, Beidi},
+  booktitle     = {Proceedings of the 40th International Conference on Machine Learning (ICML), PMLR 202:22137--22176},
+  year          = {2023},
+  eprint        = {2310.17157},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  url           = {https://proceedings.mlr.press/v202/liu23am.html},
+  note          = {Verified 2026-05-05 against arXiv 2310.17157 and the PMLR proceedings page. Published at ICML 2023 as an oral presentation; the arXiv submission (Oct 2023) post-dates the conference. Authors confirmed. Cited in \S3.1 as the comparator for activation-sparsity exploitation in dense LLMs.}
+}
+
+% =============================================================================
+% LLM serving and KV cache
+% =============================================================================
+
+% Removed 2026-05-05 (unused): kwon2023vllm
+
+% Removed 2026-05-05 (unused): pope2023llmserving
+
+% Removed 2026-05-05 (unused): shazeer2019fastdecoding
+
+% Removed 2026-05-05 (unused): rouhani2023microscaling
+
+% Removed 2026-05-05 (unused): microscaling2023ocp
+
+@misc{ggerganov2023llamacpp,
+  title  = {{llama.cpp}: {LLM} inference in {C/C++}},
+  author = {Gerganov, Georgi and {llama.cpp contributors}},
+  year   = {2023},
+  month  = mar,
+  url    = {https://github.com/ggml-org/llama.cpp},
+  note   = {Verified 2026-05-05. Open-source project started by Georgi Gerganov in March 2023; the canonical repository has since moved from \texttt{github.com/ggerganov/llama.cpp} to \texttt{github.com/ggml-org/llama.cpp} (the original URL redirects). MIT licensed. Cited for the upstream engine that our fork is built on, the GGUF model file format, and the ggml graph executor.}
+}
+
+@misc{gguf_spec,
+  title  = {{GGUF} File Format Specification},
+  author = {Gerganov, Georgi and {ggml contributors}},
+  year   = {2023},
+  url    = {https://github.com/ggml-org/ggml/blob/master/docs/gguf.md},
+  note   = {Verified 2026-05-05. Canonical GGUF specification, maintained in the ggml repository (moved from \texttt{ggerganov/ggml} to \texttt{ggml-org/ggml}; the original URL redirects). Document defines \texttt{gguf\_header\_t} and \texttt{gguf\_tensor\_info\_t} structures whose fields are name, dimensions, type, and offset; the spec notes that the per-tensor offset is relative to the start of the data section, not the start of the file.}
+}
+
+% =============================================================================
+% Linux man pages, kernel docs, and OS internals
+% =============================================================================
+
+@misc{mmap_man,
+  title        = {{mmap(2)}: Linux manual page},
+  author       = {Kerrisk, Michael and {Linux man-pages project}},
+  year         = {2025},
+  month        = oct,
+  day          = {29},
+  howpublished = {Linux man-pages 6.16},
+  url          = {https://man7.org/linux/man-pages/man2/mmap.2.html},
+  note         = {Verified 2026-05-05. Maintained by Michael Kerrisk for the Linux man-pages project. Cited in \S2.3 for the file-into-address-space semantics that llama.cpp's default loader relies on.}
+}
+
+% Removed 2026-05-05 (unused): madvise_man
+
+@misc{open_man,
+  title        = {{open(2)}: Linux manual page},
+  author       = {Kerrisk, Michael and {Linux man-pages project}},
+  year         = {2025},
+  month        = oct,
+  day          = {29},
+  howpublished = {Linux man-pages 6.16},
+  url          = {https://man7.org/linux/man-pages/man2/open.2.html},
+  note         = {Verified 2026-05-05. The page's \texttt{O\_DIRECT} section states that since Linux 2.6.0 the file offset, request length, and buffer address must be multiples of the block device's logical block size (typically 512 bytes), which is the alignment contract we cite in \S2.4.}
+}
+
+% Removed 2026-05-05 (unused): mlock_man
+
+@misc{mlock2_man,
+  title        = {{mlock(2)}: lock and unlock memory (\texttt{mlock}, \texttt{mlock2}, \texttt{munlock}, \texttt{mlockall}, \texttt{munlockall})},
+  author       = {Kerrisk, Michael and {Linux man-pages project}},
+  year         = {2025},
+  month        = oct,
+  day          = {29},
+  howpublished = {Linux man-pages 6.16},
+  url          = {https://man7.org/linux/man-pages/man2/mlock2.2.html},
+  note         = {Verified 2026-05-05. The page documents the \texttt{MLOCK\_ONFAULT} flag we cite in \S7.2: ``Lock pages that are currently resident and mark the entire range so that the remaining nonresident pages are locked when they are populated by a page fault.''}
+}
+
+% Removed 2026-05-05 (unused): posix_aio_man
+
+% Removed 2026-05-05 (unused): iouring_man
+
+% Removed 2026-05-05 (unused): iouring_kerneldoc
+
+% Removed 2026-05-05 (unused): linux_mm_concepts
+
+% Removed 2026-05-05 (unused): linux_pagemap
+
+% Removed 2026-05-05 (unused): linux_readahead
+
+% Removed 2026-05-05 (unused): linux_drop_caches
+
+% Removed 2026-05-05 (unused): linux_oom
+
+% Removed 2026-05-05 (unused): systemd_man
+
+% Removed 2026-05-05 (unused): swapoff_man
+
+% Removed 2026-05-05 (unused): pthread_barrier_man
+
+% Removed 2026-05-05 (unused): futex_man
+
+% Removed 2026-05-05 (unused): bovet2005linuxkernel
+
+% Removed 2026-05-05 (unused): gorman2004understanding
+
+% Removed 2026-05-05 (unused): mauerer2008linuxkernel
+
+@misc{amd_ryzen7700x,
+  title  = {{AMD Ryzen 7 7700X} Desktop Processor},
+  author = {{Advanced Micro Devices}},
+  year   = {2022},
+  month  = sep,
+  day    = {27},
+  url    = {https://www.amd.com/en/products/processors/desktops/ryzen/7000-series/amd-ryzen-7-7700x.html},
+  note   = {Verified 2026-05-05 (corroborated through AMD's product page, TechPowerUp, and Wikipedia after the AMD page itself failed to respond within timeout). Zen~4 architecture, 8~cores / 16 SMT threads, 4.5\,GHz base / 5.4\,GHz boost, 32\,MB L3 cache, socket AM5, released 27 September 2022. Cited in \S6.1 for the 8-core count of the test machine's CPU.}
+}
+
+@misc{jedec_ddr5,
+  title  = {{DDR5} {SDRAM} Standard ({JESD79-5})},
+  author = {{JEDEC Solid State Technology Association}},
+  year   = {2020},
+  month  = jul,
+  day    = {14},
+  url    = {https://www.jedec.org/standards-documents/docs/jesd79-5},
+  note   = {Verified 2026-05-05 (JEDEC's catalogue page returned 403 to unauthenticated fetches; first-publication date confirmed via the JEDEC press release dated 14 July 2020 and corroborated through Synopsys and VideoCardz coverage). The standard has since been revised (JESD79-5A, -5B, -5C, -5D); the citation refers to the DDR5 standard family. Cited in \S6.1 to denote the DDR5 main-memory standard the test machine implements.}
+}
+
+@misc{pcisig_pcie4,
+  title  = {{PCI Express} Base Specification, Revision 4.0, Version 1.0},
+  author = {{PCI-SIG}},
+  year   = {2017},
+  month  = jun,
+  day    = {8},
+  url    = {https://pcisig.com/specifications},
+  note   = {Verified 2026-05-05 (corroborated via secondary sources; the pcisig.com members-only portal blocks unauthenticated fetches). Released by PCI-SIG on 8 June 2017. Cited in \S6.1 to characterise the PCIe 4.0 link of the Samsung 980 PRO used as the model store.}
+}
+
+@misc{nvme_spec,
+  title  = {{NVM Express} Base Specification (Revision 2.3)},
+  author = {{NVM Express Consortium}},
+  year   = {2025},
+  month  = aug,
+  url    = {https://nvmexpress.org/specifications/},
+  note   = {Verified 2026-05-05 against the official NVMe specifications portal. The current revision (2.3) was released on 5 August 2025 by the NVM Express non-profit consortium that defines the NVMe family of specifications (Base, Command Set, Transport, Management). Cited in \S2.4 for the concept of a per-device logical block size; the specific 512-byte value mentioned in that sentence is a property of the Samsung 980 PRO used in our setup, not a constant of the NVMe spec.}
+}
+
+% Removed 2026-05-05 (unused): nvme_device_datasheet
+
+@misc{nvidia_gds,
+  title  = {{GPUDirect Storage} Documentation},
+  author = {{NVIDIA Corporation}},
+  year   = {2026},
+  url    = {https://docs.nvidia.com/gpudirect-storage/},
+  note   = {Verified 2026-05-05. Official NVIDIA documentation portal (copyright 2020--2026). Cited in \S7.2 (future work) for the technology that enables direct DMA between storage and GPU-resident memory, bypassing CPU buffers; the same SQE--DMA pattern we use today on host buffers could in principle target GPU buffers via this facility.}
+}
+
+% =============================================================================
+% Cache replacement, memory hierarchy, working set
+% =============================================================================
+
+% Removed 2026-05-05 (unused): mattson1970evaluation
+
+% Removed 2026-05-05 (unused): denning1968workingset
+
+% Removed 2026-05-05 (unused): lee2001lrfu
+
+% Removed 2026-05-05 (unused): arlitt2000evaluating
+
+% Removed 2026-05-05 (unused): cormode2005countmin
+
+% Removed 2026-05-05 (unused): caffeine_cache
+
+% Removed 2026-05-05 (unused): mellor1991algorithms
+
+% Removed 2026-05-05 (unused): herlihy2008art
+
+% Removed 2026-05-05 (unused): axboe2006blktrace
+
+% Removed 2026-05-05 (unused): fio_tool
+
+% Removed 2026-05-05 (cite dropped from appendix prose): liburing
+
+% Removed 2026-05-05 (cite dropped from appendix prose): react
+
+% Removed 2026-05-05 (cite dropped from appendix prose): zustand
+
+% Removed 2026-05-05 (cite dropped from appendix prose): vite
+
+@article{cytoscape_js,
+  title   = {{Cytoscape.js}: a graph theory library for visualisation and analysis},
+  author  = {Franz, Max and Lopes, Christian T. and Huck, Gerardo and Dong, Yue and Sumer, Onur and Bader, Gary D.},
+  journal = {Bioinformatics},
+  volume  = {32},
+  number  = {2},
+  pages   = {309--311},
+  year    = {2016},
+  doi     = {10.1093/bioinformatics/btv557},
+  url     = {https://doi.org/10.1093/bioinformatics/btv557},
+  note    = {Verified 2026-05-05 against the Oxford Bioinformatics article page. Authors, volume, issue, pages, and DOI confirmed. Cited in \autoref{sec:art-tracing} for the JavaScript graph-layout library used by the WebUI's tracer-graph view.}
+}
+
+% Removed 2026-05-05 (cite dropped from appendix prose): threejs
+
+% Removed 2026-05-05 (cite dropped from appendix prose): tailwind
+
+% Removed 2026-05-05 (cite dropped from appendix prose): typescript
+
+% Removed 2026-05-05 (cite dropped from appendix prose): dear_imgui
+
+% Removed 2026-05-05 (cite dropped from appendix prose): glfw
+
+% Removed 2026-05-05 (cite dropped from appendix prose): opengl
+
+% Removed 2026-05-05 (cite dropped from appendix prose): nlohmann_json
+
+% Removed 2026-05-05 (cite dropped from appendix prose): gcc
+
+% Removed 2026-05-05 (cite dropped from appendix prose): cmake
+
+% Removed 2026-05-05 (cite dropped from appendix prose): huggingface
+
+@misc{trendforce_dram2026,
+  title  = {[News] {AI} Reportedly to Consume 20\% of Global {DRAM} Wafer Capacity in 2026, {HBM} and {GDDR7} Lead Demand},
+  author = {{TrendForce}},
+  year   = {2025},
+  month  = dec,
+  day    = {26},
+  url    = {https://www.trendforce.com/news/2025/12/26/news-ai-reportedly-to-consume-20-of-global-dram-wafer-capacity-in-2026-hbm-gddr7-lead-demand/},
+  note   = {Verified 2026-05-05: TrendForce News, citing Commercial Times. Article supports the claim that AI consumption will reach about 20\% of global DRAM supply in 2026; it does not directly address DDR5 price doubling.}
+}
+
+@misc{counterpoint_ddr5,
+  title  = {{RAM} Shortage 2025: How {AI} Demand is Raising {DRAM} Prices},
+  author = {{IntuitionLabs}},
+  year   = {2025},
+  url    = {https://intuitionlabs.ai/articles/ram-shortage-2025-ai-demand},
+  note   = {Verified 2026-05-05: IntuitionLabs, citing Counterpoint Research. Reports a roughly 50\% DDR5 contract-price rise in 2025 plus a further roughly 50\% forecast through early 2026, compounding to a roughly twofold increase since early 2025.}
+}
+
+@misc{networkworld_ddr5,
+  title  = {Server memory prices could double by 2026 as {AI} demand strains supply},
+  author = {Swain, Gyana},
+  year   = {2025},
+  month  = nov,
+  day    = {20},
+  howpublished = {Network World},
+  url    = {https://www.networkworld.com/article/4093752/server-memory-prices-could-double-by-2026-as-ai-demand-strains-supply.html},
+  note   = {Verified 2026-05-05: Network World, citing Counterpoint Research. Reports that DDR5 64\,GB RDIMM modules could cost roughly twice as much by the end of 2026 as at the start of 2025.}
+}
+
+% Removed 2026-05-05 (unused): intuitionlabs_h100
+
