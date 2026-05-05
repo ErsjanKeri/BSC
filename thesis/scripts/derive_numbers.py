@@ -62,9 +62,7 @@ def fmt2(x: float) -> str:
     return f"{x:.2f}"
 
 
-# -------------------------------------------------------------------------
-# 1. Per-tensor weight breakdown (byte-exact).
-# -------------------------------------------------------------------------
+# Per-tensor weight breakdown (byte-exact).
 MEM_MAP_20B = Path("/home/keri/BSC/tensor-tracing/desktopui/data/memory-map.json")
 GGUF_120B = Path("/home/keri/llama.cpp/models/gpt-oss-120b/gpt-oss-120b-F16.gguf")
 GGUF_DUMP_BIN = Path("/home/keri/llama.cpp/build/bin/llama-gguf-dump")
@@ -156,9 +154,7 @@ def load_120b_breakdown() -> dict:
     }
 
 
-# -------------------------------------------------------------------------
-# 2. Per-token reads (dense + 4 experts × 3 projections × n_layers).
-# -------------------------------------------------------------------------
+# Per-token reads (dense + 4 experts × 3 projections × n_layers).
 def per_token_reads(b: dict) -> dict:
     cats = b["categories"]
     # "Read per word" interpretation: only one row of the token embedding is
@@ -194,9 +190,7 @@ def per_token_reads(b: dict) -> dict:
 per_token_reads_20b = per_token_reads
 
 
-# -------------------------------------------------------------------------
-# 3. Run-log parsing for KV / compute / pin / RSS.
-# -------------------------------------------------------------------------
+# Run-log parsing for KV / compute / pin / RSS.
 LOG_20B = Path(
     "/home/keri/BSC/time-tracking/results/cgroup_20260501_191023/"
     "async_projection_overlap_lfua_20b_7g_run1.log"
@@ -275,9 +269,7 @@ def parse_log(path: Path) -> dict:
     return out
 
 
-# -------------------------------------------------------------------------
-# 4. cache_dump.csv: per-(layer, expert) selection counts and reuse distance.
-# -------------------------------------------------------------------------
+# cache_dump.csv: per-(layer, expert) selection counts and reuse distance.
 CACHE_DUMP = Path(
     "/home/keri/BSC/tensor-tracing/traces/20b-2000tok-cache-dump/cache_dump.csv"
 )
@@ -403,9 +395,7 @@ def reuse_distance_stats(path: Path) -> dict:
     }
 
 
-# -------------------------------------------------------------------------
-# 5. Final canon JSON: tok/s and CV stats.
-# -------------------------------------------------------------------------
+# Final canon JSON: tok/s and CV stats.
 FINAL_CANON = Path("/home/keri/BSC/thesis/_meta/final_canon.json")
 
 
@@ -425,13 +415,10 @@ def canon_stats() -> dict:
     }
 
 
-# -------------------------------------------------------------------------
-# Main: print authoritative numbers in a single report.
-# -------------------------------------------------------------------------
 def main() -> None:
-    print("=" * 78)
+    """Print authoritative numbers in a single report."""
     print("AUTHORITATIVE NUMBERS (units: GiB / MiB / KiB ; rounding: 2 decimals)")
-    print("=" * 78)
+    print()
     print()
 
     def print_breakdown(b: dict) -> None:

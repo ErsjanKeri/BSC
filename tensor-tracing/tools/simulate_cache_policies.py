@@ -21,9 +21,7 @@ from collections import defaultdict, OrderedDict
 from pathlib import Path
 
 
-# =============================================================================
 # Access sequence loader — returns batches, not flat list
-# =============================================================================
 
 def load_access_batches(trace_dir: str) -> list[list[tuple[int, int, int]]]:
     """Load expert accesses grouped into per-layer batches.
@@ -55,9 +53,7 @@ def load_access_batches(trace_dir: str) -> list[list[tuple[int, int, int]]]:
     return batches
 
 
-# =============================================================================
 # Cache policy implementations — all use batch_access(keys) interface
-# =============================================================================
 
 class LRUCache:
     """Classic LRU. Batch: all keys get MRU placement, eviction only from
@@ -478,9 +474,7 @@ class WTinyLFUCache:
         self.protected[key] = True
 
 
-# =============================================================================
 # Belady's optimal (standalone, processes flat sequence)
-# =============================================================================
 
 def simulate_belady_batched(batches, capacity):
     """Belady's optimal with batch-aware processing."""
@@ -541,9 +535,7 @@ def simulate_belady_batched(batches, capacity):
     return total_hits, total_misses
 
 
-# =============================================================================
 # Simulation runner
-# =============================================================================
 
 def simulate_policy(policy_class, batches, capacity, **kwargs):
     cache = policy_class(capacity, **kwargs)

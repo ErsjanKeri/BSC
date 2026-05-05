@@ -16,9 +16,7 @@ import sys
 from collections import OrderedDict
 
 
-# =============================================================================
 # Load access sequence from C dump
-# =============================================================================
 
 def load_dump(path):
     """Read CSV dump, return list of (batch, real_hits, real_misses)."""
@@ -36,9 +34,7 @@ def load_dump(path):
     return loads
 
 
-# =============================================================================
 # Policy implementations — all bit-exact verified against C code
-# =============================================================================
 
 class LRUCache:
     """LRU with batch protection. Verified against C code."""
@@ -352,9 +348,7 @@ class BeladyCache:
         return hits, len(keys) - hits
 
 
-# =============================================================================
 # Main
-# =============================================================================
 
 def simulate(loads, cache_size, policy_cls, all_batches=None, **kwargs):
     if policy_cls == BeladyCache:

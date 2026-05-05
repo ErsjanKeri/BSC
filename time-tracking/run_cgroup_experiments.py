@@ -41,9 +41,7 @@ from utils import (
 )
 
 
-# =============================================================================
 # Constants
-# =============================================================================
 
 # NOTE: slice name MUST NOT contain a hyphen. systemd interprets hyphens in
 # slice/scope names as nested-hierarchy separators, so `bsc-experiment.slice`
@@ -57,9 +55,7 @@ SETTLE_AFTER_DROP_S   = 5
 RUN_TIMEOUT_S         = 14400  # 4 hours, generous for tight budgets
 
 
-# =============================================================================
 # Cgroup management
-# =============================================================================
 
 def cleanup_cgroup_slice():
     """Forcefully tear down the experiment slice and any scopes inside it.
@@ -157,9 +153,7 @@ def parse_cgroup_stats_from_output(output):
     return stats
 
 
-# =============================================================================
 # Diagnostic snapshots
-# =============================================================================
 
 MEMINFO_FIELDS = [
     'MemFree', 'MemAvailable', 'Cached', 'Active', 'Inactive',
@@ -235,9 +229,7 @@ def append_cgroup_stats(result_dir, exp_name, run_num, stats):
         f.write(','.join(values) + '\n')
 
 
-# =============================================================================
 # Single iteration
-# =============================================================================
 
 def run_iteration(exp, iter_num, result_dir, settings):
     """Execute one iteration of an experiment.
@@ -382,9 +374,7 @@ def run_iteration(exp, iter_num, result_dir, settings):
     return metrics
 
 
-# =============================================================================
 # Experiment loop
-# =============================================================================
 
 def run_experiment(exp, settings, result_dir):
     """Run all iterations of one experiment configuration."""
@@ -428,9 +418,7 @@ def run_experiment(exp, settings, result_dir):
     return stats
 
 
-# =============================================================================
 # Pre-flight checks
-# =============================================================================
 
 def check_root():
     if os.geteuid() != 0:
@@ -484,9 +472,7 @@ def check_paths(settings):
             sys.exit(1)
 
 
-# =============================================================================
 # Main
-# =============================================================================
 
 def main():
     parser = argparse.ArgumentParser(
