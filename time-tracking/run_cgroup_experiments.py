@@ -336,13 +336,13 @@ def run_iteration(exp, iter_num, result_dir, settings):
         io_mon.stop()
         io_csv = result_dir / f"{name}_io_run{iter_num}.csv"
         n_samples = io_mon.to_csv(io_csv)
-        log(f"  io_monitor: {n_samples} samples → {io_csv.name}")
+        log(f"  io_monitor: {n_samples} samples -> {io_csv.name}")
 
     if cpu_mon is not None:
         cpu_mon.stop()
         cpu_csv = result_dir / f"{name}_cpu_run{iter_num}.csv"
         n_samples = cpu_mon.to_csv(cpu_csv)
-        log(f"  cpu_monitor: {n_samples} samples → {cpu_csv.name}")
+        log(f"  cpu_monitor: {n_samples} samples -> {cpu_csv.name}")
 
     # 8. Extract cgroup stats from the wrapper's output (BSC_CGROUP_* markers).
     # The bash wrapper inside the cgroup printed memory.peak/current/events

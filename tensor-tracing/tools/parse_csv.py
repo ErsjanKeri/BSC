@@ -265,7 +265,7 @@ def main():
     with open(args.output, 'w') as f:
         json.dump(memory_map, f, indent=indent)
 
-    print(f"✓ Memory map written to: {args.output}")
+    print(f"Memory map written to: {args.output}")
     print(f"  File size: {os.path.getsize(args.output) / 1024:.1f} KB")
 
 

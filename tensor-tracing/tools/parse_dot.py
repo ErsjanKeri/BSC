@@ -458,7 +458,7 @@ def main():
     with open(args.output, 'w') as f:
         json.dump(graph_json, f, indent=indent)
 
-    print(f"✓ Graph data written to: {args.output}")
+    print(f"Graph data written to: {args.output}")
     print(f"  File size: {os.path.getsize(args.output) / 1024:.1f} KB")
 
 

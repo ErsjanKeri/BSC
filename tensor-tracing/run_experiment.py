@@ -157,7 +157,7 @@ def verify_prerequisites(paths):
         if not script_path.exists():
             error_exit(f"Parser script not found: {script_path}")
 
-    log("✓ All prerequisites verified")
+    log("All prerequisites verified")
 
 
 def clean_temp_files(paths):
@@ -184,7 +184,7 @@ def clean_temp_files(paths):
         shutil.rmtree(paths['graphs_dir'])
         log(f"  Removed: {paths['graphs_dir']}")
 
-    log("✓ Temp files cleaned")
+    log("Temp files cleaned")
 
 
 def run_llama_inference(paths, settings):
@@ -228,7 +228,7 @@ def run_llama_inference(paths, settings):
     if result.returncode != 0:
         error_exit(f"llama-completion failed:\n{result.stderr}")
 
-    log(f"✓ Inference complete ({elapsed_time:.2f}s)")
+    log(f"Inference complete ({elapsed_time:.2f}s)")
 
     # Verify trace files were generated
     if not paths['trace_bin'].exists():
@@ -301,7 +301,7 @@ def parse_gguf_to_memory_map(paths):
     # Clean up temp CSV
     csv_path.unlink()
 
-    log(f"✓ Memory map generated: {output_path}")
+    log(f"Memory map generated: {output_path}")
 
 
 def parse_trace_to_json(paths):
@@ -340,7 +340,7 @@ def parse_trace_to_json(paths):
     print(result.stdout)
 
     num_files = len(list(output_dir.glob('token-*.json')))
-    log(f"✓ Generated {num_files} trace JSON files")
+    log(f"Generated {num_files} trace JSON files")
 
 
 def parse_graphs_to_json(paths):
@@ -387,7 +387,7 @@ def parse_graphs_to_json(paths):
             error_exit(f"parse_dot.py failed for {dot_file}:\n{result.stderr}")
 
     num_files = len(list(output_dir.glob('token-*.json')))
-    log(f"✓ Generated {num_files} graph JSON files")
+    log(f"Generated {num_files} graph JSON files")
 
 
 def parse_buffer_stats(paths):
@@ -418,7 +418,7 @@ def parse_buffer_stats(paths):
     if result.returncode != 0:
         error_exit(f"parse_buffer_stats.py failed:\n{result.stderr}")
 
-    log(f"✓ Buffer timeline generated: {output_file}")
+    log(f"Buffer timeline generated: {output_file}")
 
 
 def display_summary(paths, inference_time):
@@ -448,7 +448,7 @@ def display_summary(paths, inference_time):
     log(f"\nPerformance:")
     log(f"  Inference time:  {inference_time:.2f}s")
 
-    log(f"\n✓ All data ready in: {data_dir}")
+    log(f"\nAll data ready in: {data_dir}")
     log(f"  Start the webui dev server to visualize results")
     log("=" * 70 + "\n")
 
@@ -495,10 +495,10 @@ if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
-        print("\n\n❌ Interrupted by user")
+        print("\n\nInterrupted by user")
         sys.exit(1)
     except Exception as e:
-        print(f"\n❌ Unexpected error: {e}", file=sys.stderr)
+        print(f"\nUnexpected error: {e}", file=sys.stderr)
         import traceback
         traceback.print_exc()
         sys.exit(1)

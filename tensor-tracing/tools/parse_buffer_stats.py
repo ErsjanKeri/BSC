@@ -247,7 +247,7 @@ def generate_output(events: List[Dict], output_path: Path = None) -> None:
             json.dump(output, f, indent=2)
 
         file_size = output_path.stat().st_size
-        print(f"✓ Buffer timeline written to: {output_path}")
+        print(f"Buffer timeline written to: {output_path}")
         print(f"  File size: {file_size / 1024:.1f} KB")
     else:
         # Output to stdout
@@ -325,7 +325,7 @@ def main():
         print("No events found in file", file=sys.stderr)
         return 1
 
-    print(f"✓ Parsed {len(events)} events")
+    print(f"Parsed {len(events)} events")
 
     # Display summary or generate output
     if args.summary:

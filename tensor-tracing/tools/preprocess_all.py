@@ -164,9 +164,9 @@ def preprocess_buffer_stats(buffer_stats_path: Path, output_dir: Path, verbose: 
     if success:
         if verbose:
             size_kb = output_file.stat().st_size / 1024
-            print(f"✓ Success! ({size_kb:.1f} KB)")
+            print(f"Success! ({size_kb:.1f} KB)")
     else:
-        print(f"✗ Error: {error}")
+        print(f"Error: {error}")
 
     return success
 
@@ -209,9 +209,9 @@ def preprocess_memory_map(csv_path: Path, output_dir: Path, verbose: bool = True
     if success:
         if verbose:
             size_kb = output_file.stat().st_size / 1024
-            print(f"✓ Success! ({size_kb:.1f} KB)")
+            print(f"Success! ({size_kb:.1f} KB)")
     else:
-        print(f"✗ Error: {error}")
+        print(f"Error: {error}")
 
     return success
 
@@ -250,7 +250,7 @@ def preprocess_token(
 
     if dot_file.exists():
         if verbose:
-            print(f"Graph:  {dot_file.name} → {graph_output.name}")
+            print(f"Graph:  {dot_file.name} -> {graph_output.name}")
 
         parse_dot = find_script("parse_dot.py")
         cmd = [
@@ -264,18 +264,18 @@ def preprocess_token(
         graph_success, error = run_command(cmd, f"parse_dot.py (token {token_id})")
         if graph_success:
             size_kb = graph_output.stat().st_size / 1024
-            print(f"  ✓ Graph JSON: {size_kb:.1f} KB")
+            print(f"  Graph JSON: {size_kb:.1f} KB")
         else:
-            print(f"  ✗ Graph failed: {error}")
+            print(f"  Graph failed: {error}")
     else:
-        print(f"  ⚠ Graph file not found: {dot_file}")
+        print(f"  WARN: Graph file not found: {dot_file}")
 
     # 2. Process trace
     trace_output = output_dir / "traces" / f"token-{token_id:05d}.json"
 
     if trace_file.exists():
         if verbose:
-            print(f"Trace:  {trace_file.name} (token {token_id}) → {trace_output.name}")
+            print(f"Trace:  {trace_file.name} (token {token_id}) -> {trace_output.name}")
 
         parse_trace = find_script("parse_trace.py")
         cmd = [
@@ -290,14 +290,14 @@ def preprocess_token(
         trace_success, error = run_command(cmd, f"parse_trace.py (token {token_id})")
         if trace_success and trace_output.exists():
             size_kb = trace_output.stat().st_size / 1024
-            print(f"  ✓ Trace JSON: {size_kb:.1f} KB")
+            print(f"  Trace JSON: {size_kb:.1f} KB")
         elif trace_success:
-            print(f"  ⚠ Trace completed but output file not found")
+            print(f"  WARN: Trace completed but output file not found")
             trace_success = False
         else:
-            print(f"  ✗ Trace failed: {error}")
+            print(f"  Trace failed: {error}")
     else:
-        print(f"  ⚠ Trace file not found: {trace_file}")
+        print(f"  WARN: Trace file not found: {trace_file}")
 
     return graph_success, trace_success
 
@@ -483,7 +483,7 @@ Examples:
                     status.append("trace")
                 print(f"  Token {tid:05d}: {', '.join(status)} failed")
 
-        print("\n✓ Preprocessing complete!")
+        print("\nPreprocessing complete!")
         print(f"  Output directory: {args.output.absolute()}")
 
     return 0

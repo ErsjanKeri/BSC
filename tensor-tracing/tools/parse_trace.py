@@ -347,61 +347,61 @@ def verify_format(entries):
     print("\n=== Format Verification ===\n")
 
     if not entries:
-        print("❌ No entries found")
+        print("No entries found")
         return False
 
     issues = []
 
     # Check entry count
-    print(f"✓ Found {len(entries)} entries")
+    print(f"Found {len(entries)} entries")
 
     # Check if entries have valid sources
     entries_with_sources = [e for e in entries if e['num_sources'] > 0]
-    print(f"✓ Entries with sources: {len(entries_with_sources)} / {len(entries)}")
+    print(f"Entries with sources: {len(entries_with_sources)} / {len(entries)}")
 
     # Check destination names
     entries_with_dst = [e for e in entries if e['dst_name']]
-    print(f"✓ Entries with destination names: {len(entries_with_dst)} / {len(entries)}")
+    print(f"Entries with destination names: {len(entries_with_dst)} / {len(entries)}")
 
     # Check source names
     all_sources = [src for e in entries for src in e['sources']]
     sources_with_names = [src for src in all_sources if src['name']]
-    print(f"✓ Sources with names: {len(sources_with_names)} / {len(all_sources)}")
+    print(f"Sources with names: {len(sources_with_names)} / {len(all_sources)}")
 
     # Check memory source detection
     disk_sources = [src for src in all_sources if src['memory_source'] == 'DISK']
     buffer_sources = [src for src in all_sources if src['memory_source'] == 'BUFFER']
-    print(f"✓ DISK sources: {len(disk_sources)}")
-    print(f"✓ BUFFER sources: {len(buffer_sources)}")
+    print(f"DISK sources: {len(disk_sources)}")
+    print(f"BUFFER sources: {len(buffer_sources)}")
 
     # Check disk offsets
     disk_with_offsets = [src for src in disk_sources if src['disk_offset_or_buffer_id'] > 0]
     if disk_sources:
         offset_pct = (len(disk_with_offsets) / len(disk_sources)) * 100
-        print(f"✓ DISK sources with non-zero offsets: {len(disk_with_offsets)} / {len(disk_sources)} ({offset_pct:.1f}%)")
+        print(f"DISK sources with non-zero offsets: {len(disk_with_offsets)} / {len(disk_sources)} ({offset_pct:.1f}%)")
         if offset_pct < 50:
-            issues.append(f"⚠️  Only {offset_pct:.1f}% of DISK sources have non-zero offsets")
+            issues.append(f"Only {offset_pct:.1f}% of DISK sources have non-zero offsets")
 
     # Check operation types
     valid_ops = [e for e in entries if e['operation_name'] != f"UNKNOWN_{e['operation_type']}"]
-    print(f"✓ Valid operation types: {len(valid_ops)} / {len(entries)}")
+    print(f"Valid operation types: {len(valid_ops)} / {len(entries)}")
 
     # Check layers
     entries_with_layer = [e for e in entries if e['layer_id'] is not None]
     if entries_with_layer:
         unique_layers = set(e['layer_id'] for e in entries_with_layer)
-        print(f"✓ Unique layers: {len(unique_layers)} (expecting 22 for TinyLlama)")
+        print(f"Unique layers: {len(unique_layers)} (expecting 22 for TinyLlama)")
         if len(unique_layers) < 22:
-            issues.append(f"⚠️  Only {len(unique_layers)} layers captured (expected 22)")
+            issues.append(f"Only {len(unique_layers)} layers captured (expected 22)")
 
     # Summary
     if issues:
-        print(f"\n❌ Found {len(issues)} issues:")
+        print(f"\nFound {len(issues)} issues:")
         for issue in issues:
             print(f"  {issue}")
         return False
     else:
-        print("\n✅ Format verification passed!")
+        print("\nFormat verification passed!")
         return True
 
 
@@ -483,7 +483,7 @@ def export_to_csv(entries, output_path):
 
             writer.writerow(row)
 
-    print(f"✓ Exported {len(entries)} entries to {output_file}")
+    print(f"Exported {len(entries)} entries to {output_file}")
     print(f"  File size: {output_file.stat().st_size / (1024*1024):.2f} MB")
 
     return len(entries)
@@ -577,7 +577,7 @@ def export_to_json_per_token(entries, output_dir):
             json.dump(token_json, f, indent=2)
 
         file_size_kb = output_file.stat().st_size / 1024
-        print(f"✓ Token {token_id:5d}: {len(token_entries):4d} entries → {output_file} ({file_size_kb:.1f} KB)")
+        print(f"Token {token_id:5d}: {len(token_entries):4d} entries -> {output_file} ({file_size_kb:.1f} KB)")
         num_files += 1
 
     return num_files
@@ -629,7 +629,7 @@ def main():
             entries.append(entry)
             entry_num += 1
 
-    print(f"✓ Parsed {len(entries)} entries\n")
+    print(f"Parsed {len(entries)} entries\n")
 
     if not entries:
         print("No valid entries found", file=sys.stderr)
@@ -639,11 +639,11 @@ def main():
     if args.export_json:
         print(f"\nExporting to JSON (grouped by token)...")
         num_files = export_to_json_per_token(entries, args.export_json)
-        print(f"\n✓ Exported {num_files} token files to {args.export_json}")
+        print(f"\nExported {num_files} token files to {args.export_json}")
     elif args.export_csv:
         print(f"\nExporting to CSV (wide format for DuckDB)...")
         num_rows = export_to_csv(entries, args.export_csv)
-        print(f"\n✓ Exported {num_rows} rows to {args.export_csv}")
+        print(f"\nExported {num_rows} rows to {args.export_csv}")
     elif args.verify:
         verify_format(entries)
     elif args.stats:
